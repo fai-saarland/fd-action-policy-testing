@@ -1,8 +1,8 @@
 #ifndef VARIABLE_ORDER_FINDER_H
 #define VARIABLE_ORDER_FINDER_H
 
-#include "mas_heuristic.h" // needed for MergeStrategy type;
-                           // TODO: move that type somewhere else?
+#include "raz_mas_heuristic.h" // needed for MergeStrategy type;
+// TODO: move that type somewhere else?
 
 #include <vector>
 
@@ -16,7 +16,8 @@ protected:
 
     void select_next(int position, int var_no);
 public:
-    VariableOrderFinder(MergeStrategy merge_strategy, bool is_first = true);
+    VariableOrderFinder(MergeStrategy merge_strategy, double mix_parameter,
+                        bool is_first = true);
     bool done() const;
     int next();
 };
