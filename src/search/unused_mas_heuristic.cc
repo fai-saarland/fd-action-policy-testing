@@ -17,7 +17,8 @@ using namespace std;
 
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
-    : max_abstract_states(opts.get<int>("max_states")),
+    : Heuristic(opts),
+      max_abstract_states(opts.get<int>("max_states")),
       max_abstract_states_before_merge(opts.get<int>("max_states_before_merge")),
       abstraction_count(opts.get<int>("count")),
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
@@ -26,6 +27,9 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
     assert(max_abstract_states_before_merge > 0);
     assert(max_abstract_states >= max_abstract_states_before_merge);
+}
+
+MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
@@ -232,6 +236,19 @@ void MergeAndShrinkHeuristic::initialize() {
          << timer << "]" << endl
          << "initial h value: " << compute_heuristic(*g_initial_state)
          << endl;
+
+    /* TODO: The peak memory reported in the next line is wrong --
+             this seems to be the maximum over the memory amounts
+             required by the *last* abstraction of each iteration,
+             rather than the peaks of each iteration.
+             Abstraction::peak_memory doesn't seem to contain what
+             we're interested in -- need to set it based on the child
+             values for composite abstractions?
+
+       TODO: Since this memory estimate is just an estimate, might be a
+             good idea to complement it with a report on the peak memory
+             usage of the process as provided in utilities.h.
+    */
     cout << "Estimated peak memory: " << peak_memory << " bytes" << endl;
 }
 
@@ -261,6 +278,8 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
+    // TODO: better documentation what each parameter does 
     parser.add_option<int>(
         "max_states", -1, "maximum abstraction size");
     parser.add_option<int>(
