@@ -59,6 +59,8 @@ void CegarHeuristic::initialize() {
     abstraction->set_log_h(options.get<bool>("log_h"));
 
     abstraction->build(h_updates);
+    if (max_states_online <= 0)
+        abstraction->release_memory();
 
     if (!search)
         exit(0);
