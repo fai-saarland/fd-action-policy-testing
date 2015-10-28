@@ -7,6 +7,7 @@ import sys
 
 from . import aliases
 from . import arguments
+from . import cleanup
 from . import run_components
 
 
@@ -21,19 +22,29 @@ def main():
         aliases.show_aliases()
         sys.exit()
 
-    try:
-        for component in args.components:
+    if args.cleanup:
+        cleanup.cleanup_temporary_files(args)
+        sys.exit()
+
+    # If validation succeeds, exit with the search component's exitcode.
+    exitcode = None
+    for component in args.components:
+        try:
             if component == "translate":
                 run_components.run_translate(args)
             elif component == "preprocess":
                 run_components.run_preprocess(args)
             elif component == "search":
-                run_components.run_search(args)
+                exitcode = run_components.run_search(args)
+            elif component == "validate":
+                run_components.run_validate(args)
             else:
                 assert False
-    except subprocess.CalledProcessError as err:
-        print(err)
-        sys.exit(err.returncode)
+        except subprocess.CalledProcessError as err:
+            print(err)
+            exitcode = err.returncode
+            break
+    sys.exit(exitcode)
 
 
 if __name__ == "__main__":
