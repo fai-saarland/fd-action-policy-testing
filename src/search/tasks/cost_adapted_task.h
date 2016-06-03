@@ -1,11 +1,15 @@
-#ifndef COST_ADAPTED_TASK_H
-#define COST_ADAPTED_TASK_H
+#ifndef TASKS_COST_ADAPTED_TASK_H
+#define TASKS_COST_ADAPTED_TASK_H
 
 #include "delegating_task.h"
-#include "operator_cost.h"
 
+#include "../operator_cost.h"
+
+namespace options {
 class Options;
+}
 
+namespace tasks {
 /*
   Task transformation that changes operator costs. If the parent task assigns
   costs 'c' to an operator, its adjusted costs, depending on the value of the
@@ -23,10 +27,11 @@ class CostAdaptedTask : public DelegatingTask {
     const bool is_unit_cost;
     bool compute_is_unit_cost() const;
 public:
-    explicit CostAdaptedTask(const Options &opts);
+    explicit CostAdaptedTask(const options::Options &opts);
     virtual ~CostAdaptedTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
 };
+}
 
 #endif
