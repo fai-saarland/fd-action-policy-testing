@@ -1,4 +1,6 @@
-#include "landmark_graph_merged.h"
+#include "landmark_factory_merged.h"
+
+#include "landmark_graph.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -11,28 +13,24 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
+class LandmarkNode;
+
+LandmarkFactoryMerged::LandmarkFactoryMerged(const Options &opts)
     : LandmarkFactory(opts),
-      lm_graphs(opts.get_list<LandmarkGraph *>("lm_graphs")) {
+      lm_factories(opts.get_list<LandmarkFactory *>("lm_factories")) {
 }
 
-LandmarkGraphMerged::~LandmarkGraphMerged() {
-}
-
-LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm) const {
+LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const LandmarkNode &lm) const {
     if (!lm.disjunctive && !lm.conjunctive) {
-        pair<int, int> lm_fact = make_pair(lm.vars[0], lm.vals[0]);
+        const FactPair &lm_fact = lm.facts[0];
         if (lm_graph->simple_landmark_exists(lm_fact))
             return &lm_graph->get_simple_lm_node(lm_fact);
         else
             return 0;
     } else if (lm.disjunctive) {
-        set<pair<int, int>> lm_facts;
-        for (size_t i = 0; i < lm.vars.size(); ++i) {
-            lm_facts.insert(make_pair(lm.vars[i], lm.vals[i]));
-        }
+        set<FactPair> lm_facts(lm.facts.begin(), lm.facts.end());
         if (lm_graph->exact_same_disj_landmark_exists(lm_facts))
-            return &lm_graph->get_disj_lm_node(make_pair(lm.vars[0], lm.vals[0]));
+            return &lm_graph->get_disj_lm_node(lm.facts[0]);
         else
             return 0;
     } else if (lm.conjunctive) {
@@ -42,8 +40,13 @@ LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm)
     return 0;
 }
 
-void LandmarkGraphMerged::generate_landmarks() {
-    cout << "Merging " << lm_graphs.size() << " landmark graphs" << endl;
+void LandmarkFactoryMerged::generate_landmarks(
+    const shared_ptr<AbstractTask> &task, Exploration &exploration) {
+    cout << "Merging " << lm_factories.size() << " landmark graphs" << endl;
+
+    for (LandmarkFactory *lm_factory : lm_factories) {
+        lm_graphs.push_back(lm_factory->compute_lm_graph(task, exploration));
+    }
 
     cout << "Adding simple landmarks" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
@@ -51,7 +54,7 @@ void LandmarkGraphMerged::generate_landmarks() {
         set<LandmarkNode *>::const_iterator it;
         for (it = nodes.begin(); it != nodes.end(); ++it) {
             const LandmarkNode &node = **it;
-            pair<int, int> lm_fact = make_pair(node.vars[0], node.vals[0]);
+            const FactPair &lm_fact = node.facts[0];
             if (!node.conjunctive && !node.disjunctive && !lm_graph->landmark_exists(lm_fact)) {
                 LandmarkNode &new_node = lm_graph->landmark_add_simple(lm_fact);
                 new_node.in_goal = node.in_goal;
@@ -66,10 +69,9 @@ void LandmarkGraphMerged::generate_landmarks() {
         for (it = nodes.begin(); it != nodes.end(); ++it) {
             const LandmarkNode &node = **it;
             if (node.disjunctive) {
-                set<pair<int, int>> lm_facts;
+                set<FactPair> lm_facts;
                 bool exists = false;
-                for (size_t j = 0; j < node.vars.size(); ++j) {
-                    pair<int, int> lm_fact = make_pair(node.vars[j], node.vals[j]);
+                for (const FactPair &lm_fact: node.facts) {
                     if (lm_graph->landmark_exists(lm_fact)) {
                         exists = true;
                         break;
@@ -95,7 +97,7 @@ void LandmarkGraphMerged::generate_landmarks() {
             if (from) {
                 for (const auto &to : from_orig->children) {
                     const LandmarkNode &to_orig = *to.first;
-                    edge_type e_type = to.second;
+                    EdgeType e_type = to.second;
                     LandmarkNode *to_node = get_matching_landmark(to_orig);
                     if (to_node) {
                         edge_add(*from, *to_node, e_type);
@@ -110,8 +112,16 @@ void LandmarkGraphMerged::generate_landmarks() {
     }
 }
 
+bool LandmarkFactoryMerged::supports_conditional_effects() const {
+    for (const LandmarkFactory *lm_factory : lm_factories) {
+        if (!lm_factory->supports_conditional_effects()) {
+            return false;
+        }
+    }
+    return true;
+}
 
-static LandmarkGraph *_parse(OptionParser &parser) {
+static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merged Landmarks",
         "Merges the landmarks and orderings from the parameter landmarks");
@@ -126,35 +136,22 @@ static LandmarkGraph *_parse(OptionParser &parser) {
     parser.document_note(
         "Note",
         "Does not currently support conjunctive landmarks");
-    parser.add_list_option<LandmarkGraph *>("lm_graphs");
-    LandmarkGraph::add_options_to_parser(parser);
+    parser.add_list_option<LandmarkFactory *>("lm_factories");
+    _add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    opts.verify_list_non_empty<LandmarkGraph *>("lm_graphs");
+    opts.verify_list_non_empty<LandmarkFactory *>("lm_factories");
 
     parser.document_language_support("conditional_effects",
                                      "supported if all components support them");
 
     if (parser.dry_run()) {
-        return 0;
+        return nullptr;
     } else {
-        vector<LandmarkGraph *> lm_graphs = opts.get_list<LandmarkGraph *>("lm_graphs");
-        bool supports_conditional_effects = true;
-        for (size_t i = 0; i < lm_graphs.size(); ++i) {
-            if (!lm_graphs[i]->supports_conditional_effects()) {
-                supports_conditional_effects = false;
-                break;
-            }
-        }
-        opts.set<bool>("supports_conditional_effects", supports_conditional_effects);
-
-        opts.set<Exploration *>("explor", new Exploration(opts));
-        LandmarkGraphMerged lm_graph_factory(opts);
-        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-        return graph;
+        return new LandmarkFactoryMerged(opts);
     }
 }
 
-static Plugin<LandmarkGraph> _plugin(
+static Plugin<LandmarkFactory> _plugin(
     "lm_merged", _parse);
 }
