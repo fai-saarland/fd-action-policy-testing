@@ -643,7 +643,7 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME CORE_TASKS
+    NAME CORE_KS
     HELP "Core task transformations"
     SOURCES
         tasks/cost_adapted_task
@@ -891,6 +891,19 @@ fast_downward_plugin(
     SOURCES
         algorithms/sccs
     DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME POLICYFUZZING
+    HELP "Fuzzing of (NN) policy to find states on which the policy is buggy"
+    SOURCES
+        policy_fuzzing/basic_notions
+        policy_fuzzing/random_choices
+        policy_fuzzing/fuzzer
+        policy_fuzzing/random_walk_normal_bug
+        policy_fuzzing/mutator_normal_bug
+        policy_fuzzing/policy_fuzzing
+    DEPENDS TASK_PROPERTIES POLICIES
 )
 
 fast_downward_add_plugin_sources_and_packages(PLANNER_SOURCES PLANNER_REQ_PACKAGES)
