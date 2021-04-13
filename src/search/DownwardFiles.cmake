@@ -898,12 +898,13 @@ fast_downward_plugin(
     HELP "Fuzzing of (NN) policy to find states on which the policy is buggy"
     SOURCES
         policy_fuzzing/basic_notions
+        policy_fuzzing/abstraction_implementation
         policy_fuzzing/random_choices
         policy_fuzzing/fuzzer
         policy_fuzzing/random_walk_normal_bug
         policy_fuzzing/mutator_normal_bug
         policy_fuzzing/policy_fuzzing
-    DEPENDS TASK_PROPERTIES POLICIES
+    DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON
 )
 
 fast_downward_add_plugin_sources_and_packages(PLANNER_SOURCES PLANNER_REQ_PACKAGES)
