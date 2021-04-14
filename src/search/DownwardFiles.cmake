@@ -900,9 +900,8 @@ fast_downward_plugin(
         policy_fuzzing/basic_notions
         policy_fuzzing/abstraction_implementation
         policy_fuzzing/random_choices
-        policy_fuzzing/fuzzer
-        policy_fuzzing/random_walk_normal_bug
-        policy_fuzzing/mutator_normal_bug
+        policy_fuzzing/fuzzers
+        policy_fuzzing/fuzzer_bugs
         policy_fuzzing/policy_fuzzing
     DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON
 )
