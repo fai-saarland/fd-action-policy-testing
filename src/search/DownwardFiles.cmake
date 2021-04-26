@@ -907,6 +907,7 @@ fast_downward_plugin(
         policy_fuzzing/fuzzers/random_choices
         policy_fuzzing/oracles/oracle
         policy_fuzzing/oracles/oracles_plan_opt
+        policy_fuzzing/oracles/oracles_plan_sat
         policy_fuzzing/fuzzer_bugs
         policy_fuzzing/policy_fuzzing
     DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON
