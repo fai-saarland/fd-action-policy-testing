@@ -897,17 +897,12 @@ fast_downward_plugin(
     NAME POLICYFUZZING
     HELP "Fuzzing of (NN) policy to find states on which the policy is buggy"
     SOURCES
-        policy_fuzzing/basics/costs
-        policy_fuzzing/basics/planning_abstraction
-        policy_fuzzing/basics/policy_evaluator
+        policy_fuzzing/costs
+        policy_fuzzing/planning_abstraction
+        policy_fuzzing/policy_evaluator
+        policy_fuzzing/fuzzers
         policy_fuzzing/fuzzers/fuzzer
-        policy_fuzzing/fuzzers/coverage_guide_random_walk
-        policy_fuzzing/fuzzers/initial_state_random_walk
-        policy_fuzzing/fuzzers/pool_random_walk
-        policy_fuzzing/fuzzers/mixed_fuzzer
-        policy_fuzzing/oracles/oracle
-        policy_fuzzing/oracles/oracles_plan_opt
-        policy_fuzzing/oracles/oracles_plan_sat
+        policy_fuzzing/oracles
         policy_fuzzing/coverage
         policy_fuzzing/fuzzer_bugs
         policy_fuzzing/policy_fuzzing
