@@ -461,6 +461,8 @@ fast_downward_plugin(
         sampling_engines/sampling_engine
         sampling_engines/sampling_state_engine
         sampling_engines/sampling_search
+        sampling_engines/sampling_search_base
+        sampling_engines/sampling_search_simple
         sampling_engines/sampling_v
         sampling_engines/sampling_tasks
         sampling_engines/plugin_sampling.cc
@@ -521,6 +523,7 @@ fast_downward_plugin(
 #        SOURCES
 #        neural_networks/torch_network
 #        neural_networks/test_torch_network
+#        neural_networks/torch_state_network
 #        DEPENDS NEURAL_NETWORKS
 #        PACKAGES Torch
 #)
