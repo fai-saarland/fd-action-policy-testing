@@ -905,8 +905,10 @@ fast_downward_plugin(
         policy_fuzzing/policy_evaluator
         policy_fuzzing/fuzzers
         policy_fuzzing/fuzzers/fuzzer
+        policy_fuzzing/modified_task
         policy_fuzzing/oracles
         policy_fuzzing/coverage
+        policy_fuzzing/aras_wrapper
         policy_fuzzing/fuzzer_bugs
         policy_fuzzing/policy_fuzzing
     DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON
