@@ -48,7 +48,12 @@ string AbstractTask::get_sas() const {
     }
 
     // Mutex section
+    /*
+     TODO: The former looked wrong to me (and was not accepted by a older FD sas parser,
+      namely in https://github.com/nhootan/Aras)
     sas << "INVALID" << endl << "MUTEX" << endl << "SECTION" << endl;
+    */
+    sas << "0" << endl;
 
     // Initial state section
     sas << "begin_state" << endl;
@@ -87,6 +92,7 @@ string AbstractTask::get_sas() const {
             ++idx_eff) {
             // Operator effect conditions
             sas << get_num_operator_effect_conditions(idx_op, idx_eff, false);
+            sas << " ";
             for (int idx_eff_cnd = 0;
                 idx_eff_cnd < get_num_operator_effect_conditions(
                 idx_op, idx_eff, false);
