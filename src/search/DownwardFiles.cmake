@@ -517,16 +517,16 @@ fast_downward_plugin(
 #    PACKAGES TENSORFLOW PROTOBUF EIGEN
 #)
 
-#fast_downward_plugin(
-#        NAME TORCH_NETWORKS
-#        HELP "Networks using torch"
-#        SOURCES
-#        neural_networks/torch_network
-#        neural_networks/test_torch_network
-#        neural_networks/torch_state_network
-#        DEPENDS NEURAL_NETWORKS
-#        PACKAGES Torch
-#)
+fast_downward_plugin(
+        NAME TORCH_NETWORKS
+        HELP "Networks using torch"
+        SOURCES
+        neural_networks/torch_network
+        neural_networks/test_torch_network
+        neural_networks/torch_state_network
+        DEPENDS NEURAL_NETWORKS
+        PACKAGES Torch
+)
 
 fast_downward_plugin(
     NAME NETWORK_HEURISTIC
