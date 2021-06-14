@@ -29,6 +29,11 @@ fast_downward_set_linker_flags()
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
 add_executable(downward ${PLANNER_SOURCES})
 
+find_package(Python3 COMPONENTS Development)
+include_directories(${Python3_INCLUDE_DIRS})
+target_link_libraries(downward ${Python3_LIBRARIES})
+
+
 ## == Required Packages ==
 IF (DEFINED ENV{PATH_TORCH})
     list(APPEND CMAKE_PREFIX_PATH "$ENV{PATH_TORCH}")
