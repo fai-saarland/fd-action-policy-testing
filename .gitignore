@@ -1,5 +1,6 @@
 **/*.tmp
 .idea/
+*.o
 /**/cmake-build-debug
 /builds/
 /experiments/issue*/.venv/
