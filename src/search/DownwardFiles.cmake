@@ -912,6 +912,7 @@ fast_downward_plugin(
         policy_fuzzing/aras_wrapper
         policy_fuzzing/fuzzer_bugs
         policy_fuzzing/policy_fuzzing
+        policy_fuzzing/asnets
     DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON
 )
 
