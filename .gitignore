@@ -10,3 +10,7 @@
 /output.sas
 /sas_plan*
 __pycache__/
+/aras/src/preprocess/preprocess
+/aras/src/search/downward-1
+/aras/src/search/downward-2
+/aras/src/search/downward-4
