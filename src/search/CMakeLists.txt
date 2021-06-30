@@ -29,9 +29,15 @@ fast_downward_set_linker_flags()
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
 add_executable(downward ${PLANNER_SOURCES})
 
-find_package(Python3 COMPONENTS Development)
-include_directories(${Python3_INCLUDE_DIRS})
-target_link_libraries(downward ${Python3_LIBRARIES})
+if (DEFINED ENV{PYTHON3_ROOT})
+	include_directories($ENV{PYTHON3_ROOT}/include/python3.7m/)
+	#target_link_libraries(downward $ENV{PYTHON3_ROOT}/lib/libpython3.7m.a -lcrypt -lpthread -ldl -lutil)
+	target_link_libraries(downward $ENV{PYTHON3_ROOT}/lib/libpython3.7m.so)
+else()
+	find_package(Python3 COMPONENTS Development)
+	include_directories(${Python3_INCLUDE_DIRS})
+	target_link_libraries(downward ${Python3_LIBRARIES})
+endif()
 
 
 ## == Required Packages ==
