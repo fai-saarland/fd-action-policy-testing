@@ -32,6 +32,24 @@ public:
     ~HeuristicPolicy();
     virtual bool dead_ends_are_reliable() const override;
 };
+
+
+class LookaheadHeuristicPolicy: public Policy {
+    std::shared_ptr<Evaluator> evaluator;
+    StateRegistry registry;
+    int const lookahead;
+protected:
+    const successor_generator::SuccessorGenerator &successor_generator;
+
+    int get_max_evaluator_value(const State &state, int depth);
+
+    PolicyResult compute_policy(const State &state) override;
+public:
+    explicit LookaheadHeuristicPolicy(const options::Options &options);
+    ~LookaheadHeuristicPolicy() override;
+    bool dead_ends_are_reliable() const override;
+};
+
 }
 
 #endif
