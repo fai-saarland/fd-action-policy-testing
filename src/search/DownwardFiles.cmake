@@ -913,7 +913,8 @@ fast_downward_plugin(
         policy_fuzzing/fuzzer_bugs
         policy_fuzzing/policy_fuzzing
         policy_fuzzing/asnets
-    DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON
+        policy_fuzzing/novelty_store
+    DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON EXTRA_TASKS
 )
 
 fast_downward_add_plugin_sources_and_packages(PLANNER_SOURCES PLANNER_REQ_PACKAGES)
