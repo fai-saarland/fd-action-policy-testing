@@ -2,8 +2,8 @@
 
 #include "../task_proxy.h"
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 namespace policy_fuzzing {
 
@@ -110,6 +110,29 @@ NoveltyStore::insert(const State& state)
         } while (varsets.next());
     }
     return is_novel;
+}
+
+unsigned
+NoveltyStore::size(unsigned arity) const
+{
+    assert(arity > 0);
+    assert(arity <= max_arity_);
+    return fact_sets_[arity - 1].size();
+}
+
+unsigned
+NoveltyStore::get_arity() const
+{
+    return max_arity_;
+}
+
+void
+NoveltyStore::print_statistics() const
+{
+    for (unsigned novelty = 1; novelty <= get_arity(); ++novelty) {
+        std::cout << "Unique " << novelty << "-fact-sets: " << size(novelty)
+                  << std::endl;
+    }
 }
 
 } // namespace policy_fuzzing

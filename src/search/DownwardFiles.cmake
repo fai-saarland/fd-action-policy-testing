@@ -914,6 +914,8 @@ fast_downward_plugin(
         policy_fuzzing/policy_fuzzing
         policy_fuzzing/asnets
         policy_fuzzing/novelty_store
+        policy_fuzzing/pool_fuzzer
+        policy_fuzzing/pool_tester
     DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON EXTRA_TASKS
 )
 

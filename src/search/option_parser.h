@@ -17,4 +17,32 @@ using options::OptionParserError;
 using options::Options;
 using options::ParseError;
 
+namespace options {
+
+template<class BaseClass, class ActualClass>
+std::shared_ptr<BaseClass>
+parse(OptionParser& parser)
+{
+    ActualClass::add_options_to_parser(parser);
+    Options opts = parser.parse();
+    if (!parser.dry_run()) {
+        return std::make_shared<ActualClass>(opts);
+    }
+    return nullptr;
+}
+
+template<class BaseClass, class ActualClass>
+std::shared_ptr<BaseClass>
+parse_without_options(OptionParser& parser)
+{
+    parser.parse();
+    if (parser.dry_run()) {
+        return nullptr;
+    }
+    return std::make_shared<ActualClass>();
+}
+
+} // namespace options
+
+
 #endif
