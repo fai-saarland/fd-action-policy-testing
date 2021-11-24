@@ -5,6 +5,8 @@
 #include <cassert>
 #include <iostream>
 
+#define DMSG(x)
+
 namespace policy_fuzzing {
 
 struct VarsetIterator {
@@ -69,6 +71,28 @@ NoveltyStore::NoveltyStore(unsigned max_arity, const std::vector<int>& domains)
     }
 }
 
+double
+NoveltyStore::compute_weighted_novelty(const State& state)
+{
+    double res = 0;
+    for (unsigned i = 0; i < max_arity_; ++i) {
+        VarsetIterator varsets(domains_.size(), i + 1);
+        do {
+            const auto& vars = *varsets;
+            FactSetType res = offsets_[i][varsets.get_idx()];
+            FactSetType product = 1;
+            for (unsigned j = 0; j <= i; ++j) {
+                res += product * state[vars[j]].get_value();
+                product *= domains_[vars[j]];
+            }
+            if (!fact_sets_[i].count(res)) {
+                res += (max_arity_ - i);
+            }
+        } while (varsets.next());
+    }
+    return res;
+}
+
 int
 NoveltyStore::compute_novelty(const State& state)
 {
@@ -83,11 +107,11 @@ NoveltyStore::compute_novelty(const State& state)
                 product *= domains_[vars[j]];
             }
             if (!fact_sets_[i].count(res)) {
-                return i;
+                return i + 1;
             }
         } while (varsets.next());
     }
-    return -1;
+    return 0;
 }
 
 bool
@@ -105,6 +129,18 @@ NoveltyStore::insert(const State& state)
                 product *= domains_[vars[j]];
             }
             if (fact_sets_[i].insert(res).second) {
+                DMSG(
+                    std::cout << "novel " << (i + 1) << "-fact-set: vars=[";
+                    for (unsigned var = 0; var < vars.size(); ++var) {
+                        std::cout << (var > 0 ? ", " : "") << vars[var];
+                    } std::cout
+                    << "] id=" << varsets.get_idx() << " hash=" << res
+                    << " values=[";
+                    for (unsigned var = 0; var < vars.size(); ++var) {
+                        std::cout << (var > 0 ? ", " : "")
+                                  << state[vars[var]].get_name();
+                    } std::cout
+                    << "]" << std::endl;)
                 is_novel = true;
             }
         } while (varsets.next());
@@ -136,3 +172,5 @@ NoveltyStore::print_statistics() const
 }
 
 } // namespace policy_fuzzing
+
+#undef DMSG
