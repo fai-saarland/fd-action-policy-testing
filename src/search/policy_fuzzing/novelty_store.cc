@@ -128,7 +128,9 @@ NoveltyStore::insert(const State& state)
                 res += product * state[vars[j]].get_value();
                 product *= domains_[vars[j]];
             }
-            if (fact_sets_[i].insert(res).second) {
+            auto inserted =
+                fact_sets_[i].insert(std::pair<FactSetType, int>(res, 1));
+            if (inserted.second) {
                 DMSG(
                     std::cout << "novel " << (i + 1) << "-fact-set: vars=[";
                     for (unsigned var = 0; var < vars.size(); ++var) {
@@ -142,10 +144,32 @@ NoveltyStore::insert(const State& state)
                     } std::cout
                     << "]" << std::endl;)
                 is_novel = true;
+            } else {
+                inserted.first->second = inserted.first->second + 1;
             }
         } while (varsets.next());
     }
     return is_novel;
+}
+
+bool
+NoveltyStore::has_unique_factset(const State& state, unsigned arity) const
+{
+    VarsetIterator varsets(domains_.size(), arity);
+    do {
+        const auto& vars = *varsets;
+        FactSetType res = offsets_[arity - 1][varsets.get_idx()];
+        FactSetType product = 1;
+        for (unsigned j = 0; j < arity; ++j) {
+            res += product * state[vars[j]].get_value();
+            product *= domains_[vars[j]];
+        }
+        auto it = fact_sets_[arity - 1].find(res);
+        if (it->second == 1) {
+            return true;
+        }
+    } while (varsets.next());
+    return false;
 }
 
 unsigned
