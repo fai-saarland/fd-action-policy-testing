@@ -916,6 +916,7 @@ fast_downward_plugin(
         policy_fuzzing/novelty_store
         policy_fuzzing/pool_fuzzer
         policy_fuzzing/pool_tester
+        policy_fuzzing/pool_oracle_engine
         policy_fuzzing/statistics_engine
     DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON EXTRA_TASKS
 )
