@@ -10,3 +10,5 @@
 /output.sas
 /sas_plan*
 __pycache__/
+pool.txt
+bugs.txt
