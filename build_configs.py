@@ -7,7 +7,9 @@ testing = minimal + [ "-DPLUGIN_{0}_ENABLED=YES".format(plugin) for plugin in [
             "POLICYFUZZING",
             "MAX_HEURISTIC",
             "FF_HEURISTIC",
+            "LANDMARK_CUT_HEURISTIC",
             "PLUGIN_LAZY_GREEDY",
+            "PLUGIN_ASTAR",
             "LANDMARKS",
             ]]
 
