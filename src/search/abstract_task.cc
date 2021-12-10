@@ -4,6 +4,8 @@
 #include "plugin.h"
 
 #include <iostream>
+#include <unordered_map>
+#include <set>
 #include <sstream>
 
 using namespace std;
@@ -77,14 +79,32 @@ string AbstractTask::get_sas() const {
         sas << "begin_operator" << endl
             << get_operator_name(idx_op, false) << endl;
         // Preconditions
-        sas << get_num_operator_preconditions(idx_op, false) << endl;
+        std::unordered_map<int, int> pres;
+        std::set<int> prevail;
         for (int idx_pre = 0;
             idx_pre < get_num_operator_preconditions(idx_op, false);
             ++idx_pre) {
             FactPair pre = get_operator_precondition(idx_op, idx_pre, false);
-            sas << pre.var << " " << pre.value << endl;
-            
+            // sas << pre.var << " " << pre.value << endl;
+            pres[pre.var] = pre.value;
+            prevail.insert(pre.var);
         }
+
+        for (int idx_eff = 0;
+            idx_eff < get_num_operator_effects(idx_op, false);
+            ++idx_eff) {
+            FactPair eff = get_operator_effect(idx_op, idx_eff, false);
+            auto it = prevail.find(eff.var);
+            if (it != prevail.end()) {
+                prevail.erase(it);
+            }
+        }
+
+        sas << prevail.size() << endl;
+        for (auto var : prevail) {
+            sas << var << " " << pres[var] << endl;
+        }
+
         // Operator effects
         sas << get_num_operator_effects(idx_op, false) << endl;
         for (int idx_eff = 0;
@@ -103,7 +123,12 @@ string AbstractTask::get_sas() const {
             }
             // Operator precondition, variable, new value
             FactPair eff = get_operator_effect(idx_op, idx_eff, false);
-            sas << eff.var << " " << -1 << " " << eff.value << endl;
+            auto it = pres.find(eff.var);
+            if (it == pres.end()) {
+                sas << eff.var << " " << -1 << " " << eff.value << endl;
+            } else {
+                sas << eff.var << " " << it->second << " " << eff.value << endl;
+            }
         }
         sas << get_operator_cost(idx_op, false) << endl
             << "end_operator" << endl;

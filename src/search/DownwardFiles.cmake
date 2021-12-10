@@ -920,6 +920,8 @@ fast_downward_plugin(
         policy_fuzzing/statistics_engine
         policy_fuzzing/asnet_evaluator
         policy_fuzzing/spanner_oracle
+        policy_fuzzing/matching_blocks_oracle
+        policy_fuzzing/external_planner_oracle
     DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON EXTRA_TASKS
 )
 
