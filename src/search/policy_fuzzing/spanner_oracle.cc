@@ -7,6 +7,8 @@
 #include "planning_abstraction.h"
 
 #include <iostream>
+#include <string>
+#include <unordered_map>
 
 namespace policy_fuzzing {
 
@@ -14,13 +16,34 @@ SpannerQualOracle::SpannerQualOracle(const options::Options& opts)
     : Oracle(g_planning_abstraction)
     , max_heuristic::HSPMaxHeuristic(opts)
 {
+    std::unordered_map<std::string, int> spanner_idx;
     propositions.emplace_back();
     goal_propositions.push_back(propositions.size() - 1);
     for (auto var : task_proxy.get_variables()) {
         for (int val = 0; val < var.get_domain_size(); ++val) {
             auto fact = var.get_fact(val);
             if (fact.get_name().rfind("Atom carrying", 0) == 0) {
-                spanners_.push_back(get_proposition(get_prop_id(fact)));
+                const int i = fact.get_name().rfind(",") + 2;
+                const int j = fact.get_name().rfind(")") - i;
+                std::string spanner = fact.get_name().substr(i, j);
+                auto idx = spanner_idx.emplace(
+                    std::pair<std::string, int>(spanner, spanner_idx.size()));
+                if (idx.second) {
+                    spanners_.emplace_back(nullptr, nullptr);
+                }
+                spanners_[idx.first->second].first =
+                    get_proposition(get_prop_id(fact));
+            } else if (fact.get_name().rfind("Atom useable", 0) == 0) {
+                const int i = fact.get_name().find("(") + 1;
+                const int j = fact.get_name().find(")") - i;
+                std::string spanner = fact.get_name().substr(i, j);
+                auto idx = spanner_idx.emplace(
+                    std::pair<std::string, int>(spanner, spanner_idx.size()));
+                if (idx.second) {
+                    spanners_.emplace_back(nullptr, nullptr);
+                }
+                spanners_[idx.first->second].second =
+                    get_proposition(get_prop_id(fact));
             }
         }
     }
@@ -60,10 +83,11 @@ SpannerQualOracle::optimistic_value(StateAbstraction idx, int)
     }
     int n = spanners_.size();
     for (auto p : spanners_) {
-        if (p->cost == -1) {
+        if (p.first->cost == -1 || p.second->cost == -1) {
             --n;
         }
     }
+    std::cout << left << " " << n << std::endl;
     if (n < left) {
         return policy_fuzzing::DEAD_END;
     }
