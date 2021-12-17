@@ -11,6 +11,7 @@
 #include "tasks/root_task.h"
 #include "task_utils/successor_generator.h"
 #include "utils/logging.h"
+#include "utils/memory.h"
 #include "utils/rng_options.h"
 #include "utils/system.h"
 #include "utils/timer.h"
@@ -114,6 +115,11 @@ void SearchEngine::search() {
         }
         if (timer->is_expired()) {
             utils::g_log << "Time limit reached. Abort search." << endl;
+            status = TIMEOUT;
+            break;
+        }
+        if (utils::is_out_of_memory()) {
+            utils::g_log << "Memory limit reached. Abort search." << endl;
             status = TIMEOUT;
             break;
         }
