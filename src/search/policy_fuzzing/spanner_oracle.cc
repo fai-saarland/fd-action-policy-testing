@@ -87,7 +87,6 @@ SpannerQualOracle::optimistic_value(StateAbstraction idx, int)
             --n;
         }
     }
-    std::cout << left << " " << n << std::endl;
     if (n < left) {
         return policy_fuzzing::DEAD_END;
     }
