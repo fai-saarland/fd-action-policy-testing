@@ -17,5 +17,5 @@ testing = minimal + [ "-DPLUGIN_{0}_ENABLED=YES".format(plugin) for plugin in [
             "LANDMARKS",
             ]]
 
-DEFAULT = "release"
+DEFAULT = "testing"
 DEBUG = "debug"
