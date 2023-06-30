@@ -15,6 +15,7 @@ testing = minimal + [ "-DPLUGIN_{0}_ENABLED=YES".format(plugin) for plugin in [
             "PLUGIN_EAGER_GREEDY",
             "PLUGIN_ASTAR",
             "LANDMARKS",
+            "BLIND_SEARCH_HEURISTIC",
             ]]
 
 DEFAULT = "testing"
