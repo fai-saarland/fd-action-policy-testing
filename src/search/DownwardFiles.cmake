@@ -913,6 +913,7 @@ fast_downward_plugin(
         policy_fuzzing/fuzzer_bugs
         policy_fuzzing/policy_fuzzing
         policy_fuzzing/asnets
+        policy_fuzzing/remote_policy
         policy_fuzzing/novelty_store
         policy_fuzzing/pool_fuzzer
         policy_fuzzing/pool_tester
