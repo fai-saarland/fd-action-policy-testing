@@ -8,14 +8,32 @@
 #include "../utils/logging.h"
 #include "utils/system.h"
 #include "utils/timer.h"
+#include "policy_fuzzing/remote_policy.h"
 
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 using utils::ExitCode;
 
 int main(int argc, const char **argv) {
     utils::register_event_handlers();
+
+    if (argc >= 3 && static_cast<string>(argv[1]) == "--remote-policy") {
+        try {
+            policy_fuzzing::g_policy
+                = make_shared<policy_fuzzing::RemotePolicy>(static_cast<string>(argv[2]));
+            utils::g_log << "Connected to remote policy at " << argv[2] << endl;
+
+        } catch (const policy_fuzzing::RemotePolicyError &err) {
+            err.print();
+            utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+        }
+
+        for (int i = 3; i < argc; ++i)
+            argv[i - 2] = argv[i];
+        argc -= 2;
+    }
 
     if (argc < 2) {
         utils::g_log << usage(argv[0]) << endl;
@@ -25,7 +43,19 @@ int main(int argc, const char **argv) {
     bool unit_cost = false;
     if (static_cast<string>(argv[1]) != "--help") {
         utils::g_log << "reading input..." << endl;
-        tasks::read_root_task(cin);
+        if (!policy_fuzzing::g_policy){
+            tasks::read_root_task(cin);
+        }else{
+            try {
+                std::string task = policy_fuzzing::g_policy->input_fdr();
+                std::istringstream strin(task);
+                tasks::read_root_task(strin);
+
+            } catch (const policy_fuzzing::RemotePolicyError &err) {
+                err.print();
+                utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+            }
+        }
         utils::g_log << "done reading input!" << endl;
         TaskProxy task_proxy(*tasks::g_root_task);
         unit_cost = task_properties::is_unit_cost(task_proxy);
