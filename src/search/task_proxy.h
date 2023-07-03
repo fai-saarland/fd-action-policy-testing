@@ -336,7 +336,7 @@ protected:
 public:
     using ItemType = FactProxy;
     explicit ConditionsProxy(const AbstractTask &task)
-            : task(&task) {}
+        : task(&task) {}
     virtual ~ConditionsProxy() = default;
 
     virtual std::size_t size() const = 0;
@@ -346,7 +346,7 @@ public:
         return size() == 0;
     }
 
-    template <typename T>
+    template<typename T>
     void dump_pddl(T &out = utils::g_log, const std::string &separator = "\n") const {
         for (FactProxy fact : (*this)) {
             std::string fact_name = fact.get_name();
@@ -356,16 +356,15 @@ public:
         out << std::flush;
     }
 
-    template <typename T>
+    template<typename T>
     void dump_fdr(T &out = utils::g_log, const std::string &separator = "\n") const {
         for (FactProxy fact : (*this)) {
             VariableProxy var = fact.get_variable();
             out << "  #" << var.get_id() << " [" << var.get_name() << "] -> "
                 << fact.get_value() << separator;
         }
-        out <<std::flush;
+        out << std::flush;
     }
-
 };
 
 
@@ -590,6 +589,8 @@ public:
 
     PartialAssignment(const AbstractTask &task, std::vector<int> &&values);
     PartialAssignment(const PartialAssignment &assignment, std::vector<int> &&values);
+    PartialAssignment();
+
     virtual ~PartialAssignment() = default;
 //    PartialAssignment(const PartialAssignment &) = default;
 
@@ -614,7 +615,7 @@ public:
     PartialAssignment get_partial_successor(OperatorProxy op) const;
     bool violates_mutexes() const;
     std::pair<bool, State> get_full_state(
-            bool check_mutexes, utils::RandomNumberGenerator &rng) const;
+        bool check_mutexes, utils::RandomNumberGenerator &rng) const;
 };
 
 
@@ -655,6 +656,8 @@ public:
           const PackedStateBin *buffer, std::vector<int> &&values);
     // Construct a state with only unpacked data.
     State(const AbstractTask &task, std::vector<int> &&values);
+    // Construct a dummy state
+    State();
 
     bool operator==(const State &other) const;
     bool operator!=(const State &other) const;
@@ -692,6 +695,21 @@ public:
       unpack() to ensure the data exists.
     */
     State get_unregistered_successor(const OperatorProxy &op) const;
+
+    friend std::ostream &operator<<(std::ostream &os, const State &s) {
+        os << "[";
+        bool first = true;
+        for (auto fact: s) {
+            if (first) {
+                first = false;
+            } else {
+                os << ", ";
+            }
+            os << fact.get_name();
+        }
+        os << "]";
+        return os;
+    }
 };
 
 
@@ -802,8 +820,8 @@ public:
     }
 
     std::pair<bool, State> convert_to_full_state(
-            PartialAssignment &assignment,
-            bool check_mutexes, utils::RandomNumberGenerator &rng) const;
+        PartialAssignment &assignment,
+        bool check_mutexes, utils::RandomNumberGenerator &rng) const;
 
     const causal_graph::CausalGraph &get_causal_graph() const;
 };
@@ -916,7 +934,7 @@ inline bool State::operator!=(const State &other) const {
 
 inline void State::unpack() const {
     if (!values) {
-        int num_variables = size();
+        int _num_variables = size();
         /*
           A micro-benchmark in issue348 showed that constructing the vector
           in the required size and then assigning values was faster than the
@@ -928,8 +946,8 @@ inline void State::unpack() const {
           structures that exploit sequentially unpacking each entry, by doing
           things bin by bin.)
         */
-        values = std::make_shared<std::vector<int>>(num_variables);
-        for (int var = 0; var < num_variables; ++var) {
+        values = std::make_shared<std::vector<int>>(_num_variables);
+        for (int var = 0; var < _num_variables; ++var) {
             (*values)[var] = state_packer->get(buffer, var);
         }
     }

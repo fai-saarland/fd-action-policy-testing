@@ -25,7 +25,6 @@ using ParseTree = tree<ParseNode>;
 }
 
 namespace sampling_engine {
-
 // Optimize to use directly GlobalState and std::move
 struct StateTree {
     const StateID state_id;
@@ -56,8 +55,8 @@ protected:
 
     /* Options for the output file */
     const bool add_goal_to_output;
-    
-    
+
+
     std::shared_ptr<Evaluator> qevaluator;
     std::shared_ptr<AbstractTask> q_task;
     std::shared_ptr<TaskProxy> q_task_proxy;
@@ -67,7 +66,7 @@ protected:
 //    const int expand_goal_state_limit;
 //    const bool reload_expanded_goals;
     std::string q_task_goal;
-    
+
     /* Internal Methods*/
     void reload_evaluator(std::shared_ptr<AbstractTask> task);
     void reload_task(std::shared_ptr<AbstractTask> task);
@@ -76,12 +75,12 @@ protected:
         const State &state);
     double evaluate_q_value(const State &state);
     std::string convert_output(const State &state, double q_value);
-    
+
     /* Overwritten Methods*/
     virtual void initialize() override;
     std::vector<std::string> sample(
         std::shared_ptr<AbstractTask> task) override;
-    
+
 
 public:
     explicit SamplingV(const options::Options &opts);

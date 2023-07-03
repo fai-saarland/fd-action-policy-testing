@@ -12,7 +12,7 @@
 
 
 namespace utils {
-    class RandomNumberGenerator;
+class RandomNumberGenerator;
 }
 
 namespace sampling_engine {
@@ -60,22 +60,22 @@ protected:
     virtual std::string sample_file_header() const override;
 
     void convert_and_push_state(
-            std::ostringstream &oss,
-            const State &state) const;
+        std::ostringstream &oss,
+        const State &state) const;
     void convert_and_push_goal(
-            std::ostringstream &oss, const AbstractTask &task) const;
+        std::ostringstream &oss, const AbstractTask &task) const;
 
 public:
     explicit SamplingStateEngine(const options::Options &opts);
-    virtual ~SamplingStateEngine() override  = default;
+    virtual ~SamplingStateEngine() override = default;
 
 
     static void add_sampling_state_options(
-            options::OptionParser &parser,
-            const std::string &default_sample_format,
-            const std::string &default_state_format,
-            const std::string &default_field_separator,
-            const std::string &default_state_separator);
+        options::OptionParser &parser,
+        const std::string &default_sample_format,
+        const std::string &default_state_format,
+        const std::string &default_field_separator,
+        const std::string &default_state_separator);
 };
 }
 #endif

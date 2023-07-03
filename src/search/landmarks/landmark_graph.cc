@@ -124,7 +124,7 @@ LandmarkNode &LandmarkGraph::add_simple_landmark(const FactPair &lm) {
     unique_ptr<LandmarkNode> new_node =
         utils::make_unique_ptr<LandmarkNode>(facts, false, false);
     LandmarkNode *new_node_p = new_node.get();
-    nodes.push_back(move(new_node));
+    nodes.push_back(std::move(new_node));
     simple_landmarks_to_nodes.emplace(lm, new_node_p);
     return *new_node_p;
 }
@@ -137,7 +137,7 @@ LandmarkNode &LandmarkGraph::add_disjunctive_landmark(const set<FactPair> &lm) {
     unique_ptr<LandmarkNode> new_node =
         utils::make_unique_ptr<LandmarkNode>(facts, true, false);
     LandmarkNode *new_node_p = new_node.get();
-    nodes.push_back(move(new_node));
+    nodes.push_back(std::move(new_node));
     for (const FactPair &lm_fact : lm) {
         disjunctive_landmarks_to_nodes.emplace(lm_fact, new_node_p);
     }
@@ -153,7 +153,7 @@ LandmarkNode &LandmarkGraph::add_conjunctive_landmark(const set<FactPair> &lm) {
     unique_ptr<LandmarkNode> new_node =
         utils::make_unique_ptr<LandmarkNode>(facts, false, true);
     LandmarkNode *new_node_p = new_node.get();
-    nodes.push_back(move(new_node));
+    nodes.push_back(std::move(new_node));
     ++num_conjunctive_landmarks;
     return *new_node_p;
 }

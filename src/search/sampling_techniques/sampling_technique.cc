@@ -21,7 +21,7 @@ namespace sampling_technique {
 std::shared_ptr<AbstractTask> modified_task = nullptr;
 
 static shared_ptr<AbstractTask> _parse_sampling_transform(
-        options::OptionParser &parser) {
+    options::OptionParser &parser) {
     if (parser.dry_run()) {
         return nullptr;
     } else {
@@ -34,7 +34,7 @@ static shared_ptr<AbstractTask> _parse_sampling_transform(
 }
 
 static Plugin<AbstractTask> _plugin_sampling_transform(
-        "sampling_transform", _parse_sampling_transform);
+    "sampling_transform", _parse_sampling_transform);
 
 
 
@@ -107,24 +107,24 @@ static vector<vector<string>> load_mutexes(const string &path) {
 
 /* START DEFINITION SAMPLING_TECHNIQUE */
 SamplingTechnique::SamplingTechnique(const options::Options &opts)
-        : id(next_id++),
-          registry(opts.get_registry()),
-          predefinitions(opts.get_predefinitions()),
-          count(opts.get<int>("count")),
+    : id(next_id++),
+      registry(opts.get_registry()),
+      predefinitions(opts.get_predefinitions()),
+      count(opts.get<int>("count")),
 //          dump_directory(opts.get<string>("dump")),
-          check_mutexes(opts.get<bool>("check_mutexes")),
-          check_solvable(opts.get<bool>("check_solvable")),
-          use_alternative_mutexes(opts.get<string>("mutexes") != "none"),
-          alternative_mutexes(load_mutexes(opts.get<string>("mutexes"))),
-          eval_parse_tree(opts.get_parse_tree("evals")),
-          option_parser(utils::make_unique_ptr<OptionParser>(
-                  eval_parse_tree,
-                  *opts.get_registry(), *opts.get_predefinitions(),
-                  false, false)),
-          remaining_upgrades(opts.get<int>("max_upgrades", 0)),
-          rng(utils::parse_rng_from_options(opts)) {
+      check_mutexes(opts.get<bool>("check_mutexes")),
+      check_solvable(opts.get<bool>("check_solvable")),
+      use_alternative_mutexes(opts.get<string>("mutexes") != "none"),
+      alternative_mutexes(load_mutexes(opts.get<string>("mutexes"))),
+      eval_parse_tree(opts.get_parse_tree("evals")),
+      option_parser(utils::make_unique_ptr<OptionParser>(
+                        eval_parse_tree,
+                        *opts.get_registry(), *opts.get_predefinitions(),
+                        false, false)),
+      remaining_upgrades(opts.get<int>("max_upgrades", 0)),
+      rng(utils::parse_rng_from_options(opts)) {
     for (const shared_ptr<Evaluator> &e:
-            option_parser->start_parsing<vector<shared_ptr<Evaluator>>>()) {
+         option_parser->start_parsing<vector<shared_ptr<Evaluator>>>()) {
         if (!e->dead_ends_are_reliable()) {
             cout << "Warning: A given dead end detection evaluator is not safe."
                  << endl;
@@ -133,23 +133,23 @@ SamplingTechnique::SamplingTechnique(const options::Options &opts)
 }
 
 SamplingTechnique::SamplingTechnique(
-        int count,
+    int count,
 //        string dump_directory,
-        bool check_mutexes,
-        bool check_solvable, mt19937 &mt)
-        : id(next_id++),
-          registry(nullptr),
-          predefinitions(nullptr),
-          count(count),
+    bool check_mutexes,
+    bool check_solvable, mt19937 &mt)
+    : id(next_id++),
+      registry(nullptr),
+      predefinitions(nullptr),
+      count(count),
 //          dump_directory(move(dump_directory)),
-          check_mutexes(check_mutexes),
-          check_solvable(check_solvable),
-          use_alternative_mutexes(false),
-          alternative_mutexes(),
-          eval_parse_tree(options::generate_parse_tree("[]")),
-          option_parser(nullptr),
-          remaining_upgrades(0),
-          rng(make_shared<utils::RandomNumberGenerator>(mt)) {}
+      check_mutexes(check_mutexes),
+      check_solvable(check_solvable),
+      use_alternative_mutexes(false),
+      alternative_mutexes(),
+      eval_parse_tree(options::generate_parse_tree("[]")),
+      option_parser(nullptr),
+      remaining_upgrades(0),
+      rng(make_shared<utils::RandomNumberGenerator>(mt)) {}
 
 SamplingTechnique::~SamplingTechnique() {}
 
@@ -166,13 +166,13 @@ bool SamplingTechnique::empty() const {
 }
 
 shared_ptr<AbstractTask> SamplingTechnique::next(
-        const shared_ptr<AbstractTask> &seed_task) {
+    const shared_ptr<AbstractTask> &seed_task) {
     return next(seed_task, TaskProxy(*seed_task));
 }
 
 shared_ptr<AbstractTask> SamplingTechnique::next(
-        const shared_ptr<AbstractTask> &seed_task,
-        const TaskProxy &task_proxy) {
+    const shared_ptr<AbstractTask> &seed_task,
+    const TaskProxy &task_proxy) {
     if (empty()) {
         return nullptr;
     } else {
@@ -180,11 +180,11 @@ shared_ptr<AbstractTask> SamplingTechnique::next(
         counter++;
         while (true) {
             shared_ptr<AbstractTask> next_task = create_next(
-                    seed_task, task_proxy);
+                seed_task, task_proxy);
             modified_task = next_task;
             if ((check_mutexes && !test_mutexes(next_task)) ||
                 (check_solvable && !test_solvable(
-                        TaskProxy(*next_task)))) {
+                     TaskProxy(*next_task)))) {
                 //cout << "Generated task invalid, try anew." << endl;
                 continue;
             }
@@ -195,7 +195,7 @@ shared_ptr<AbstractTask> SamplingTechnique::next(
 }
 
 void SamplingTechnique::update_alternative_task_mutexes(
-        const std::shared_ptr<AbstractTask> &task) {
+    const std::shared_ptr<AbstractTask> &task) {
     if (!use_alternative_mutexes || task == last_task) {
         return;
     }
@@ -227,7 +227,7 @@ void SamplingTechnique::update_alternative_task_mutexes(
                 }
                 int fact2 = ifact2->second;
                 inconsistent_facts[facts[fact1].var][facts[fact1].value].insert(
-                        FactPair(facts[fact2].var, facts[fact2].value));
+                    FactPair(facts[fact2].var, facts[fact2].value));
             }
         }
     }
@@ -240,7 +240,7 @@ bool SamplingTechnique::has_upgradeable_parameters() const {
 
 void SamplingTechnique::do_upgrade_parameters() {
     cerr << "Either this sampling technique has not upgradable parameters"
-            "or the upgrade method has to be implemented." << endl;
+        "or the upgrade method has to be implemented." << endl;
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
@@ -252,14 +252,14 @@ void SamplingTechnique::upgrade_parameters() {
         remaining_upgrades--;
     } else {
         cerr << "Either this sampling technique has not upgradable parameters"
-                "or no upgrades are remaining." << endl;
+            "or no upgrades are remaining." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
 
-void SamplingTechnique::dump_upgradable_parameters(ostream &/*stream*/) const {
+void SamplingTechnique::dump_upgradable_parameters(ostream & /*stream*/) const {
     cerr << "Either this sampling technique has not upgradable parameters"
-            "or the dump parameter method has to be implemented." << endl;
+        "or the dump parameter method has to be implemented." << endl;
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
@@ -301,7 +301,7 @@ bool SamplingTechnique::test_solvable(const TaskProxy &task_proxy) const {
     EvaluationContext eval_context(state);
     int round = 0;
     for (const shared_ptr<Evaluator> &e:
-            option_parser->start_parsing<vector<shared_ptr<Evaluator>>>()) {
+         option_parser->start_parsing<vector<shared_ptr<Evaluator>>>()) {
         EvaluationResult eval_result = e->compute_result(eval_context);
         if (eval_result.is_infinite()) {
             cout << "Task unsolvable said by evaluator: " << round << endl;
@@ -326,30 +326,30 @@ bool SamplingTechnique::test_solvable(const TaskProxy &task_proxy) const {
 
 void SamplingTechnique::add_options_to_parser(options::OptionParser &parser) {
     parser.add_option<int>("count", "Number of times this sampling "
-                                    "technique shall be used.");
+                           "technique shall be used.");
     parser.add_list_option<shared_ptr<Evaluator>>(
-            "evals",
-            "evaluators for dead-end detection (use only save ones to not "
-            "reject a non dead end). If any of the evaluators detects a dead "
-            "end, the assignment is rejected. \nATTENTON: The evaluators are "
-            "initialize for each task to test anew. To be initialized "
-            "correctly, they need to have the attribute "
-            "'transform=sampling_transform'", "[]");
+        "evals",
+        "evaluators for dead-end detection (use only save ones to not "
+        "reject a non dead end). If any of the evaluators detects a dead "
+        "end, the assignment is rejected. \nATTENTON: The evaluators are "
+        "initialize for each task to test anew. To be initialized "
+        "correctly, they need to have the attribute "
+        "'transform=sampling_transform'", "[]");
     parser.add_option<string>(
-            "mutexes",
-            "Path to a file describing mutexes. Uses those mutexes instead of "
-            "the task mutexes if given.",
-            "none");
+        "mutexes",
+        "Path to a file describing mutexes. Uses those mutexes instead of "
+        "the task mutexes if given.",
+        "none");
     parser.add_option<string>(
-            "dump",
-            "Path to a directory where to dump the modifications or \"false\" "
-            "to not dump.",
-            SamplingTechnique::no_dump_directory);
+        "dump",
+        "Path to a directory where to dump the modifications or \"false\" "
+        "to not dump.",
+        SamplingTechnique::no_dump_directory);
     parser.add_option<bool>("check_mutexes", "Boolean flag to set whether to "
-                                             "to check that a generated task does not violate "
-                                             "mutexes.", "true");
+                            "to check that a generated task does not violate "
+                            "mutexes.", "true");
     parser.add_option<bool>("check_solvable", "Boolean flag to set whether "
-                                              "the generated task is solvable.",
+                            "the generated task is solvable.",
                             "true");
     utils::add_rng_options(parser);
 }
@@ -364,7 +364,7 @@ vector<int> SamplingTechnique::extractInitialState(const State &state) {
 }
 
 vector<FactPair> SamplingTechnique::extractGoalFacts(
-        const GoalsProxy &goals_proxy) {
+    const GoalsProxy &goals_proxy) {
     vector<FactPair> goals;
     goals.reserve(goals_proxy.size());
     for (size_t i = 0; i < goals_proxy.size(); i++) {
@@ -386,7 +386,6 @@ vector<FactPair> SamplingTechnique::extractGoalFacts(
 
 
 static PluginTypePlugin<SamplingTechnique> _type_plugin(
-        "SamplingTechnique",
-        "Generates from a given task a new one.");
+    "SamplingTechnique",
+    "Generates from a given task a new one.");
 }
-

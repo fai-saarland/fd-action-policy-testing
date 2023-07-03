@@ -12,7 +12,6 @@
 #include <limits>
 
 namespace task_properties {
-
 inline bool is_applicable(OperatorProxy op, const PartialAssignment &partial_assignment) {
     for (FactProxy precondition : op.get_preconditions()) {
         if (partial_assignment[precondition.get_variable()] != precondition)
@@ -38,7 +37,7 @@ inline bool is_goal_state(TaskProxy task, const State &state) {
 }
 
 inline bool is_goal_assignment(
-        const TaskProxy &task, const PartialAssignment &partial_assignment) {
+    const TaskProxy &task, const PartialAssignment &partial_assignment) {
     for (FactProxy goal : task.get_goals()) {
         if (partial_assignment[goal.get_variable()] != goal)
             return false;
@@ -48,7 +47,7 @@ inline bool is_goal_assignment(
 
 inline bool is_strips_fact(const std::string &fact_name) {
     return fact_name != "<none of those>" &&
-        fact_name.rfind("NegatedAtom", 0) == std::string::npos;
+           fact_name.rfind("NegatedAtom", 0) == std::string::npos;
 }
 
 inline bool is_strips_fact(const AbstractTask *task, const FactPair &fact_pair) {
@@ -85,7 +84,7 @@ extern void verify_no_conditional_effects(TaskProxy task);
 
 extern std::vector<int> get_operator_costs(const TaskProxy &task_proxy);
 
-template <typename AnyTaskProxy>
+template<typename AnyTaskProxy>
 double get_average_operator_cost(AnyTaskProxy task_proxy) {
     double average_operator_cost = 0;
     for (OperatorProxy op : task_proxy.get_operators()) {
@@ -95,7 +94,7 @@ double get_average_operator_cost(AnyTaskProxy task_proxy) {
     return average_operator_cost;
 }
 
-template <typename AnyTaskProxy>
+template<typename AnyTaskProxy>
 int get_min_operator_cost(AnyTaskProxy task_proxy) {
     int min_cost = std::numeric_limits<int>::max();
     for (OperatorProxy op : task_proxy.get_operators()) {
@@ -127,8 +126,9 @@ std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
 }
 
 extern void print_variable_statistics(const TaskProxy &task_proxy);
-template <typename T>
-void dump_pddl(const State &state, T &stream = utils::g_log, const std::string &separator = "\n", bool skip_undefined = false){
+template<typename T>
+void dump_pddl(const State &state, T &stream = utils::g_log, const std::string &separator = "\n",
+               bool skip_undefined = false) {
     for (FactProxy fact : state) {
         std::string fact_name = fact.get_name();
         if (skip_undefined and fact_name == "<undefined>") {
@@ -139,8 +139,8 @@ void dump_pddl(const State &state, T &stream = utils::g_log, const std::string &
     }
     stream << std::flush;
 }
-template <typename T>
-void dump_fdr(const State &state, T &stream = utils::g_log, const std::string &separator = "\n"){
+template<typename T>
+void dump_fdr(const State &state, T &stream = utils::g_log, const std::string &separator = "\n") {
     for (FactProxy fact : state) {
         VariableProxy var = fact.get_variable();
         stream << "  #" << var.get_id() << " [" << var.get_name() << "] -> "
@@ -148,8 +148,8 @@ void dump_fdr(const State &state, T &stream = utils::g_log, const std::string &s
     }
     stream << std::flush;
 }
-template <typename T>
-void dump_pddl(const PartialAssignment &state, T &stream = utils::g_log, const std::string &separator = "\n"){
+template<typename T>
+void dump_pddl(const PartialAssignment &state, T &stream = utils::g_log, const std::string &separator = "\n") {
     for (unsigned int var = 0; var < state.size(); ++var) {
         if (state.assigned(var)) {
             FactProxy fact = state[var];
@@ -160,20 +160,20 @@ void dump_pddl(const PartialAssignment &state, T &stream = utils::g_log, const s
     }
     stream << std::flush;
 }
-template <typename T>
-void dump_fdr(const PartialAssignment &state, T &stream = utils::g_log, const std::string &separator = "\n"){
+template<typename T>
+void dump_fdr(const PartialAssignment &state, T &stream = utils::g_log, const std::string &separator = "\n") {
     for (unsigned int var = 0; var < state.size(); ++var) {
         if (state.assigned(var)) {
             FactProxy fact = state[var];
-            VariableProxy var = fact.get_variable();
-            stream << "  #" << var.get_id() << " [" << var.get_name() << "] -> "
+            VariableProxy var_proxy = fact.get_variable();
+            stream << "  #" << var_proxy.get_id() << " [" << var_proxy.get_name() << "] -> "
                    << fact.get_value() << separator;
         }
     }
     stream << std::flush;
 }
-template <typename T>
-void dump_goals(const GoalsProxy &goals, T &stream = utils::g_log, const std::string &separator = "\n"){
+template<typename T>
+void dump_goals(const GoalsProxy &goals, T &stream = utils::g_log, const std::string &separator = "\n") {
     stream << "Goal conditions:" << separator;
     for (FactProxy goal : goals) {
         stream << "  " << goal.get_variable().get_name() << ": "
@@ -181,8 +181,8 @@ void dump_goals(const GoalsProxy &goals, T &stream = utils::g_log, const std::st
     }
     stream << std::flush;
 }
-template <typename T>
-void dump_task(const TaskProxy &task_proxy, T &stream = utils::g_log, const std::string &separator = "\n"){
+template<typename T>
+void dump_task(const TaskProxy &task_proxy, T &stream = utils::g_log, const std::string &separator = "\n") {
     OperatorsProxy operators = task_proxy.get_operators();
     int min_action_cost = std::numeric_limits<int>::max();
     int max_action_cost = 0;
@@ -212,43 +212,48 @@ void dump_task(const TaskProxy &task_proxy, T &stream = utils::g_log, const std:
 }
 
 //<<<<
-    inline void dump_pddl(const State &state, std::ostream &stream = std::cout, const std::string &separator = "\n", bool skip_undefined = false){
-        dump_pddl<std::ostream>(state, stream, separator, skip_undefined);
-    }
-    inline void dump_fdr(const State &state, std::ostream &stream = std::cout, const std::string &separator = "\n") {
-        dump_fdr<std::ostream>(state, stream, separator);
-    }
-    inline void dump_pddl(const PartialAssignment &state, std::ostream &stream = std::cout, const std::string &separator = "\n") {
-        dump_pddl<std::ostream>(state, stream, separator);
-    }
-    inline void dump_fdr(const PartialAssignment &state, std::ostream &stream = std::cout, const std::string &separator = "\n") {
-        dump_fdr<std::ostream>(state, stream, separator);
-    }
-    inline void dump_goals(const GoalsProxy &goals, std::ostream &stream = std::cout, const std::string &separator = "\n") {
-        dump_goals<std::ostream>(goals, stream, separator);
-    }
-    inline void dump_task(const TaskProxy &task_proxy, std::ostream &stream = std::cout, const std::string &separator = "\n") {
-        dump_task<std::ostream>(task_proxy, stream, separator);
-    }
+inline void dump_pddl(const State &state, std::ostream &stream = std::cout, const std::string &separator = "\n",
+                      bool skip_undefined = false) {
+    dump_pddl<std::ostream>(state, stream, separator, skip_undefined);
+}
+inline void dump_fdr(const State &state, std::ostream &stream = std::cout, const std::string &separator = "\n") {
+    dump_fdr<std::ostream>(state, stream, separator);
+}
+inline void dump_pddl(const PartialAssignment &state, std::ostream &stream = std::cout,
+                      const std::string &separator = "\n") {
+    dump_pddl<std::ostream>(state, stream, separator);
+}
+inline void dump_fdr(const PartialAssignment &state, std::ostream &stream = std::cout,
+                     const std::string &separator = "\n") {
+    dump_fdr<std::ostream>(state, stream, separator);
+}
+inline void dump_goals(const GoalsProxy &goals, std::ostream &stream = std::cout, const std::string &separator = "\n") {
+    dump_goals<std::ostream>(goals, stream, separator);
+}
+inline void dump_task(const TaskProxy &task_proxy, std::ostream &stream = std::cout,
+                      const std::string &separator = "\n") {
+    dump_task<std::ostream>(task_proxy, stream, separator);
+}
 
-    inline void dump_pddl(const State &state, utils::Log log, const std::string &separator = "\n", bool skip_undefined = false){
-        dump_pddl<utils::Log>(state, log, separator, skip_undefined);
-    }
-    inline void dump_fdr(const State &state, utils::Log log, const std::string &separator = "\n") {
-        dump_fdr<utils::Log>(state, log, separator);
-    }
-    inline void dump_pddl(const PartialAssignment &state, utils::Log log, const std::string &separator = "\n") {
-        dump_pddl<utils::Log>(state, log, separator);
-    }
-    inline void dump_fdr(const PartialAssignment &state, utils::Log log, const std::string &separator = "\n") {
-        dump_fdr<utils::Log>(state, log, separator);
-    }
-    inline void dump_goals(const GoalsProxy &goals, utils::Log log, const std::string &separator = "\n") {
-        dump_goals<utils::Log>(goals, log, separator);
-    }
-    inline void dump_task(const TaskProxy &task_proxy, utils::Log log, const std::string &separator = "\n") {
-        dump_task<utils::Log>(task_proxy, log, separator);
-    }
+inline void dump_pddl(const State &state, utils::Log log, const std::string &separator = "\n",
+                      bool skip_undefined = false) {
+    dump_pddl<utils::Log>(state, log, separator, skip_undefined);
+}
+inline void dump_fdr(const State &state, utils::Log log, const std::string &separator = "\n") {
+    dump_fdr<utils::Log>(state, log, separator);
+}
+inline void dump_pddl(const PartialAssignment &state, utils::Log log, const std::string &separator = "\n") {
+    dump_pddl<utils::Log>(state, log, separator);
+}
+inline void dump_fdr(const PartialAssignment &state, utils::Log log, const std::string &separator = "\n") {
+    dump_fdr<utils::Log>(state, log, separator);
+}
+inline void dump_goals(const GoalsProxy &goals, utils::Log log, const std::string &separator = "\n") {
+    dump_goals<utils::Log>(goals, log, separator);
+}
+inline void dump_task(const TaskProxy &task_proxy, utils::Log log, const std::string &separator = "\n") {
+    dump_task<utils::Log>(task_proxy, log, separator);
+}
 //>>>>
 
 extern PerTaskInformation<int_packer::IntPacker> g_state_packers;

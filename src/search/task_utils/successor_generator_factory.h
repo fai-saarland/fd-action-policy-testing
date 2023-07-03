@@ -10,7 +10,6 @@ class TaskProxy;
 using namespace operator_generator;
 
 namespace successor_generator {
-
 class SuccessorGeneratorFactory : public OperatorGeneratorFactory {
     const TaskProxy &task_proxy;
 

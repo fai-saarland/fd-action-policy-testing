@@ -28,7 +28,8 @@
 # to the cmake call.
 
 # Version 2.8.3 introduces CMakeParseArguments.
-cmake_minimum_required(VERSION 2.8.3)
+# (Jan) Version 2.8.3 is deprecated
+cmake_minimum_required(VERSION 3.20.0)
 
 # Respect the PATH environment variable when searching for compilers.
 find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH)
@@ -70,3 +71,13 @@ add_custom_command(TARGET translate POST_BUILD
     COMMENT "Copying translator module into output directory")
 
 add_subdirectory(search)
+
+# Format code
+find_program(UNCRUSTIFY "uncrustify")
+IF(UNCRUSTIFY)
+    add_custom_target(format COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../misc/style/run-uncrustify.py -m -f)
+    add_dependencies(downward format)
+    MESSAGE("-- uncrustify found, code will be auto-formatted")
+ELSEIF()
+    MESSAGE("uncrustify not found, code will not be auto-formatted")
+ENDIF()

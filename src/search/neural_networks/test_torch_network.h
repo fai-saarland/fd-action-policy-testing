@@ -9,7 +9,6 @@
 #include "../utils/rng_options.h"
 
 namespace neural_networks {
-
 class TestTorchNetwork : public TorchNetwork {
 protected:
     int last_h = Heuristic::NO_VALUE;

@@ -19,7 +19,6 @@ class RandomNumberGenerator;
 class Policy;
 
 namespace search_engines {
-
 enum OperatorSelection {
     First, Best, Probability
 };

@@ -26,7 +26,6 @@ using ParseTree = tree<ParseNode>;
 
 
 namespace sampling_engine {
-
 class SamplingSearch : public SamplingSearchBase {
 protected:
     // Sample Sources
@@ -52,18 +51,18 @@ protected:
     const std::string constructed_sample_file_header;
     const std::string entry_meta_general;
     const std::string entry_meta_heuristics;
-    
+
     std::vector<std::shared_ptr<Evaluator>> ptr_use_evaluators;
     utils::HashMap<int, size_t> successfully_solved;
     utils::HashMap<int, std::deque<bool>> successfully_solved_history;
     const size_t successfully_solved_history_size = 500;
     const size_t successfully_solved_increment_threshold = successfully_solved_history_size * 0.9;
-    
+
     virtual std::vector<std::string> extract_samples() override;
     std::string construct_meta(
-            size_t modification_hash,
-            const std::string &sample_type,
-            const std::string &snd_state);
+        size_t modification_hash,
+        const std::string &sample_type,
+        const std::string &snd_state);
     void add_entry(
         std::vector<std::string> &new_entries, const std::string &meta,
         const State &state,
@@ -81,7 +80,7 @@ protected:
         const StateRegistry &sr, OperatorsProxy &ops, const SearchSpace &ss,
         const std::string &meta, StateID &sid,
         const std::string &goal_description);
-    
+
     void post_search(std::vector<std::string> &samples) override;
     virtual void next_engine() override;
     virtual std::string sample_file_header() const override;

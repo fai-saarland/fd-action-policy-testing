@@ -4,7 +4,7 @@
 #include <ostream>
 
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
-#include <sys/time.h>
+#include <ctime>
 #endif
 
 #if OPERATING_SYSTEM == OSX
@@ -73,7 +73,9 @@ double Timer::current_clock() const {
     uint64_t end = mach_absolute_time();
     mach_absolute_difference(end, start, &tp);
 #else
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tp);
+    // TODO not a perfect solution (but also works when FD calls other programs via system calls)
+    // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tp);
+    clock_gettime(CLOCK_MONOTONIC, &tp);
 #endif
     return tp.tv_sec + tp.tv_nsec / 1e9;
 #endif
@@ -89,8 +91,7 @@ Duration Timer::operator()() const {
     if (stopped)
         return Duration(collected_time);
     else
-        return Duration(collected_time
-                        + compute_sanitized_duration(last_start_clock, current_clock()));
+        return Duration(collected_time + compute_sanitized_duration(last_start_clock, current_clock()));
 }
 
 void Timer::resume() {

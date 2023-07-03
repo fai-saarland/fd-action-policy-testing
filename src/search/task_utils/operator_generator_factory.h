@@ -55,16 +55,16 @@ class OperatorGrouper {
 
 public:
     explicit OperatorGrouper(
-            const std::vector<OperatorInfo> &operator_infos,
-            int depth,
-            GroupOperatorsBy group_by,
-            OperatorRange range);
+        const std::vector<OperatorInfo> &operator_infos,
+        int depth,
+        GroupOperatorsBy group_by,
+        OperatorRange range);
 
     bool done() const;
     std::pair<int, OperatorRange> next();
 };
 
-template <typename AnyOperatorProxy>
+template<typename AnyOperatorProxy>
 std::vector<FactPair> build_sorted_precondition(const AnyOperatorProxy &op) {
     std::vector<FactPair> precond;
     precond.reserve(op.get_preconditions().size());
@@ -83,16 +83,16 @@ class OperatorGeneratorFactory {
     GeneratorPtr construct_fork(std::vector<GeneratorPtr> nodes) const;
     GeneratorPtr construct_leaf(OperatorRange range) const;
     GeneratorPtr construct_switch(
-            int switch_var_id, ValuesAndGenerators values_and_generators) const;
+        int switch_var_id, ValuesAndGenerators values_and_generators) const;
     GeneratorPtr construct_recursive(int depth, OperatorRange range) const;
 
 protected:
     virtual VariablesProxy get_variables() const = 0;
-    template <typename AnyOperatorsProxy> GeneratorPtr internal_create(AnyOperatorsProxy operators) {
+    template<typename AnyOperatorsProxy> GeneratorPtr internal_create(AnyOperatorsProxy operators) {
         operator_infos.reserve(operators.size());
         for (auto op : operators) {
             operator_infos.emplace_back(
-                    OperatorID(op.get_id()), build_sorted_precondition(op));
+                OperatorID(op.get_id()), build_sorted_precondition(op));
         }
         /* Use stable_sort rather than sort for reproducibility.
            This amounts to breaking ties by operator ID. */

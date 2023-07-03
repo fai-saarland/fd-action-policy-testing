@@ -9,12 +9,10 @@
 using namespace std;
 using namespace tensorflow;
 namespace neural_networks {
-
 vector<int> get_goal_defaults(
-        const TaskProxy &task_proxy,
-        const vector<int> &domain_sizes,
-        const vector<FactMapping> &fact_mappings) {
-
+    const TaskProxy &task_proxy,
+    const vector<int> &domain_sizes,
+    const vector<FactMapping> &fact_mappings) {
     vector<int> goal_idx;
     if (fact_mappings.empty()) {
         vector<int> shift;
@@ -26,9 +24,8 @@ vector<int> get_goal_defaults(
 
         for (const FactProxy &fp: task_proxy.get_goals()) {
             goal_idx.push_back(
-                    shift[fp.get_variable().get_id()] + fp.get_value());
+                shift[fp.get_variable().get_id()] + fp.get_value());
         }
-
     } else {
         unordered_map<int, unordered_set<int>> goals;
         for (const FactProxy &fp: task_proxy.get_goals()) {
@@ -52,7 +49,7 @@ StateGoalNetwork::StateGoalNetwork(const Options &opts)
     : StateNetwork(opts),
       _goal_layer_name(opts.get<string>("goal_layer")),
       goal_defaults(get_goal_defaults(
-              task_proxy, domain_sizes, fact_mappings)) {
+                        task_proxy, domain_sizes, fact_mappings)) {
 }
 
 StateGoalNetwork::~StateGoalNetwork() {
@@ -60,8 +57,8 @@ StateGoalNetwork::~StateGoalNetwork() {
 
 Tensor StateGoalNetwork::get_goal_input_tensor(int input_size) const {
     Tensor goal_tensor(
-            DT_FLOAT,
-     TensorShape({batch_size, input_size}));
+        DT_FLOAT,
+        TensorShape({batch_size, input_size}));
 
     // Fill goal tensor with default values
     auto goal_tensor_buffer = goal_tensor.matrix<float>();
@@ -94,7 +91,7 @@ static shared_ptr<neural_networks::AbstractNetwork> _parse(OptionParser &parser)
 
     parser.add_option<string>("goal_layer", "Name of the input layer in"
                               "the computation graph to insert the current goal.");
-    
+
     Options opts = parser.parse();
     shared_ptr<neural_networks::StateGoalNetwork> network;
     if (!parser.dry_run()) {

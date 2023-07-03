@@ -104,13 +104,13 @@ void SearchEngine::search() {
     initialize();
     assert(!timer);
     timer = make_unique<utils::CountdownTimer>(max_time);
-    double last_statistic_time  = timer->get_elapsed_time();
+    double last_statistic_time = timer->get_elapsed_time();
     while (status == IN_PROGRESS) {
         try {
             status = step();
         } catch (MaximumExpansionsError e) {
             cout << "Maximum number of expansions reached. Abort search."
-                << endl;
+                 << endl;
             break;
         }
         if (timer->is_expired()) {
@@ -123,8 +123,8 @@ void SearchEngine::search() {
             status = TIMEOUT;
             break;
         }
-        if(statistics_interval > 0 &&
-           timer->get_elapsed_time() - last_statistic_time > statistics_interval) {
+        if (statistics_interval > 0 &&
+            timer->get_elapsed_time() - last_statistic_time > statistics_interval) {
             print_timed_statistics();
             last_statistic_time = timer->get_elapsed_time();
         }
@@ -137,9 +137,9 @@ bool SearchEngine::check_goal_and_set_plan(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
         utils::g_log << "Solution found!" << endl;
         goal_id = state.get_id();
-        Plan plan;
-        search_space.trace_path(state, plan);
-        set_plan(plan);
+        Plan p;
+        search_space.trace_path(state, p);
+        set_plan(p);
         return true;
     }
     return false;
@@ -161,9 +161,9 @@ double SearchEngine::get_max_time() {
 void SearchEngine::reduce_max_time(double new_max_time) {
     if (timer) {
         cerr << "The time limit of a search cannot be reduced after it was"
-                "started" << endl;
+            "started" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-    } else if (new_max_time > max_time){
+    } else if (new_max_time > max_time) {
         cerr << "You cannot increase the time limit of a search!" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     } else {
@@ -205,11 +205,11 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
         "maximum number of expansions the search is allowed to run for.",
         "infinity");
     parser.add_option<double>(
-            "statistics_interval",
-            "Prints every interval seconds some statistics on the search."
-            "Use a negative value to disable. Default: 30",
-            "30"
-            );
+        "statistics_interval",
+        "Prints every interval seconds some statistics on the search."
+        "Use a negative value to disable. Default: 30",
+        "30"
+        );
     parser.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Optional task transformation for the search algorithm."

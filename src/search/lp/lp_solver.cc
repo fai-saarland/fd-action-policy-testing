@@ -35,14 +35,14 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
         "See LPBuildInstructions.");
     vector<string> lp_solvers;
     vector<string> lp_solvers_doc;
-    lp_solvers.push_back("CLP");
-    lp_solvers_doc.push_back("default LP solver shipped with the COIN library");
-    lp_solvers.push_back("CPLEX");
-    lp_solvers_doc.push_back("commercial solver by IBM");
-    lp_solvers.push_back("GUROBI");
-    lp_solvers_doc.push_back("commercial solver");
-    lp_solvers.push_back("SOPLEX");
-    lp_solvers_doc.push_back("open source solver by ZIB");
+    lp_solvers.emplace_back("CLP");
+    lp_solvers_doc.emplace_back("default LP solver shipped with the COIN library");
+    lp_solvers.emplace_back("CPLEX");
+    lp_solvers_doc.emplace_back("commercial solver by IBM");
+    lp_solvers.emplace_back("GUROBI");
+    lp_solvers_doc.emplace_back("commercial solver");
+    lp_solvers.emplace_back("SOPLEX");
+    lp_solvers_doc.emplace_back("open source solver by ZIB");
     parser.add_enum_option<LPSolverType>(
         "lpsolver",
         lp_solvers,
@@ -82,7 +82,8 @@ ostream &LPConstraint::dump(ostream &stream, double infinity, const LinearProgra
         if (program && program->get_variables().has_names() && !program->get_variables().get_name(variable).empty()) {
             variable_name = program->get_variables().get_name(variable);
         } else {
-            variable_name = "v" + to_string(variable);
+            // variable_name = "v" + to_string(variable); (Jan) dubious compiler error with g++ 12.2, switch to equivalent version
+            variable_name = string("v").append(to_string(variable));
         }
         stream << coefficients[i] << " * " << variable_name;
     }

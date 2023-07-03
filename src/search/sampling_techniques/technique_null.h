@@ -4,12 +4,11 @@
 #include "sampling_technique.h"
 
 namespace sampling_technique {
-
 class TechniqueNull : public SamplingTechnique {
 protected:
     virtual std::shared_ptr<AbstractTask> create_next(
-            std::shared_ptr<AbstractTask> seed_task,
-            const TaskProxy &task_proxy) override;
+        std::shared_ptr<AbstractTask> seed_task,
+        const TaskProxy &task_proxy) override;
 
 public:
     TechniqueNull();

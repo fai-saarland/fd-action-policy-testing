@@ -8,8 +8,8 @@ ModifiedInitGoalsTask::ModifiedInitGoalsTask(
     const vector<int> &&initial_state,
     const vector<FactPair> &&goals)
     : DelegatingTask(parent),
-      initial_state(move(initial_state)),
-      goals(move(goals)) {
+      initial_state(std::move(initial_state)),
+      goals(std::move(goals)) {
 }
 
 int ModifiedInitGoalsTask::get_num_goals() const {

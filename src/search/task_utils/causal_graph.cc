@@ -23,7 +23,7 @@ using namespace std;
   uses an unmodified task because it will create its own copy of
   CostAdaptedTask.
   We have the same problems for other objects that are associated with tasks
-  (causal graphs, successor generators and axiom evlauators, DTGs, ...) and can
+  (causal graphs, successor generators and axiom evaluators, DTGs, ...) and can
   maybe deal with all of them in the same way.
 */
 

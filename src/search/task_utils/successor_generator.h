@@ -10,30 +10,23 @@ class State;
 class TaskProxy;
 
 namespace operator_generator {
-    class GeneratorBase;
+class GeneratorBase;
 }
 namespace successor_generator {
-
 class SuccessorGenerator {
     std::unique_ptr<operator_generator::GeneratorBase> root;
 
 public:
     explicit SuccessorGenerator(const TaskProxy &task_proxy);
-    /*
-      We cannot use the default destructor (implicitly or explicitly)
-      here because GeneratorBase is a forward declaration and the
-      incomplete type cannot be destroyed.
-    */
     ~SuccessorGenerator();
 
-    void generate_applicable_ops(
-        const State &state, std::vector<OperatorID> &applicable_ops) const;
+    void generate_applicable_ops(const State &state, std::vector<OperatorID> &applicable_ops) const;
+    std::vector<OperatorID> generate_applicable_ops(const State &state) const;
 };
 
 extern PerTaskInformation<SuccessorGenerator> g_successor_generators;
 
 SuccessorGenerator &get_successor_generator(const TaskProxy &task_proxy);
-
 }
 
 #endif

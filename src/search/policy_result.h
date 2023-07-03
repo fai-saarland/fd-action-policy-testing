@@ -14,7 +14,7 @@ class PolicyResult {
 public:
     PolicyResult();
     PolicyResult(std::vector<OperatorID> &&preferred_operators,
-                 std::vector<float> && operator_preferences,
+                 std::vector<float> &&operator_preferences,
                  bool count_evaluation);
 
     bool is_uninitialized() const;

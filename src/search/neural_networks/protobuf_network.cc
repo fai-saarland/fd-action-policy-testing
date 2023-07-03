@@ -11,7 +11,7 @@ ProtobufNetwork::ProtobufNetwork(const Options &opts)
       task_proxy(*task),
       path(opts.get<string>("path")),
       session(nullptr),
-      batch_size(opts.get<int>("batch_size")){
+      batch_size(opts.get<int>("batch_size")) {
 }
 
 ProtobufNetwork::~ProtobufNetwork() {
@@ -71,9 +71,9 @@ void ProtobufNetwork::evaluate(const State &state) {
 void ProtobufNetwork::evaluate(const vector<State> &states) {
     clear_output();
     for (size_t batch_round = 0; batch_round < states.size();
-            batch_round += batch_size) {
+         batch_round += batch_size) {
         int batch_round_size = min(
-                batch_size, (int) (states.size() - batch_round));
+            batch_size, (int)(states.size() - batch_round));
         for (int batch_idx = 0; batch_idx < batch_round_size; ++batch_idx) {
             fill_input(states[batch_round + batch_idx], batch_idx);
         }
@@ -97,12 +97,12 @@ void ProtobufNetwork::add_options_to_parser(options::OptionParser &parser) {
         "available.",
         "no_transform()");
     parser.add_option<int>(
-            "batch_size",
-            "Size of the tensor to evaluate states in a batch. By default,"
-            "this causes all evaluation to run in a batch of the given size. "
-            "Thus, evaluating  not full batches has some overhead",
-            "1"
-    );
+        "batch_size",
+        "Size of the tensor to evaluate states in a batch. By default,"
+        "this causes all evaluation to run in a batch of the given size. "
+        "Thus, evaluating  not full batches has some overhead",
+        "1"
+        );
     parser.add_option<string>("path", "Path to networks protobuf file.");
 }
 }

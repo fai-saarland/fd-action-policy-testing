@@ -5,6 +5,7 @@
 #include <cassert>
 #include <random>
 #include <vector>
+#include <numeric>
 
 namespace utils {
 class RandomNumberGenerator {
@@ -44,37 +45,32 @@ public:
         return vec.begin() + operator()(vec.size());
     }
 
-    template<typename W>
-    size_t weighted_choose_index(const std::vector<W> &weights) {
-        assert(all_of(weights.begin(), weights.end(), [](W i) {return i >= 0.0;}));
-        double sum = std::accumulate(weights.begin(), weights.end(), 0.0);
-        assert(sum > 0.0);
-        double choice = operator()() * sum;
-        for (size_t i = 0; i < weights.size(); ++i) {
-            choice -= weights[i];
-            if (choice < 0) {
-                return i;
-            }
-        }
-        assert(false);
-        return 0;
-    }
-
-
-    template<typename T, typename W>
-    typename std::vector<T>::const_iterator weighted_choose(
-            const std::vector<T> &vec,
-            const std::vector<W> &weights) {
-        assert(vec.size() == weights.size());
-        return vec.begin() + weighted_choose_index(weights);
-    }
-
     template<typename T>
     void shuffle(std::vector<T> &vec) {
         std::shuffle(vec.begin(), vec.end(), rng);
     }
 
-    std::vector<int> choose_n_of_N(int n, int N);
+    /**
+     * @brief Compute a vector containing a subset of the indices of vec, i.e., a random subset of 0, 1, ..., vec.size()-1
+     * with min(max_size, vec.size()) elements.
+     * @note the returned vector is sorted
+     */
+    template<typename T>
+    std::vector<int> select_random_positions(const std::vector<T> &vec, size_t max_size) {
+        std::vector<int> vec_indices(vec.size());
+        std::iota(vec_indices.begin(), vec_indices.end(), 0);
+        // vec indices contains numbers 0, ..., vec.size() - 1
+
+        if (vec.size() <= max_size) {
+            return vec_indices;
+        }
+
+        // select a sub vector of indices, keeping order intact
+        shuffle(vec_indices);
+        vec_indices.resize(max_size);
+        std::sort(vec_indices.begin(), vec_indices.end());
+        return vec_indices;
+    }
 };
 }
 

@@ -75,7 +75,7 @@ public:
     */
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) = 0;
-    
+
     virtual std::vector<EvaluationResult> compute_results(
         std::vector<EvaluationContext> &eval_contexts);
 

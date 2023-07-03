@@ -7,7 +7,7 @@ PartialStateWrapperTask::PartialStateWrapperTask(
     const shared_ptr<AbstractTask> &parent)
     : DelegatingTask(parent) { }
 
-bool PartialStateWrapperTask::is_undefined(const FactPair& fact) const {
+bool PartialStateWrapperTask::is_undefined(const FactPair &fact) const {
     return fact.value == parent->get_variable_domain_size(fact.var);
 }
 
@@ -15,7 +15,7 @@ int PartialStateWrapperTask::get_variable_domain_size(int var) const {
     return parent->get_variable_domain_size(var) + 1;
 }
 
-std::string PartialStateWrapperTask::get_fact_name(const FactPair& fact) const {
+std::string PartialStateWrapperTask::get_fact_name(const FactPair &fact) const {
     if (is_undefined(fact)) {
         return "<undefined>";
     } else {
@@ -23,8 +23,8 @@ std::string PartialStateWrapperTask::get_fact_name(const FactPair& fact) const {
     }
 }
 
-bool PartialStateWrapperTask::are_facts_mutex(const FactPair& fact1, const FactPair& fact2) const {
-    /* 
+bool PartialStateWrapperTask::are_facts_mutex(const FactPair &fact1, const FactPair &fact2) const {
+    /*
      To be correct, we would need to check that if fact1 is undefined there
      at one of its variable values is not mutex with fact2 and vice versa and
      for the case that both are undefined.

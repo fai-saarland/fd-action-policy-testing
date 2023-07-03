@@ -58,7 +58,7 @@ public:
             return default_value;
     }
     // TODO pat maybe make movable
-    void set_parse_tree(const std::string &key, const ParseTree parse_tree) {
+    void set_parse_tree(const std::string &key, const ParseTree &parse_tree) {
         parse_trees[key] = parse_tree;
     }
 

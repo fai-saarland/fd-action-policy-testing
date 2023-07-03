@@ -14,7 +14,8 @@ class GeneratorBase {
 public:
     virtual ~GeneratorBase() {}
 
-    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state, bool reject_unassigned = false) const = 0;
+    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state,
+                                                  bool reject_unassigned = false) const = 0;
     virtual void generate_applicable_ops(
         const std::vector<int> &state, std::vector<OperatorID> &applicable_ops) const = 0;
 };
@@ -27,7 +28,8 @@ public:
         std::unique_ptr<GeneratorBase> generator1,
         std::unique_ptr<GeneratorBase> generator2);
 
-    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state, bool reject_unassigned = false) const override;
+    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state,
+                                                  bool reject_unassigned = false) const override;
     virtual void generate_applicable_ops(
         const std::vector<int> &state, std::vector<OperatorID> &applicable_ops) const override;
 };
@@ -37,7 +39,8 @@ class GeneratorForkMulti : public GeneratorBase {
 public:
     explicit GeneratorForkMulti(std::vector<std::unique_ptr<GeneratorBase>> children);
 
-    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state, bool reject_unassigned = false) const override; 
+    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state,
+                                                  bool reject_unassigned = false) const override;
     virtual void generate_applicable_ops(
         const std::vector<int> &state, std::vector<OperatorID> &applicable_ops) const override;
 };
@@ -58,7 +61,8 @@ public:
         std::vector<std::unique_ptr<GeneratorBase>> &&generator_for_value,
         bool covers_all_values = false);
 
-    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state, bool reject_unassigned = false) const override;
+    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state,
+                                                  bool reject_unassigned = false) const override;
     virtual void generate_applicable_ops(
         const std::vector<int> &state, std::vector<OperatorID> &applicable_ops) const override;
 };
@@ -71,7 +75,8 @@ public:
         std::unordered_map<int, std::unique_ptr<GeneratorBase>> &&generator_for_value,
         bool covers_all_values = false);
 
-    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state, bool reject_unassigned = false) const override;
+    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state,
+                                                  bool reject_unassigned = false) const override;
     virtual void generate_applicable_ops(
         const std::vector<int> &state, std::vector<OperatorID> &applicable_ops) const override;
 };
@@ -85,7 +90,8 @@ public:
         std::unique_ptr<GeneratorBase> generator_for_value,
         bool covers_all_values = false);
 
-    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state, bool reject_unassigned = false) const override;
+    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state,
+                                                  bool reject_unassigned = false) const override;
     virtual void generate_applicable_ops(
         const std::vector<int> &state, std::vector<OperatorID> &applicable_ops) const override;
 };
@@ -95,7 +101,8 @@ class GeneratorLeafVector : public GeneratorBase {
 public:
     explicit GeneratorLeafVector(std::vector<OperatorID> &&applicable_operators);
 
-    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state, bool reject_unassigned = false) const override;
+    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state,
+                                                  bool reject_unassigned = false) const override;
     virtual void generate_applicable_ops(
         const std::vector<int> &state, std::vector<OperatorID> &applicable_ops) const override;
 };
@@ -105,7 +112,8 @@ class GeneratorLeafSingle : public GeneratorBase {
 public:
     explicit GeneratorLeafSingle(OperatorID applicable_operator);
 
-    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state, bool reject_unassigned = false) const override;
+    virtual OperatorID generate_min_applicable_op(const std::vector<int> &state,
+                                                  bool reject_unassigned = false) const override;
     virtual void generate_applicable_ops(
         const std::vector<int> &state, std::vector<OperatorID> &applicable_ops) const override;
 };

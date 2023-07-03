@@ -5,7 +5,6 @@
 using namespace std;
 
 namespace successor_generator {
-
 SuccessorGeneratorFactory::SuccessorGeneratorFactory(
     const TaskProxy &task_proxy)
     : OperatorGeneratorFactory(), task_proxy(task_proxy) {

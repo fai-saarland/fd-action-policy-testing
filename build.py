@@ -23,6 +23,8 @@ if os.name == "posix":
     MAKE = "make"
     try:
         num_cpus = multiprocessing.cpu_count()
+        if num_cpus > 1:
+            num_cpus -= 1
     except NotImplementedError:
         pass
     else:
@@ -96,6 +98,7 @@ def get_src_path():
 def get_build_path(config_name):
     return os.path.join(get_builds_path(), config_name)
 
+
 def try_run(cmd, cwd):
     print('Executing command "{}" in directory "{}".'.format(" ".join(cmd), cwd))
     try:
@@ -108,6 +111,7 @@ def try_run(cmd, cwd):
             sys.exit(1)
         else:
             raise
+
 
 def build(config_name, cmake_parameters, make_parameters):
     print("Building configuration {config_name}.".format(**locals()))

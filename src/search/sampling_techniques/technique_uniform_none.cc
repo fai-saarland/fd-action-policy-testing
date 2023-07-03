@@ -15,21 +15,21 @@ const string &TechniqueUniformNone::get_name() const {
 }
 
 TechniqueUniformNone::TechniqueUniformNone(const options::Options &opts)
-        : SamplingTechnique(opts) { }
+    : SamplingTechnique(opts) { }
 
 std::shared_ptr<AbstractTask> TechniqueUniformNone::create_next(
-        shared_ptr<AbstractTask> seed_task, const TaskProxy &) {
+    shared_ptr<AbstractTask> seed_task, const TaskProxy &) {
     TaskProxy seed_task_proxy(*seed_task);
     int c = 0;
     while (true) {
         vector<int> unassigned(
-                seed_task->get_num_variables(), PartialAssignment::UNASSIGNED);
+            seed_task->get_num_variables(), PartialAssignment::UNASSIGNED);
         auto state = PartialAssignment(*seed_task, move(unassigned))
-                .get_full_state(check_mutexes, *rng);
+            .get_full_state(check_mutexes, *rng);
         if (state.first) {
             vector<int> values = state.second.get_values();
             return make_shared<extra_tasks::ModifiedInitGoalsTask>(
-                    seed_task, move(values), extractGoalFacts(seed_task_proxy.get_goals()));
+                seed_task, move(values), extractGoalFacts(seed_task_proxy.get_goals()));
         } else {
             c++;
         }
@@ -38,7 +38,7 @@ std::shared_ptr<AbstractTask> TechniqueUniformNone::create_next(
 
 /* PARSING TECHNIQUE_UNIFORM_NONE*/
 static shared_ptr<SamplingTechnique> _parse_technique_uniform_none(
-        options::OptionParser &parser) {
+    options::OptionParser &parser) {
     SamplingTechnique::add_options_to_parser(parser);
 
 
@@ -52,7 +52,5 @@ static shared_ptr<SamplingTechnique> _parse_technique_uniform_none(
 }
 
 static Plugin<SamplingTechnique> _plugin_technique_uniform_none(
-        TechniqueUniformNone::name, _parse_technique_uniform_none);
-
-
+    TechniqueUniformNone::name, _parse_technique_uniform_none);
 }

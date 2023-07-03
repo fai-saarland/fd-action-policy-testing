@@ -6,7 +6,6 @@
 #include "../heuristic.h"
 
 namespace neural_networks {
-
 class TorchStateNetwork : public TorchNetwork {
 protected:
     const int heuristic_shift;

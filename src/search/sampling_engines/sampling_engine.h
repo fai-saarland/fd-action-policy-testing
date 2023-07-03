@@ -14,7 +14,7 @@
 
 
 namespace utils {
-    class RandomNumberGenerator;
+class RandomNumberGenerator;
 }
 
 namespace sampling_engine {
@@ -31,19 +31,19 @@ protected:
     const int max_sample_files;
     int count_sample_files;
     const std::vector<std::shared_ptr<
-        sampling_technique::SamplingTechnique>>sampling_techniques;
+                          sampling_technique::SamplingTechnique>>sampling_techniques;
     std::vector<std::shared_ptr<
-        sampling_technique::SamplingTechnique>>::const_iterator current_technique;
+                    sampling_technique::SamplingTechnique>>::const_iterator current_technique;
 
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     std::size_t sample_cache_size = 0;
     std::vector<std::vector<std::string>> sample_cache;
 
     bool finalize = false;
-    
+
     /* Statistics*/
     int generated_samples = 0;
-    
+
 
     virtual void initialize() override;
     virtual void update_current_technique();

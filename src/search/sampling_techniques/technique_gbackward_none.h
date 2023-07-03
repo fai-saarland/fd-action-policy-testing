@@ -33,10 +33,10 @@ protected:
     std::shared_ptr<sampling::RandomRegressionWalkSampler> rrws = nullptr;
 
     virtual std::shared_ptr<AbstractTask> create_next(
-            std::shared_ptr<AbstractTask> seed_task,
-            const TaskProxy &task_proxy) override;
+        std::shared_ptr<AbstractTask> seed_task,
+        const TaskProxy &task_proxy) override;
 
-    virtual void do_upgrade_parameters() override ;
+    virtual void do_upgrade_parameters() override;
 
 public:
     explicit TechniqueGBackwardNone(const options::Options &opts);

@@ -16,10 +16,10 @@ void MaximumExpansionsError::print() const {
     cerr << "Maximum number of expansions reached: " << msg << endl;
 }
 
-void SearchStatistics::inc_expanded(int inc){
+void SearchStatistics::inc_expanded(int inc) {
     if (expanded_states >= maximum_expansions) {
         throw MaximumExpansionsError(
-            "Maximum number of expansions reached. Abort search.");
+                  "Maximum number of expansions reached. Abort search.");
     }
     expanded_states += inc;
 }

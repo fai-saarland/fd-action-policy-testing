@@ -12,7 +12,6 @@
 
 using namespace std;
 namespace neural_networks {
-
 TestTorchNetwork::TestTorchNetwork(const Options &opts)
     : TorchNetwork(opts) {}
 
@@ -32,7 +31,7 @@ const vector<int> &TestTorchNetwork::get_heuristics() {
 }
 
 int tmp = 0;
-vector<at::Tensor> TestTorchNetwork::get_input_tensors(const State &/*state*/) {
+vector<at::Tensor> TestTorchNetwork::get_input_tensors(const State & /*state*/) {
     at::Tensor tensor = torch::ones({1, 3});
     auto accessor = tensor.accessor<float, 2>();
     accessor[0][0] = 0;
@@ -53,7 +52,7 @@ vector<at::Tensor> TestTorchNetwork::get_input_tensors(const State &/*state*/) {
 void TestTorchNetwork::parse_output(const torch::jit::IValue &output) {
     at::Tensor tensor = output.toTensor();
     auto accessor = tensor.accessor<float, 1>();
-    for (int64_t i = 0; i < tensor.size(0); ++i){
+    for (int64_t i = 0; i < tensor.size(0); ++i) {
         last_h = accessor[i];
         last_h_batch.push_back(last_h);
         cout << "TestTorch Output: " << accessor[i] << endl;

@@ -5,11 +5,11 @@ using namespace std;
 
 PolicyResult::PolicyResult() : initialized(false) {}
 PolicyResult::PolicyResult(
-        vector<OperatorID> &&preferred_operators,
-        vector<float> &&operator_preferences,
-        bool count_evaluation)
-    : preferred_operators(move(preferred_operators)),
-      operator_preferences(move(operator_preferences)),
+    vector<OperatorID> &&preferred_operators,
+    vector<float> &&operator_preferences,
+    bool count_evaluation)
+    : preferred_operators(std::move(preferred_operators)),
+      operator_preferences(std::move(operator_preferences)),
       count_evaluation(count_evaluation),
       initialized(true) {}
 
@@ -39,12 +39,12 @@ bool PolicyResult::get_count_evaluation() const {
 void PolicyResult::set_preferred_operators(
     vector<OperatorID> &&preferred_ops) {
     initialized = true;
-    preferred_operators = move(preferred_ops);
+    preferred_operators = std::move(preferred_ops);
 }
 
 void PolicyResult::set_operator_preferences(
-        vector<float> &&operator_prefs) {
-    operator_preferences = move(operator_prefs);
+    vector<float> &&operator_prefs) {
+    operator_preferences = std::move(operator_prefs);
 }
 
 void PolicyResult::set_count_evaluation(bool count_eval) {

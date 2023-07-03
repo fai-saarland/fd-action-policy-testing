@@ -179,7 +179,7 @@ ExplicitVariable::ExplicitVariable(istream &in) {
 
 ExplicitEffect::ExplicitEffect(
     int var, int value, vector<FactPair> &&conditions)
-    : fact(var, value), conditions(move(conditions)) {
+    : fact(var, value), conditions(std::move(conditions)) {
 }
 
 
@@ -190,7 +190,7 @@ void ExplicitOperator::read_pre_post(istream &in) {
     if (value_pre != -1) {
         preconditions.emplace_back(var, value_pre);
     }
-    effects.emplace_back(var, value_post, move(conditions));
+    effects.emplace_back(var, value_post, std::move(conditions));
 }
 
 ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom, bool use_metric)
@@ -495,7 +495,7 @@ void RootTask::convert_state_values(
     }
 }
 
-bool RootTask::is_undefined(const FactPair &/*fact*/) const {
+bool RootTask::is_undefined(const FactPair & /*fact*/) const {
     return false;
 }
 

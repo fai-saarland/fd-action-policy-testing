@@ -91,10 +91,10 @@ bool RegressionOperator::achieves_subgoal(const PartialAssignment &assignment) c
 
 bool RegressionOperator::is_applicable(const PartialAssignment &assignment) const {
     return achieves_subgoal(assignment) &&
-        all_of(preconditions.begin(), preconditions.end(),
-            [&](const RegressionCondition &condition) {
-                return condition.is_satisfied(assignment);
-        });
+           all_of(preconditions.begin(), preconditions.end(),
+                  [&](const RegressionCondition &condition) {
+                      return condition.is_satisfied(assignment);
+                  });
 }
 
 
@@ -113,4 +113,3 @@ inline shared_ptr<vector<RegressionOperator>> extract_regression_operators(const
 RegressionTaskProxy::RegressionTaskProxy(const AbstractTask &task)
     : TaskProxy(task),
       operators(extract_regression_operators(task, *this)) { }
-

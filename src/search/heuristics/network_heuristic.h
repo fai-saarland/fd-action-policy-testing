@@ -8,7 +8,6 @@
 #include <memory>
 
 namespace network_heuristic {
-
 class NetworkHeuristic : public Heuristic {
 protected:
     std::shared_ptr<neural_networks::AbstractNetwork> network;
@@ -20,7 +19,7 @@ protected:
 public:
     explicit NetworkHeuristic(const options::Options &options);
     ~NetworkHeuristic();
-    
+
     virtual std::vector<EvaluationResult> compute_results(
         std::vector<EvaluationContext> &eval_contexts) override;
 };

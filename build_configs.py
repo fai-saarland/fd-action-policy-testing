@@ -1,10 +1,5 @@
-release = ["-DCMAKE_BUILD_TYPE=Release"]
-debug = ["-DCMAKE_BUILD_TYPE=Debug"]
-# USE_GLIBCXX_DEBUG is not compatible with USE_LP (see issue983).
-glibcxx_debug = ["-DCMAKE_BUILD_TYPE=Debug", "-DUSE_LP=NO", "-DUSE_GLIBCXX_DEBUG=YES"]
-minimal = ["-DCMAKE_BUILD_TYPE=Release", "-DDISABLE_PLUGINS_BY_DEFAULT=YES"]
-testing = minimal + [ "-DPLUGIN_{0}_ENABLED=YES".format(plugin) for plugin in [
-            "POLICYFUZZING",
+_testing = [ "-DDISABLE_PLUGINS_BY_DEFAULT=YES" ] + [ "-DPLUGIN_{0}_ENABLED=YES".format(plugin) for plugin in [
+            "POLICY_TESTING",
             "MAX_HEURISTIC",
             "FF_HEURISTIC",
             "LANDMARK_CUT_HEURISTIC",
@@ -15,7 +10,21 @@ testing = minimal + [ "-DPLUGIN_{0}_ENABLED=YES".format(plugin) for plugin in [
             "PLUGIN_EAGER_GREEDY",
             "PLUGIN_ASTAR",
             "LANDMARKS",
+            # "MAS_HEURISTIC",
+            "ENFORCED_HILL_CLIMBING_SEARCH",
             ]]
 
-DEFAULT = "testing"
+testing = ["-DCMAKE_BUILD_TYPE=Release"] + _testing
+release = ["-DCMAKE_BUILD_TYPE=Release"] + _testing
+release_custom_boost = ["-DCMAKE_BUILD_TYPE=Release", "-DBoost_NO_SYSTEM_PATHS=TRUE", "-DBOOST_ROOT=/mnt/data_server/eisenhut/opt"] + _testing
+debug = ["-DCMAKE_BUILD_TYPE=Debug"] + _testing
+release_clang = ["-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_CXX_COMPILER=/usr/bin/clang++"] + _testing
+debug_clang = ["-DCMAKE_BUILD_TYPE=Debug", "-DCMAKE_CXX_COMPILER=/usr/bin/clang++"] + _testing
+release_gcc = ["-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_CXX_COMPILER=/usr/bin/g++"] + _testing
+debug_gcc = ["-DCMAKE_BUILD_TYPE=Debug", "-DCMAKE_CXX_COMPILER=/usr/bin/g++"] + _testing
+# USE_GLIBCXX_DEBUG is not compatible with USE_LP (see issue983).
+glibcxx_debug = ["-DCMAKE_BUILD_TYPE=Debug", "-DUSE_LP=NO", "-DUSE_GLIBCXX_DEBUG=YES"] + _testing
+minimal = ["-DCMAKE_BUILD_TYPE=Release", "-DDISABLE_PLUGINS_BY_DEFAULT=YES"]
+
+DEFAULT = "release"
 DEBUG = "debug"

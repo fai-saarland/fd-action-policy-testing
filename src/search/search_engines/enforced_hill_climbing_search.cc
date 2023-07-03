@@ -70,15 +70,16 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       current_eval_context(state_registry.get_initial_state(), &statistics),
       current_phase_start_g(-1),
       num_ehc_phases(0),
-      last_num_expanded(-1) {
+      last_num_expanded(-1),
+      prevent_exit(opts.get<bool>("prevent_exit")) {
     for (const shared_ptr<Evaluator> &eval : preferred_operator_evaluators) {
         eval->get_path_dependent_evaluators(path_dependent_evaluators);
     }
     evaluator->get_path_dependent_evaluators(path_dependent_evaluators);
 
     State initial_state = state_registry.get_initial_state();
-    for (Evaluator *evaluator : path_dependent_evaluators) {
-        evaluator->notify_initial_state(initial_state);
+    for (Evaluator *e : path_dependent_evaluators) {
+        e->notify_initial_state(initial_state);
     }
     use_preferred = find(preferred_operator_evaluators.begin(),
                          preferred_operator_evaluators.end(), evaluator) !=
@@ -93,8 +94,8 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 
 void EnforcedHillClimbingSearch::reach_state(
     const State &parent, OperatorID op_id, const State &state) {
-    for (Evaluator *evaluator : path_dependent_evaluators) {
-        evaluator->notify_state_transition(parent, op_id, state);
+    for (Evaluator *e : path_dependent_evaluators) {
+        e->notify_state_transition(parent, op_id, state);
     }
 }
 
@@ -114,10 +115,15 @@ void EnforcedHillClimbingSearch::initialize() {
 
     if (dead_end) {
         utils::g_log << "Initial state is a dead end, no solution" << endl;
-        if (evaluator->dead_ends_are_reliable())
-            utils::exit_with(ExitCode::SEARCH_UNSOLVABLE);
-        else
-            utils::exit_with(ExitCode::SEARCH_UNSOLVED_INCOMPLETE);
+        if (prevent_exit) {
+            throw EngineInitException();
+        } else {
+            if (evaluator->dead_ends_are_reliable()) {
+                utils::exit_with(ExitCode::SEARCH_UNSOLVABLE);
+            } else {
+                utils::exit_with(ExitCode::SEARCH_UNSOLVED_INCOMPLETE);
+            }
+        }
     }
 
     SearchNode node = search_space.get_node(current_eval_context.get_state());
@@ -234,7 +240,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
                 d_pair.first += 1;
                 d_pair.second += statistics.get_expanded() - last_num_expanded;
 
-                current_eval_context = move(eval_context);
+                current_eval_context = std::move(eval_context);
                 open_list->clear();
                 current_phase_start_g = node.get_g();
                 return IN_PROGRESS;
@@ -282,6 +288,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         "preferred",
         "use preferred operators of these evaluators",
         "[]");
+    parser.add_option<bool>(
+        "prevent_exit",
+        "prevent leaving application with utils::exit_with, throw exception instead",
+        "false");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 

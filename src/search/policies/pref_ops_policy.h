@@ -7,7 +7,7 @@
 #include <memory>
 
 namespace successor_generator {
-    class SuccessorGenerator;
+class SuccessorGenerator;
 }
 
 class Evaluator;
@@ -16,7 +16,6 @@ class OperatorProxy;
 class PolicyResult;
 
 namespace policies {
-
 /*
     Policy which uses internally an heuristic which computes
     preferred operators which are then uniformally used as

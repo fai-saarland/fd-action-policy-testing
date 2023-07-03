@@ -15,12 +15,12 @@ public:
         const std::shared_ptr<AbstractTask> &parent,
         const std::vector<int> &&initial_state,
         const std::vector<FactPair> &&goals);
-    virtual ~ModifiedInitGoalsTask() override = default;
+    ~ModifiedInitGoalsTask() override = default;
 
 
-    virtual int get_num_goals() const override;
-    virtual FactPair get_goal_fact(int index) const override;
-    virtual std::vector<int> get_initial_state_values() const override;
+    int get_num_goals() const override;
+    FactPair get_goal_fact(int index) const override;
+    std::vector<int> get_initial_state_values() const override;
 };
 }
 #endif

@@ -12,20 +12,20 @@ const string &TechniqueNoneNone::get_name() const {
 }
 
 TechniqueNoneNone::TechniqueNoneNone(const options::Options &opts)
-        : SamplingTechnique(opts) {}
+    : SamplingTechnique(opts) {}
 
 TechniqueNoneNone::TechniqueNoneNone(int count,
                                      bool check_mutexes, bool check_solvable)
-        : SamplingTechnique(count, check_mutexes, check_solvable) {}
+    : SamplingTechnique(count, check_mutexes, check_solvable) {}
 
 std::shared_ptr<AbstractTask> TechniqueNoneNone::create_next(
-        shared_ptr<AbstractTask> seed_task, const TaskProxy &) {
+    shared_ptr<AbstractTask> seed_task, const TaskProxy &) {
     return seed_task;
 }
 
 
 static shared_ptr<SamplingTechnique> _parse_technique_none_none(
-        options::OptionParser &parser) {
+    options::OptionParser &parser) {
     SamplingTechnique::add_options_to_parser(parser);
     options::Options opts = parser.parse();
 
@@ -37,7 +37,5 @@ static shared_ptr<SamplingTechnique> _parse_technique_none_none(
 }
 
 static Plugin<SamplingTechnique> _plugin_technique_none_none(
-        TechniqueNoneNone::name, _parse_technique_none_none);
-
-
+    TechniqueNoneNone::name, _parse_technique_none_none);
 }

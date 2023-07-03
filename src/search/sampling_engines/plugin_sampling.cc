@@ -18,7 +18,7 @@ static shared_ptr<SearchEngine> _parse_sampling_search(OptionParser &parser) {
     sampling_engine::SamplingSearch::add_sampling_search_options(parser);
     sampling_engine::SamplingEngine::add_sampling_options(parser);
     sampling_engine::SamplingStateEngine::add_sampling_state_options(
-            parser, "fields", "pddl", ";", "\t");
+        parser, "fields", "pddl", ";", "\t");
     SearchEngine::add_options_to_parser(parser);
 
     Options opts = parser.parse();
@@ -41,7 +41,7 @@ static shared_ptr<SearchEngine> _parse_sampling_v(OptionParser &parser) {
     sampling_engine::SamplingV::add_sampling_v_options(parser);
     sampling_engine::SamplingEngine::add_sampling_options(parser);
     sampling_engine::SamplingStateEngine::add_sampling_state_options(
-            parser, "csv", "fdr", ";", ";");
+        parser, "csv", "fdr", ";", ";");
     SearchEngine::add_options_to_parser(parser);
 
 
@@ -66,19 +66,19 @@ static shared_ptr<SearchEngine> _parse_sampling_tasks(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     // Overwrite default values of the following two options
     parser.add_option<int> (
-            "sample_cache_size",
-            "If more than sample_cache_size samples are cached, then the entries "
-            "are written to disk and the cache is emptied. When sampling "
-            "finishes, all remaining cached samples are written to disk. If "
-            "running out of memory, the current cache is lost.",
-            "1");
+        "sample_cache_size",
+        "If more than sample_cache_size samples are cached, then the entries "
+        "are written to disk and the cache is emptied. When sampling "
+        "finishes, all remaining cached samples are written to disk. If "
+        "running out of memory, the current cache is lost.",
+        "1");
     parser.add_option<bool>(
-            "iterate_sample_files",
-            "Every time the cache is emptied, the output file name is the "
-            "specified file name plus an appended increasing index. If not set, "
-            "then every time the cache is full, the samples will be appended to "
-            "the output file.",
-            "true");
+        "iterate_sample_files",
+        "Every time the cache is emptied, the output file name is the "
+        "specified file name plus an appended increasing index. If not set, "
+        "then every time the cache is full, the samples will be appended to "
+        "the output file.",
+        "true");
 
     Options opts = parser.parse();
 
@@ -113,4 +113,3 @@ static Plugin<SearchEngine> _plugin_tasks2("sampling_tasks", _parse_sampling_tas
 
 //static Plugin<SearchEngine> _plugin_overlap("overlap_search", _parse_sampling_overlap);
 }
-

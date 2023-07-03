@@ -91,24 +91,40 @@ public:
       conditional effect.
     */
 
-    const std::vector<int> &get_pre_to_eff(int var) const {
+    [[nodiscard]] const std::vector<int> &get_pre_to_eff(int var) const {
         return pre_to_eff[var];
     }
 
-    const std::vector<int> &get_eff_to_pre(int var) const {
+    [[nodiscard]] const std::vector<int> &get_eff_to_pre(int var) const {
         return eff_to_pre[var];
     }
 
-    const std::vector<int> &get_eff_to_eff(int var) const {
+    [[nodiscard]] const std::vector<int> &get_eff_to_eff(int var) const {
         return eff_to_eff[var];
     }
 
-    const std::vector<int> &get_successors(int var) const {
+    [[nodiscard]] const std::vector<int> &get_successors(int var) const {
         return successors[var];
     }
 
-    const std::vector<int> &get_predecessors(int var) const {
+    [[nodiscard]] const std::vector<int> &get_predecessors(int var) const {
         return predecessors[var];
+    }
+
+    [[nodiscard]] const IntRelation &get_pre_to_eff() const {
+        return pre_to_eff;
+    }
+
+    [[nodiscard]] const IntRelation &get_eff_to_pre() const {
+        return eff_to_pre;
+    }
+
+    [[nodiscard]] const IntRelation &get_successors() const {
+        return successors;
+    }
+
+    [[nodiscard]] const IntRelation &get_predecessors() const {
+        return predecessors;
     }
 };
 

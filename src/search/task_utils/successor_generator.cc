@@ -18,6 +18,12 @@ void SuccessorGenerator::generate_applicable_ops(
     root->generate_applicable_ops(state.get_unpacked_values(), applicable_ops);
 }
 
+std::vector<OperatorID> SuccessorGenerator::generate_applicable_ops(const State &state) const {
+    std::vector<OperatorID> result;
+    generate_applicable_ops(state, result);
+    return result;
+}
+
 PerTaskInformation<SuccessorGenerator> g_successor_generators;
 
 SuccessorGenerator &get_successor_generator(const TaskProxy &task_proxy) {
@@ -25,7 +31,7 @@ SuccessorGenerator &get_successor_generator(const TaskProxy &task_proxy) {
     int peak_memory_before = utils::get_peak_memory_in_kb();
     utils::Timer successor_generator_timer;
     SuccessorGenerator &successor_generator =
-            g_successor_generators[task_proxy];
+        g_successor_generators[task_proxy];
     successor_generator_timer.stop();
     utils::g_log << "done!" << endl;
     int peak_memory_after = utils::get_peak_memory_in_kb();

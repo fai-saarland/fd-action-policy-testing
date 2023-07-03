@@ -39,9 +39,9 @@ static size_t calculate_modification_hash(
 }
 
 string SamplingSearch::construct_meta(
-        size_t modification_hash,
-        const string &sample_type,
-        const string &snd_state) {
+    size_t modification_hash,
+    const string &sample_type,
+    const string &snd_state) {
     return "{" + entry_meta_general + to_string(modification_hash) + "\", "
            "\"sample_type\": \"" + sample_type + "\", "
            "\"fields\": [{\"name\": \"current_state\", \"type\": \"state\", \"format\": \"FD\"}, " +
@@ -70,7 +70,7 @@ void SamplingSearch::add_entry(
             stream << field_separator;
             if (second_state_id != StateID::no_state) {
                 convert_and_push_state(
-                        stream, sr.lookup_state(second_state_id));
+                    stream, sr.lookup_state(second_state_id));
             }
         }
         if (!skip_action_field) {
@@ -97,7 +97,7 @@ void SamplingSearch::add_entry(
         }
 
         if (add_unsolved_samples) {
-            stream  << engine->found_solution() << field_separator;
+            stream << engine->found_solution() << field_separator;
         }
 
         convert_and_push_state(stream, state);
@@ -109,7 +109,7 @@ void SamplingSearch::add_entry(
             stream << field_separator;
             if (second_state_id != StateID::no_state) {
                 convert_and_push_state(
-                        stream, sr.lookup_state(second_state_id));
+                    stream, sr.lookup_state(second_state_id));
             }
         }
         if (!skip_action_field) {
@@ -118,7 +118,6 @@ void SamplingSearch::add_entry(
                 stream << ops[op_id].get_name();
             }
         }
-
     } else {
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
@@ -168,7 +167,7 @@ int SamplingSearch::extract_entries_trajectories(
             // TODO: Goal is to precise, can we make it more exact via Regression?
             ostringstream stream_pddl_goal;
             convert_and_push_state(
-                    stream_pddl_goal, sr.lookup_state(trajectory[idx_goal]));
+                stream_pddl_goal, sr.lookup_state(trajectory[idx_goal]));
             string_pddl_goal = stream_pddl_goal.str();
         }
         int heuristic = 0;
@@ -203,8 +202,8 @@ int SamplingSearch::extract_entries_trajectories(
             }
 
             add_entry(new_entries, (idx_init == 0) ? meta_init : meta_inter,
-                init, string_pddl_goal, next_state_id,
-                op_id, &heuristics, ops, sr);
+                      init, string_pddl_goal, next_state_id,
+                      op_id, &heuristics, ops, sr);
             counter++;
         }
     }
@@ -234,8 +233,8 @@ int SamplingSearch::extract_entries_all_states(
 /* Methods to use in the constructor */
 
 string construct_sample_file_header(
-        const SampleFormat &sample_format,
-        const string &field_separator) {
+    const SampleFormat &sample_format,
+    const string &field_separator) {
     ostringstream header;
     if (sample_format == SampleFormat::FIELDS) {
         header << SAMPLE_FILE_MAGIC_WORD << endl
@@ -265,11 +264,11 @@ string construct_sample_file_header(
 }
 
 string construct_meta_general(
-        const string & field_separator,
-        const string & problem_hash) {
+    const string &field_separator,
+    const string &problem_hash) {
     return string(R"("delimiter": ")") + field_separator + "\", "
-        "\"problem_hash\": \"" + problem_hash + "\", "
-        "\"modification_hash\": \"";
+           "\"problem_hash\": \"" + problem_hash + "\", "
+           "\"modification_hash\": \"";
 }
 
 string construct_meta_heuristics(const vector<string> &use_evaluators) {
@@ -303,15 +302,15 @@ SamplingSearch::SamplingSearch(const options::Options &opts)
       problem_hash(opts.get<string>("hash")),
       network_reload_frequency(opts.get<int>("network_reload_frequency")),
       constructed_sample_file_header(
-              sample_format == SampleFormat::FIELDS ?
-              construct_sample_file_header(sample_format, field_separator) :
-              SamplingStateEngine::sample_file_header()),
+          sample_format == SampleFormat::FIELDS ?
+          construct_sample_file_header(sample_format, field_separator) :
+          SamplingStateEngine::sample_file_header()),
       entry_meta_general(construct_meta_general(
-        field_separator, problem_hash)),
+                             field_separator, problem_hash)),
       entry_meta_heuristics(construct_meta_heuristics(use_evaluators)),
       successfully_solved_history_size(opts.get<int>("upgrade_history_size")),
       successfully_solved_increment_threshold(
-              successfully_solved_history_size * opts.get<double>("upgrade_solved_rate")){
+          successfully_solved_history_size * opts.get<double>("upgrade_solved_rate")) {
     if (sample_format != SampleFormat::FIELDS &&
         sample_format != SampleFormat::CSV) {
         cerr << "Invalid sample format for sampling_search" << endl;
@@ -330,15 +329,15 @@ SamplingSearch::SamplingSearch(const options::Options &opts)
             store_solution_trajectories || store_other_trajectories ||
             store_all_states)) {
         cerr << "Invalid options. 'store_expansions' cannot be used with any"
-                "option that stores more than the initial state of the actual"
-                "sampling search" << endl;
+            "option that stores more than the initial state of the actual"
+            "sampling search" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     if ((store_all_states || store_other_trajectories)
-            && add_unsolved_samples) {
+        && add_unsolved_samples) {
         cerr << "Storing of unsolved (aka timed out samples) not implemented "
-                "for sampling all visited states or states on other "
-                "trajectories." << endl;
+            "for sampling all visited states or states on other "
+            "trajectories." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
@@ -356,7 +355,7 @@ vector<string> SamplingSearch::extract_samples() {
 
     vector<string> new_entries;
 
-    if (store_expansions){
+    if (store_expansions) {
         if (engine->found_solution() || store_expansions_unsolved) {
             ostringstream stream_pddl_goal;
             gps.dump_pddl(stream_pddl_goal, "\t");
@@ -383,10 +382,10 @@ vector<string> SamplingSearch::extract_samples() {
             ss.trace_path(engine->get_goal_state(), trajectory);
 
             extract_entries_trajectories(
-                    new_entries, sr, ops,
-                    construct_meta(mod_hash, "init", "next_state"),
-                    construct_meta(mod_hash, "inter", "next_state"),
-                    engine->get_plan(), trajectory);
+                new_entries, sr, ops,
+                construct_meta(mod_hash, "init", "next_state"),
+                construct_meta(mod_hash, "inter", "next_state"),
+                engine->get_plan(), trajectory);
         } else if (add_unsolved_samples) {
             ostringstream stream_pddl_goal;
             gps.dump_pddl(stream_pddl_goal, "\t");
@@ -401,9 +400,9 @@ vector<string> SamplingSearch::extract_samples() {
 
     if (store_other_trajectories) {
         const string meta_init = construct_meta(
-                mod_hash, "trajectory_init", "next_state");
+            mod_hash, "trajectory_init", "next_state");
         const string meta_inter = construct_meta(
-                mod_hash, "trajectory_inter", "next_state");
+            mod_hash, "trajectory_inter", "next_state");
 
         for (const Path &path : sampling_engine::paths) {
             extract_entries_trajectories(
@@ -415,7 +414,7 @@ vector<string> SamplingSearch::extract_samples() {
 
     if (store_all_states) {
         const string meta_visited = construct_meta(
-             mod_hash, "visited", "previous_state");
+            mod_hash, "visited", "previous_state");
         ostringstream stream_pddl_goal;
         gps.dump_pddl(stream_pddl_goal, "\t");
         const string pddl_goal = stream_pddl_goal.str();
@@ -424,7 +423,7 @@ vector<string> SamplingSearch::extract_samples() {
              ++iter) {
             StateID state = *iter;
             extract_entries_all_states(
-                new_entries, sr, ops, ss, meta_visited,state, pddl_goal);
+                new_entries, sr, ops, ss, meta_visited, state, pddl_goal);
         }
     }
     return new_entries;
@@ -444,7 +443,7 @@ void SamplingSearch::next_engine() {
     ptr_use_evaluators.clear();
     for (const string &name : use_evaluators) {
         ptr_use_evaluators.push_back(
-                predefinitions.get<shared_ptr<Evaluator>>(name));
+            predefinitions.get<shared_ptr<Evaluator>>(name));
     }
 }
 
@@ -478,7 +477,6 @@ void SamplingSearch::post_search(std::vector<std::string> &samples) {
             successfully_solved[(*current_technique)->id] = nb_solved;
         }
     }
-
 }
 
 
@@ -525,16 +523,16 @@ void SamplingSearch::add_sampling_search_options(options::OptionParser &parser) 
 
     // What/How to store
     parser.add_option<bool> (
-            "store_expansions",
-            "instead of storing the plan length, the expanded states of the"
-            "sampling search are stored. This option is mutually exclusive"
-            "with storing anything except the initial state of the sampling search.",
-            "false");
+        "store_expansions",
+        "instead of storing the plan length, the expanded states of the"
+        "sampling search are stored. This option is mutually exclusive"
+        "with storing anything except the initial state of the sampling search.",
+        "false");
     parser.add_option<bool> ("store_expansions_unsolved",
-                              "stores also for the task not solved by the sampling search"
-                              "the expansions (timed out states will have a large expansion"
-                              "counts which informs the network to not choose such states.",
-                              "false");
+                             "stores also for the task not solved by the sampling search"
+                             "the expansions (timed out states will have a large expansion"
+                             "counts which informs the network to not choose such states.",
+                             "false");
     parser.add_option<bool> ("skip_goal_field", "does not store the goal "
                              "field of an entry.", "false");
     parser.add_option<bool> ("skip_second_state_field", "does not store the second state "
@@ -565,18 +563,17 @@ void SamplingSearch::add_sampling_search_options(options::OptionParser &parser) 
         "is not harmful.",
         "0");
     parser.add_option<int>(
-            "upgrade_history_size",
-            "If sufficiently many tasks (this options * upgrade_solved_rate)"
-            " have been solved in the last time,"
-            "then the sampling technique parameters are upgraded.",
-            "1000");
+        "upgrade_history_size",
+        "If sufficiently many tasks (this options * upgrade_solved_rate)"
+        " have been solved in the last time,"
+        "then the sampling technique parameters are upgraded.",
+        "1000");
     parser.add_option<double>(
-            "upgrade_solved_rate",
-            "Fraction of tasks that have to be solve to upgrade the"
-            "sampling technique parameters",
-            "0.95"
-            );
+        "upgrade_solved_rate",
+        "Fraction of tasks that have to be solve to upgrade the"
+        "sampling technique parameters",
+        "0.95"
+        );
     utils::add_rng_options(parser);
-
 }
 }

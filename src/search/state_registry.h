@@ -186,7 +186,7 @@ public:
 
     /*
       Returns the state that was registered at the given ID. The ID must refer
-      to a state in this registry. Do not mix IDs from from different registries.
+      to a state in this registry. Do not mix IDs from different registries.
     */
     State lookup_state(StateID id) const;
 
@@ -197,6 +197,7 @@ public:
     const State &get_initial_state();
 
     State insert_state(std::vector<int> &&state);
+    State insert_state(const std::vector<int> &state);
 
     /*
       Returns the state that results from applying op to predecessor and
@@ -216,8 +217,16 @@ public:
 
     void print_statistics() const;
 
-    class const_iterator : public std::iterator<
-                               std::forward_iterator_tag, StateID> {
+    // Jan: std::iterator deprecated in C++ 17, define traits explicitly
+    // class const_iterator : public std::iterator<std::forward_iterator_tag, StateID> {
+    class const_iterator {
+public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = StateID;
+        using difference_type = std::ptrdiff_t;
+        using pointer = StateID *;
+        using reference = StateID &;
+private:
         /*
           We intentionally omit parts of the forward iterator concept
           (e.g. default construction, copy assignment, post-increment)
@@ -239,12 +248,12 @@ public:
             return *this;
         }
 
-        bool operator==(const const_iterator &rhs) {
+        bool operator==(const const_iterator &rhs) const {
             assert(&registry == &rhs.registry);
             return pos == rhs.pos;
         }
 
-        bool operator!=(const const_iterator &rhs) {
+        bool operator!=(const const_iterator &rhs) const {
             return !(*this == rhs);
         }
 

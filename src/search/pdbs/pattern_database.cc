@@ -88,7 +88,7 @@ PatternDatabase::PatternDatabase(
                                            numeric_limits<int>::max())) {
             num_states *= var.get_domain_size();
         } else {
-            cerr << "Given pattern is too large! (Overflow occured): " << endl;
+            cerr << "Given pattern is too large! (Overflow occurred): " << endl;
             cerr << pattern << endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }

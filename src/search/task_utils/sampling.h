@@ -59,21 +59,22 @@ public:
     */
     State sample_state(
         int init_h,
-        const DeadEndDetector &is_dead_end = [](const State &) {return false;}) const;
+        const DeadEndDetector &is_dead_end = [] (const State &) {return false;
+        }) const;
 
     State sample_state_length(
         const State &init_state,
         int length,
-        const DeadEndDetector &is_dead_end = [](const State &) {return false;},
+        const DeadEndDetector &is_dead_end = [] (const State &) {return false;
+        },
         bool deprioritize_undoing_steps = false,
         const StateBias *bias = nullptr,
-        bool probabilistic_bias=true,
-        double adapt_bias=-1
-        ) const;
+        bool probabilistic_bias = true,
+        double adapt_bias = -1) const;
 };
 
 
-class PartialAssignmentRegistry{
+class PartialAssignmentRegistry {
 protected:
     std::vector<PartialAssignment> id2assignment;
     utils::HashMap<PartialAssignment, size_t> assignment2id;
@@ -82,12 +83,12 @@ public:
     PartialAssignmentRegistry() = default;
     PartialAssignmentRegistry(PartialAssignmentRegistry &&other) = default;
 
-    const PartialAssignment& lookup_by_id(size_t id) const {
+    const PartialAssignment &lookup_by_id(size_t id) const {
         assert(id < id2assignment.size());
         return id2assignment[id];
     }
 
-    size_t lookup_or_insert_by_assignment(PartialAssignment &partial_assignment){
+    size_t lookup_or_insert_by_assignment(PartialAssignment &partial_assignment) {
         auto iter = assignment2id.find(partial_assignment);
         if (iter == assignment2id.end()) {
             assignment2id[partial_assignment] = id2assignment.size();
@@ -127,26 +128,29 @@ public:
     PartialAssignment sample_state(
         int init_h,
         bool deprioritize_undoing_steps = false,
-        const ValidStateDetector &is_valid_state = [](const PartialAssignment &) {return true;},
+        const ValidStateDetector &is_valid_state = [] (const PartialAssignment &) {return true;
+        },
         const PartialAssignmentBias *bias = nullptr,
-        bool probabilistic_bias=true,
-        const PartialDeadEndDetector &is_dead_end = [](const PartialAssignment &) {return false;}) const;
+        bool probabilistic_bias = true,
+        const PartialDeadEndDetector &is_dead_end = [] (const PartialAssignment &) {return false;
+        }) const;
 
     PartialAssignment sample_state_length(
         const PartialAssignment &goals, int length,
         bool deprioritize_undoing_steps = false,
-        const ValidStateDetector &is_valid_state = [](const PartialAssignment &) {return true;},
+        const ValidStateDetector &is_valid_state = [] (const PartialAssignment &) {return true;
+        },
         const PartialAssignmentBias *bias = nullptr,
-        bool probabilistic_bias=true,
-        double adapt_bias=-1,
-        const PartialDeadEndDetector &is_dead_end = [](const PartialAssignment &) {return false;}) const;
+        bool probabilistic_bias = true,
+        double adapt_bias = -1,
+        const PartialDeadEndDetector &is_dead_end = [] (const PartialAssignment &) {return false;
+        }) const;
 
     std::pair<PartialAssignmentRegistry, utils::HashMap<size_t, int>> sample_area(
         const PartialAssignment &initial,
         int max_cost,
         int max_states,
-        bool check_mutexes = true
-        ) const;
+        bool check_mutexes = true) const;
 };
 }
 

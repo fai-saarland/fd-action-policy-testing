@@ -19,7 +19,7 @@ class StateRegistry;
 class Policy {
     /*
         Entries for Policy results including
-        dirty: true if vectors/ values are not set yet 
+        dirty: true if vectors/ values are not set yet
         operator_ids: vector of IDs for operators the policy considers
         operator_preferences: vector of operator preferences (= probabilities) for the same operators
             with index matching the operator IDs of the previous vector

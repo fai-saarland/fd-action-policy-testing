@@ -333,9 +333,9 @@ class RegressionOperatorProxy {
 public:
 
     RegressionOperatorProxy(
-            const AbstractTask &task,
-            const std::shared_ptr<std::vector<RegressionOperator>> &ops,
-            const size_t index)
+        const AbstractTask &task,
+        const std::shared_ptr<std::vector<RegressionOperator>> &ops,
+        const size_t index)
         : task(&task), ops(ops), index(index), is_an_axiom(false) {
     }
     ~RegressionOperatorProxy() = default;
@@ -343,7 +343,7 @@ public:
     bool operator==(const RegressionOperatorProxy &other) const {
         assert(task == other.task);
         return ops.get()[index] == other.ops.get()[index] &&
-                is_an_axiom == other.is_an_axiom;
+               is_an_axiom == other.is_an_axiom;
     }
 
     bool operator!=(const RegressionOperatorProxy &other) const {

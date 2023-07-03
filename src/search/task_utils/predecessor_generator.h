@@ -14,14 +14,13 @@ class PartialAssignment;
 class TaskProxy;
 
 namespace predecessor_generator {
-
 class PredecessorGenerator {
     std::unique_ptr<operator_generator::GeneratorBase> root;
     const RegressionOperatorsProxy ops;
 public:
     explicit PredecessorGenerator(const TaskProxy &task_proxy);
     explicit PredecessorGenerator(
-            const RegressionTaskProxy &regression_task_proxy);
+        const RegressionTaskProxy &regression_task_proxy);
 
     ~PredecessorGenerator();
 

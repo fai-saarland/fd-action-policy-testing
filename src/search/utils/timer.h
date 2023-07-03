@@ -26,7 +26,7 @@ class Timer {
     LARGE_INTEGER start_ticks;
 #endif
 
-    double current_clock() const;
+    [[nodiscard]] double current_clock() const;
 public:
     explicit Timer(bool start = true);
     ~Timer() = default;

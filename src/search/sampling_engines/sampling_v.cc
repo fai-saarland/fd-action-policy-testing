@@ -16,12 +16,11 @@
 using namespace std;
 
 namespace sampling_engine {
-
 StateTree::StateTree(const StateID &state_id, const int parent, const int action_cost, double value)
-: state_id(state_id),
-parent(parent),
-action_cost(action_cost),
-value(value) { }
+    : state_id(state_id),
+      parent(parent),
+      action_cost(action_cost),
+      value(value) { }
 
 
 /* Methods to use in the constructor */
@@ -49,12 +48,11 @@ SamplingV::SamplingV(const options::Options &opts)
       add_goal_to_output(opts.get<bool>("add_goal")),
       qevaluator(nullptr),
       q_task_proxy(nullptr),
-      q_state_registry(nullptr)
+      q_state_registry(nullptr) {
 //      expanded_goals(nullptr),
 //      expand_goals_cost_limit(opts.get<int>("expand_goal")),
 //      expand_goal_state_limit(opts.get<int>("expand_goal_state_limit")),
 //      reload_expanded_goals(opts.get<bool>("reload_expanded_goals"))
-      {
     if (sample_format != SampleFormat::CSV) {
         cerr << "Invalid sample format for q_sampling" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
@@ -114,28 +112,28 @@ void SamplingV::reload_task(shared_ptr<AbstractTask> task) {
 //    }
 }
 
-std::pair<int, std::vector<StateTree> > SamplingV::construct_state_tree(
-    const State& state) {
+std::pair<int, std::vector<StateTree>> SamplingV::construct_state_tree(
+    const State &state) {
     vector<StateTree> states;
     states.emplace_back(state.get_id(), -1, 0, -1.0);
-    
-    successor_generator::SuccessorGenerator &successor_generator = 
+
+    successor_generator::SuccessorGenerator &successor_generator =
         successor_generator::g_successor_generators[*q_task_proxy];
-    
+
     size_t final_layer = 0;
     size_t pre_final_layer = -1;
     size_t i = 0;
     int depth = lookahead - 1;
-    
+
     while (i < states.size() && depth >= 0) {
         if (states[i].value == -1) {
             // add all children
             vector<OperatorID> applicable_ops;
             const State curr_state = q_state_registry->
-                    lookup_state(states[i].state_id);
+                lookup_state(states[i].state_id);
             successor_generator.generate_applicable_ops(
-                    curr_state,
-                    applicable_ops);
+                curr_state,
+                applicable_ops);
             // No child -> add again such that is stays a leave
             if (applicable_ops.empty()) {
                 states.emplace_back(states[i].state_id, i, 0, -1);
@@ -144,12 +142,12 @@ std::pair<int, std::vector<StateTree> > SamplingV::construct_state_tree(
                     OperatorProxy op = q_task_proxy->get_operators()[op_id];
                     const State succ_state =
                         q_state_registry->get_successor_state(
-                                curr_state, op);
+                            curr_state, op);
 
                     states.emplace_back(
                         succ_state.get_id(), i, op.get_cost(), -1);
                     if (task_properties::is_goal_state(
-                        *q_task_proxy, succ_state)) {
+                            *q_task_proxy, succ_state)) {
                         states.back().value = 0.0;
 //                    } else if (expanded_goals != nullptr){
 //                        int c = expanded_goals->lookup_cost(succ_state.unpack());
@@ -157,7 +155,6 @@ std::pair<int, std::vector<StateTree> > SamplingV::construct_state_tree(
 //                            states.back().value = c;
 //                        }
                     }
-
                 }
             }
         }
@@ -170,10 +167,10 @@ std::pair<int, std::vector<StateTree> > SamplingV::construct_state_tree(
         ++i;
     }
     return {pre_final_layer + 1, states};
- }
+}
 
 double SamplingV::evaluate_q_value(
-        const State &state) {
+    const State &state) {
     state.unpack();
     if (task_properties::is_goal_state(*q_task_proxy, state)) {
         return 0.0;
@@ -184,15 +181,15 @@ double SamplingV::evaluate_q_value(
 //            return c;
 //        }
 //    }
-    
-    pair<int, vector<StateTree>> state_tree = 
+
+    pair<int, vector<StateTree>> state_tree =
         construct_state_tree(state);
 
     vector<EvaluationContext> eval_contexts;
-    for (size_t i = state_tree.first; i < state_tree.second.size(); ++i){
+    for (size_t i = state_tree.first; i < state_tree.second.size(); ++i) {
         if (state_tree.second[i].value == -1) {
             eval_contexts.emplace_back(q_state_registry->lookup_state(
-                    state_tree.second[i].state_id));
+                                           state_tree.second[i].state_id));
         }
     }
     vector<EvaluationResult> eval_results =
@@ -201,20 +198,20 @@ double SamplingV::evaluate_q_value(
     for (size_t i = state_tree.first; i < state_tree.second.size(); ++i) {
         if (state_tree.second[i].value == -1) {
             state_tree.second[i].value = eval_results[idx_eval_results++].
-                    get_evaluator_value();
+                get_evaluator_value();
         }
     }
-    assert (idx_eval_results == eval_results.size());
+    assert(idx_eval_results == eval_results.size());
 
     // evaluate all states in final layer
     for (auto node = state_tree.second.rbegin();
-        node != state_tree.second.rend(); ++node ) {
+         node != state_tree.second.rend(); ++node) {
         assert(node->value != -1);
-        
+
         if (node->parent == -1) {
             return node->value;
         }
-        
+
         StateTree &parent = state_tree.second[node->parent];
         if (parent.value == -1) {
             parent.value = node->value + node->action_cost;
@@ -230,7 +227,7 @@ double SamplingV::evaluate_q_value(
 
 
 string SamplingV::convert_output(
-    const State& state,
+    const State &state,
     double q_value) {
     ostringstream sout;
     sout << q_value << field_separator;
@@ -239,25 +236,25 @@ string SamplingV::convert_output(
         sout << field_separator << q_task_goal;
     }
     return sout.str();
- }
+}
 
 
 vector<string> SamplingV::sample(shared_ptr<AbstractTask> task) {
     if (qevaluator == nullptr ||
-        (evaluator_reload_frequency != -1 && 
+        (evaluator_reload_frequency != -1 &&
          evaluator_reload_counter >= evaluator_reload_frequency)) {
         reload_evaluator(task);
         evaluator_reload_counter = 0;
     }
     if (q_task == nullptr ||
-        (task_reload_frequency != -1 && 
+        (task_reload_frequency != -1 &&
          task_reload_counter >= task_reload_frequency)) {
         reload_task(task);
         task_reload_counter = 0;
     }
 
     const State state = q_state_registry->insert_state(
-            task->get_initial_state_values());
+        task->get_initial_state_values());
     evaluator_reload_counter++;
     task_reload_counter++;
 
@@ -272,7 +269,7 @@ void SamplingV::add_sampling_v_options(options::OptionParser &parser) {
         "lookahead",
         "look ahead depth for the v value calculation",
         "1"
-    );
+        );
     parser.add_option<int> (
         "evaluator_reload_frequency",
         "Specify how often the evaluator will be reloaded. -1 = never, "

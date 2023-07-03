@@ -8,7 +8,6 @@ class RegressionTaskProxy;
 using namespace operator_generator;
 
 namespace predecessor_generator {
-
 class PredecessorGeneratorFactory : public OperatorGeneratorFactory {
     const RegressionTaskProxy &regression_task_proxy;
 
@@ -16,9 +15,8 @@ protected:
     virtual VariablesProxy get_variables() const override;
 public:
     explicit PredecessorGeneratorFactory(
-            const RegressionTaskProxy &regression_task_proxy);
+        const RegressionTaskProxy &regression_task_proxy);
     virtual GeneratorPtr create() override;
-
 };
 }
 

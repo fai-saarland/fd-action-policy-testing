@@ -31,6 +31,10 @@ class CountdownTimer;
 enum class Verbosity;
 }
 
+class EngineInitException : public std::exception {
+    // exception to be thrown when engine initialization would otherwise be terminated with utils::exit_with
+};
+
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
@@ -91,6 +95,10 @@ public:
     static void add_pruning_option(options::OptionParser &parser);
     static void add_options_to_parser(options::OptionParser &parser);
     static void add_succ_order_options(options::OptionParser &parser);
+
+    const successor_generator::SuccessorGenerator &get_successor_generator() {
+        return successor_generator;
+    }
 };
 
 /*

@@ -59,7 +59,7 @@ double AbstractNetwork::get_heuristic_confidence() {
     utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
 }
 
-const std::vector<double> & AbstractNetwork::get_heuristic_confidences() {
+const std::vector<double> &AbstractNetwork::get_heuristic_confidences() {
     cerr << "Network does not support confidences for heuristic estimates." << endl
          << "Terminating." << endl;
     utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
@@ -96,8 +96,7 @@ std::vector<float> &AbstractNetwork::get_operator_preferences() {
 }
 
 static PluginTypePlugin<AbstractNetwork> _type_plugin(
-"AbstractNetwork",
+    "AbstractNetwork",
 // TODO: Replace empty string by synopsis for the wiki page.
-"");
-
+    "");
 }

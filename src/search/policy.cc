@@ -18,10 +18,9 @@ Policy::Policy(const Options &opts)
     : policy_cache(PEntry()),
       cache_policy_values(opts.get<bool>("cache_estimates")),
       task(opts.get<shared_ptr<AbstractTask>>("transform")),
-      task_proxy(*task)
+      task_proxy(*task) {
 //      register_name(opts.get<string>("register")),
 //      registered(g_register_policy(this->register_name, this))
-      {
 }
 
 Policy::~Policy() {
@@ -39,15 +38,14 @@ PolicyResult Policy::compute_result(EvaluationContext &eval_context) {
         result.set_operator_preferences(vector<float>(policy_cache[state].operator_preferences));
         result.set_count_evaluation(false);
         return result;
-
     } else {
         PolicyResult result = compute_policy(state);
 
         if (!result.get_preferred_operators().empty() &&
-                result.get_operator_preferences().empty()) {
+            result.get_operator_preferences().empty()) {
             result.set_operator_preferences(vector<float>(
-                    result.get_preferred_operators().size(),
-                    1.0/result.get_preferred_operators().size()));
+                                                result.get_preferred_operators().size(),
+                                                1.0 / result.get_preferred_operators().size()));
         }
         if (cache_policy_values) {
             policy_cache[state] = PEntry(result.get_preferred_operators(),

@@ -9,13 +9,12 @@
 #include "../utils/rng_options.h"
 
 namespace neural_networks {
-
 struct FactMapping {
     int var;
     int value;
     int index;
     FactMapping(int var, int value, int index)
-    : var(var), value(value), index(index) {}
+        : var(var), value(value), index(index) {}
 };
 /*A simple example network. This network takes a trained computation graph and
  loads it. At every state, it feeds the state into the network as sequence of
@@ -66,7 +65,7 @@ protected:
     virtual void initialize_inputs() override;
     virtual void initialize_output_layers() override;
 
-    virtual void fill_input(const State &state, int batch_index=0) override;
+    virtual void fill_input(const State &state, int batch_index = 0) override;
     virtual void extract_output(long count) override;
     virtual void clear_output() override;
 public:

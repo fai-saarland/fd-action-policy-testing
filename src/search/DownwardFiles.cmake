@@ -898,31 +898,97 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME POLICYFUZZING
+    NAME POLICY_TESTING
     HELP "Fuzzing of (NN) policy to find states on which the policy is buggy"
     SOURCES
-        policy_fuzzing/costs
-        policy_fuzzing/planning_abstraction
-        policy_fuzzing/policy_evaluator
-        policy_fuzzing/fuzzers
-        policy_fuzzing/fuzzers/fuzzer
-        policy_fuzzing/modified_task
-        policy_fuzzing/oracles
-        policy_fuzzing/coverage
-        policy_fuzzing/aras_wrapper
-        policy_fuzzing/fuzzer_bugs
-        policy_fuzzing/policy_fuzzing
-        policy_fuzzing/asnets
-        policy_fuzzing/novelty_store
-        policy_fuzzing/pool_fuzzer
-        policy_fuzzing/pool_tester
-        policy_fuzzing/pool_oracle_engine
-        policy_fuzzing/statistics_engine
-        policy_fuzzing/asnet_evaluator
-        policy_fuzzing/spanner_oracle
-        policy_fuzzing/matching_blocks_oracle
-        policy_fuzzing/external_planner_oracle
-    DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON EXTRA_TASKS
+        policy_testing/out_of_resource_exception
+        policy_testing/pool
+        policy_testing/bug_store
+        policy_testing/utils
+        policy_testing/state_regions
+        policy_testing/novelty_store
+        policy_testing/plan_file_parser
+        policy_testing/testing_environment
+        policy_testing/component
+        policy_testing/policy
+        policy_testing/cost_estimator
+        policy_testing/oracle
+        policy_testing/pool_filter
+        policy_testing/fuzzing_bias
+        policy_testing/policies/asnets
+        policy_testing/policies/asnet_policy
+        policy_testing/policies/heuristic_descend_policy
+        policy_testing/policies/hill_climbing_policy
+        policy_testing/oracles/aras_wrapper
+        policy_testing/oracles/aras_oracle
+        policy_testing/oracles/invertible_domain_oracle
+        policy_testing/oracles/bounded_lookahead_oracle
+        policy_testing/oracles/cost_estimator_based_oracle
+        policy_testing/metamorphic_oracles/numeric_dominance_oracle
+        policy_testing/metamorphic_oracles/atomic_unrelaxation_oracle
+        policy_testing/metamorphic_oracles/unrelaxation_oracle
+        policy_testing/metamorphic_oracles/iterative_improvement_oracle
+        policy_testing/metamorphic_oracles/composite_oracle
+        policy_testing/metamorphic_oracles/sequence_oracle
+        policy_testing/cost_estimators/internal_planner_cost_estimator
+        policy_testing/cost_estimators/external_planner_cost_estimator
+        policy_testing/cost_estimators/matching_blocks_cost_estimator
+        policy_testing/cost_estimators/spanner_cost_estimator
+        policy_testing/fuzzing_biases/plan_length_bias
+        policy_testing/fuzzing_biases/heuristic_bias
+        policy_testing/fuzzing_biases/internalPlannerOracle_bias
+        policy_testing/fuzzing_biases/loopiness_bias
+        policy_testing/fuzzing_biases/surface_bias
+        policy_testing/fuzzing_biases/dominance_bias
+        policy_testing/fuzzing_biases/policy_heuristic_bias
+        policy_testing/pool_filters/novelty_filter
+        policy_testing/engines/asnet_benchmarking
+        policy_testing/engines/testing_base_engine
+        policy_testing/engines/pool_policy_tester
+        policy_testing/engines/pool_fuzzer
+        policy_testing/engines/simplified_pool_fuzzer
+        policy_testing/engines/dummy_engine
+        policy_testing/simulations/simulations_manager
+        policy_testing/simulations/merge_and_shrink/abstraction_builder
+        policy_testing/simulations/merge_and_shrink/abstraction
+        policy_testing/simulations/merge_and_shrink/dominance_relation
+        policy_testing/simulations/merge_and_shrink/label
+        policy_testing/simulations/merge_and_shrink/labelled_transition_system
+        policy_testing/simulations/merge_and_shrink/label_reducer
+        policy_testing/simulations/merge_and_shrink/label_relation
+        policy_testing/simulations/merge_and_shrink/label_relation_identity
+        policy_testing/simulations/merge_and_shrink/label_relation_noop
+        policy_testing/simulations/merge_and_shrink/labels
+        policy_testing/simulations/merge_and_shrink/ld_simulation
+        policy_testing/simulations/merge_and_shrink/merge_strategy
+        policy_testing/simulations/merge_and_shrink/opt_order
+        policy_testing/simulations/merge_and_shrink/shrink_bisimulation
+        policy_testing/simulations/merge_and_shrink/shrink_bucket_based
+        policy_testing/simulations/merge_and_shrink/shrink_composite
+        policy_testing/simulations/merge_and_shrink/shrink_fh
+        policy_testing/simulations/merge_and_shrink/shrink_own_labels
+        policy_testing/simulations/merge_and_shrink/shrink_strategy
+        policy_testing/simulations/merge_and_shrink/simulation_relation
+        policy_testing/simulations/merge_and_shrink/simulation_simple
+        policy_testing/simulations/merge_and_shrink/variable_order_finder
+        policy_testing/simulations/merge_and_shrink/variable_partition_finder
+        policy_testing/simulations/merge_and_shrink/alternative_label_relation
+        policy_testing/simulations/merge_and_shrink/merge_linear
+        policy_testing/simulations/merge_and_shrink/merge_criterion
+        policy_testing/simulations/merge_and_shrink/merge_linear_criteria
+        policy_testing/simulations/merge_and_shrink/merge_dfp
+        policy_testing/simulations/numeric_dominance/breadth_first_search
+        policy_testing/simulations/numeric_dominance/dijkstra_search_epsilon
+        policy_testing/simulations/numeric_dominance/int_epsilon
+        policy_testing/simulations/numeric_dominance/numeric_dominance_pruning
+        policy_testing/simulations/numeric_dominance/numeric_dominance_relation
+        policy_testing/simulations/numeric_dominance/numeric_label_relation
+        policy_testing/simulations/numeric_dominance/numeric_simulation_relation
+        policy_testing/simulations/numeric_dominance/tau_labels
+        policy_testing/simulations/utils/equivalence_relation
+        policy_testing/simulations/utils/utilities
+        policy_testing/simulations/utils/scc
+        DEPENDS TASK_PROPERTIES POLICIES SEARCH_COMMON EXTRA_TASKS
 )
 
 fast_downward_add_plugin_sources_and_packages(PLANNER_SOURCES PLANNER_REQ_PACKAGES)

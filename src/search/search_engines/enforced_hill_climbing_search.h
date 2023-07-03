@@ -45,6 +45,8 @@ class EnforcedHillClimbingSearch : public SearchEngine {
     int num_ehc_phases;
     int last_num_expanded;
 
+    const bool prevent_exit;
+
     void insert_successor_into_open_list(
         const EvaluationContext &eval_context,
         int parent_g,

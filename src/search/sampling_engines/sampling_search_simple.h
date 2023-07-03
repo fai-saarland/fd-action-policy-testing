@@ -11,7 +11,6 @@ class Options;
 
 
 namespace sampling_engine {
-
 class SamplingSearchSimple : public SamplingSearchBase {
 protected:
     const bool store_plan_cost;

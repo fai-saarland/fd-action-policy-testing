@@ -6,7 +6,6 @@
 using namespace std;
 
 namespace predecessor_generator {
-
 PredecessorGeneratorFactory::PredecessorGeneratorFactory(
     const RegressionTaskProxy &regression_task_proxy)
     : OperatorGeneratorFactory(), regression_task_proxy(regression_task_proxy) {

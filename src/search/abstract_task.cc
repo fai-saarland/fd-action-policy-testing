@@ -82,8 +82,8 @@ string AbstractTask::get_sas() const {
         std::unordered_map<int, int> pres;
         std::set<int> prevail;
         for (int idx_pre = 0;
-            idx_pre < get_num_operator_preconditions(idx_op, false);
-            ++idx_pre) {
+             idx_pre < get_num_operator_preconditions(idx_op, false);
+             ++idx_pre) {
             FactPair pre = get_operator_precondition(idx_op, idx_pre, false);
             // sas << pre.var << " " << pre.value << endl;
             pres[pre.var] = pre.value;
@@ -91,8 +91,8 @@ string AbstractTask::get_sas() const {
         }
 
         for (int idx_eff = 0;
-            idx_eff < get_num_operator_effects(idx_op, false);
-            ++idx_eff) {
+             idx_eff < get_num_operator_effects(idx_op, false);
+             ++idx_eff) {
             FactPair eff = get_operator_effect(idx_op, idx_eff, false);
             auto it = prevail.find(eff.var);
             if (it != prevail.end()) {
@@ -108,18 +108,18 @@ string AbstractTask::get_sas() const {
         // Operator effects
         sas << get_num_operator_effects(idx_op, false) << endl;
         for (int idx_eff = 0;
-            idx_eff < get_num_operator_effects(idx_op, false);
-            ++idx_eff) {
+             idx_eff < get_num_operator_effects(idx_op, false);
+             ++idx_eff) {
             // Operator effect conditions
             sas << get_num_operator_effect_conditions(idx_op, idx_eff, false);
             sas << " ";
             for (int idx_eff_cnd = 0;
-                idx_eff_cnd < get_num_operator_effect_conditions(
-                idx_op, idx_eff, false);
-                ++idx_eff_cnd){
+                 idx_eff_cnd < get_num_operator_effect_conditions(
+                     idx_op, idx_eff, false);
+                 ++idx_eff_cnd) {
                 FactPair eff_cnd = get_operator_effect_condition(
                     idx_op, idx_eff, idx_eff_cnd, false);
-                sas << " " <<eff_cnd.var << " " << eff_cnd.value;
+                sas << " " << eff_cnd.var << " " << eff_cnd.value;
             }
             // Operator precondition, variable, new value
             FactPair eff = get_operator_effect(idx_op, idx_eff, false);
@@ -141,14 +141,13 @@ string AbstractTask::get_sas() const {
         // Preconditions
         sas << get_num_operator_preconditions(idx_ax, true) << endl;
         for (int idx_pre = 0;
-            idx_pre < get_num_operator_preconditions(idx_ax, true);
-            ++idx_pre) {
+             idx_pre < get_num_operator_preconditions(idx_ax, true);
+             ++idx_pre) {
             FactPair pre = get_operator_precondition(idx_ax, idx_pre, true);
             sas << pre.var << " " << pre.value << endl;
-            
         }
         // Axiom head
-        assert (get_num_operator_effects(idx_ax, true) == 1);
+        assert(get_num_operator_effects(idx_ax, true) == 1);
         FactPair eff = get_operator_effect(idx_ax, 1, true);
         sas << eff.var << " " << -1 << " " << eff.value << endl
             << "end_rule" << endl;

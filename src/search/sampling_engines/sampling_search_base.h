@@ -26,7 +26,6 @@ using ParseTree = tree<ParseNode>;
 
 
 namespace sampling_engine {
-
 class SamplingSearchBase : public SamplingStateEngine {
 protected:
     // Internal
@@ -42,10 +41,10 @@ protected:
     virtual std::vector<std::string> extract_samples() = 0;
 
     virtual std::vector<std::string> sample(
-            std::shared_ptr<AbstractTask> task) override;
+        std::shared_ptr<AbstractTask> task) override;
     virtual void next_engine();
 
-    
+
 
 public:
     explicit SamplingSearchBase(const options::Options &opts);

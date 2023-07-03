@@ -25,7 +25,6 @@ public:
     virtual T next() = 0;
     virtual void dump_parameters(std::ostream &stream) = 0;
     virtual void upgrade_parameters();
-
 };
 
 class DiscreteDistribution : public Distribution<int> {
@@ -44,7 +43,7 @@ class UniformIntDistribution : public DiscreteDistribution {
 
 public:
     UniformIntDistribution(int min, int max,
-            float upgrade_min, float upgrade_max, std::mt19937 rng);
+                           float upgrade_min, float upgrade_max, std::mt19937 rng);
     UniformIntDistribution(const options::Options &opts);
     virtual ~UniformIntDistribution() override;
 

@@ -40,12 +40,12 @@ PolicyResult HeuristicPolicy::compute_policy(const State &state) {
             h_best = h;
             op_best.clear();
         }
-        if (h == h_best){
+        if (h == h_best) {
             op_best.push_back(op_id);
         }
     }
 
-    return PolicyResult(move(op_best), vector<float>(), true);
+    return PolicyResult(std::move(op_best), vector<float>(), true);
 }
 
 bool HeuristicPolicy::dead_ends_are_reliable() const {

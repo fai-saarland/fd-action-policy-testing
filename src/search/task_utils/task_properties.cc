@@ -11,7 +11,6 @@ using utils::ExitCode;
 
 
 namespace task_properties {
-
 vector<FactPair> get_strips_fact_pairs(const AbstractTask *task) {
     std::vector<FactPair> facts;
     for (int var = 0; var < task->get_num_variables(); ++var) {

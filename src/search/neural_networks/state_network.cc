@@ -13,27 +13,25 @@
 using namespace std;
 using namespace tensorflow;
 namespace neural_networks {
-
-
 vector<int> get_domain_sizes(
-        TaskProxy &task_proxy, bool domain_max_is_undefined) {
+    TaskProxy &task_proxy, bool domain_max_is_undefined) {
     vector<int> domain_sizes;
     domain_sizes.reserve(task_proxy.get_variables().size());
     for (const VariableProxy &variable_proxy : task_proxy.get_variables()) {
         domain_sizes.push_back(
-                variable_proxy.get_domain_size() +
-                (domain_max_is_undefined ? -1 : 0));
+            variable_proxy.get_domain_size() +
+            (domain_max_is_undefined ? -1 : 0));
     }
     return domain_sizes;
 }
 
 vector<string> get_atoms(vector<string> atoms) {
-    if (atoms.size() == 1 && atoms[0].rfind("file ", 0) == 0){
+    if (atoms.size() == 1 && atoms[0].rfind("file ", 0) == 0) {
         vector<string> loaded_atoms;
-        ifstream myfile (atoms[0].substr(5));
+        ifstream myfile(atoms[0].substr(5));
         string line;
         if (myfile.is_open()) {
-            while (getline (myfile,line, ';')) {
+            while (getline(myfile, line, ';')) {
                 loaded_atoms.push_back(line);
             }
             myfile.close();
@@ -46,12 +44,12 @@ vector<string> get_atoms(vector<string> atoms) {
 
 
 vector<int> get_defaults(vector<string> defaults) {
-    if (defaults.size() == 1 && defaults[0].rfind("file ", 0) == 0){
+    if (defaults.size() == 1 && defaults[0].rfind("file ", 0) == 0) {
         vector<int> loaded_defaults;
-        ifstream myfile (defaults[0].substr(5));
+        ifstream myfile(defaults[0].substr(5));
         string line;
         if (myfile.is_open()) {
-            while (getline (myfile,line, ';')) {
+            while (getline(myfile, line, ';')) {
                 loaded_defaults.push_back(stoi(line));
             }
             myfile.close();
@@ -68,11 +66,11 @@ vector<int> get_defaults(vector<string> defaults) {
 }
 
 vector<FactMapping> get_fact_mappings(
-        const vector<int> &domain_sizes,
-        const vector<string> &state_atoms,
-        const TaskProxy &task_proxy,
-        bool allow_unused_atoms
-        ) {
+    const vector<int> &domain_sizes,
+    const vector<string> &state_atoms,
+    const TaskProxy &task_proxy,
+    bool allow_unused_atoms
+    ) {
     if (state_atoms.empty()) {
         return {};
     }
@@ -100,13 +98,13 @@ vector<FactMapping> get_fact_mappings(
             auto iter = atom2idx.find(fact_name);
             if (iter != atom2idx.end()) {
                 fact_mappings.push_back(
-                        FactMapping(var, value, iter->second));
+                    FactMapping(var, value, iter->second));
             } else {
                 unused_facts.push_back(fact_name);
             }
         }
     }
-    if (task_proxy.get_operators().size() == 0){
+    if (task_proxy.get_operators().size() == 0) {
         cout << "Task is trivial" << endl;
     } else if (!unused_facts.empty() && !allow_unused_atoms) {
         cerr << "The current tasks has facts that are not used by the network: ";
@@ -115,7 +113,7 @@ vector<FactMapping> get_fact_mappings(
         }
         cerr << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-    } else if (!unused_facts.empty()){
+    } else if (!unused_facts.empty()) {
         cout << "The current tasks has facts that are not used by the network: ";
         for (const string &s: unused_facts) {
             cout << s << ", ";
@@ -136,11 +134,11 @@ StateNetwork::StateNetwork(const Options &opts)
       state_defaults(get_defaults(opts.get_list<string>("defaults"))),
       allow_unused_atoms(opts.get<bool>("allow_unused_atoms")),
       fact_mappings(get_fact_mappings(
-              domain_sizes, state_atoms, task_proxy, allow_unused_atoms)),
+                        domain_sizes, state_atoms, task_proxy, allow_unused_atoms)),
       output_type(get_output_type(opts.get<string>("type"))),
       unary_threshold(opts.get<double>("unary_threshold")),
       bin_size(opts.get<int>("bin_size")),
-      exponentiate_heuristic(opts.get<bool>("exponentiate_heuristic")){
+      exponentiate_heuristic(opts.get<bool>("exponentiate_heuristic")) {
     if (output_type != OutputType::Classification
         && output_type != OutputType::Regression) {
         cerr << "Invalid output type for network: " << output_type << endl;
@@ -149,7 +147,7 @@ StateNetwork::StateNetwork(const Options &opts)
 
     if (state_defaults.size() != state_atoms.size()) {
         cerr << "The number of specified atoms does not agree with the "
-                "number of given default values: " << state_atoms.size()
+            "number of given default values: " << state_atoms.size()
              << ", " << state_defaults.size() << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
@@ -167,17 +165,16 @@ StateNetwork::StateNetwork(const Options &opts)
 
     cout << "Network State Input: ";
     if (state_atoms.empty()) {
-    for (size_t var = 0; var < domain_sizes.size(); var++) {
-        for (int value = 0; value < domain_sizes[var]; value++) {
-            cout << task_proxy.get_task()->get_fact_name(
+        for (size_t var = 0; var < domain_sizes.size(); var++) {
+            for (int value = 0; value < domain_sizes[var]; value++) {
+                cout << task_proxy.get_task()->get_fact_name(
                     FactPair(var, value)) << ", ";
+            }
         }
-    }
     } else {
         if (state_atoms.size() != state_defaults.size()) {
             cerr << "Invalid state_atoms, state_defaults definition. "
                  << "Sizes varys (atoms, defaults)" << endl;
-
         }
         for (unsigned int i = 0; i < state_atoms.size() - 1; ++i) {
             cout << state_atoms[i] << "(" << state_defaults[i] << "), ";
@@ -188,7 +185,6 @@ StateNetwork::StateNetwork(const Options &opts)
 }
 
 StateNetwork::~StateNetwork() {
-
 }
 
 
@@ -283,8 +279,8 @@ void StateNetwork::fill_input(const State &state, int batch_idx) {
 }
 
 static float inline extract_unary_confidence(
-        TTypes<float>::Matrix & tensor_buffer,
-        int batch_idx, int h_value) {
+    TTypes<float>::Matrix &tensor_buffer,
+    int batch_idx, int h_value) {
     assert(h_value < tensor_buffer.dimension(1));
     if (h_value == -1) { // aka DEAD_END
         return 1 - tensor_buffer(batch_idx, h_value + 1);
@@ -304,9 +300,8 @@ void StateNetwork::extract_output(long count) {
     }
     double h = -2;
     for (int batch_idx = 0;
-         batch_idx < min(count, (long) tensor_buffer.dimension(0));
+         batch_idx < min(count, (long)tensor_buffer.dimension(0));
          ++batch_idx) {
-
         if (output_type == OutputType::Regression) {
             h = round(tensor_buffer(batch_idx, 0));
             last_h_confidence = -1;
@@ -333,7 +328,7 @@ void StateNetwork::extract_output(long count) {
                     if (tensor_buffer(batch_idx, i) < unary_threshold) {
                         h = i - 1;
                         last_h_confidence = extract_unary_confidence(
-                                tensor_buffer, batch_idx, last_h);
+                            tensor_buffer, batch_idx, last_h);
                         break;
                     }
                 }
@@ -345,10 +340,10 @@ void StateNetwork::extract_output(long count) {
                 // max confidence choosen
                 int max_h = Heuristic::DEAD_END;
                 float max_confidence = extract_unary_confidence(
-                        tensor_buffer, batch_idx, max_h);
+                    tensor_buffer, batch_idx, max_h);
                 for (int i = 0; i < tensor_buffer.dimension(1); i++) {
                     float new_confidence = extract_unary_confidence(
-                            tensor_buffer, batch_idx, i);
+                        tensor_buffer, batch_idx, i);
                     if (new_confidence > max_confidence) {
                         max_h = i;
                         max_confidence = new_confidence;
@@ -361,7 +356,7 @@ void StateNetwork::extract_output(long count) {
                 float mean_h = 0;
                 for (int i = 0; i < tensor_buffer.dimension(1); i++) {
                     float new_confidence = extract_unary_confidence(
-                            tensor_buffer, batch_idx, i);
+                        tensor_buffer, batch_idx, i);
                     mean_h += new_confidence * i;
                 }
                 h = mean_h;
@@ -372,7 +367,7 @@ void StateNetwork::extract_output(long count) {
                 weights.reserve(tensor_buffer.dimension(1));
                 for (int i = 0; i < tensor_buffer.dimension(1); i++) {
                     float new_confidence = extract_unary_confidence(
-                            tensor_buffer, batch_idx, i);
+                        tensor_buffer, batch_idx, i);
                     weights.push_back(new_confidence);
                     if (weights[i] < 0) {
                         weights[i] = 0;
@@ -409,54 +404,54 @@ void StateNetwork::add_state_network_options_to_parser(options::OptionParser &pa
     parser.add_option<string>("type",
                               "Type of network output (regression or classification)");
     parser.add_option<string>("state_layer", "Name of the input layer in "
-                                             "the computation graph to insert the current state.");
+                              "the computation graph to insert the current state.");
     parser.add_list_option<string>("output_layers", "Name of the output layer "
-                                              "from which to extract the network output.");
+                                   "from which to extract the network output.");
     parser.add_list_option<string>("atoms", "(Optional) Description of the atoms"
-                                            "in the input state of the network. Provide a list of atom names exactly"
-                                            "as they are used by Fast Downward. The order of the list has to fit to"
-                                            "the order the network expects them. Alternatively, write [file filepath]"
-                                            "to load the atoms from filepath. In the file the entries are separated "
-                                            "by ;.", "[]");
+                                   "in the input state of the network. Provide a list of atom names exactly"
+                                   "as they are used by Fast Downward. The order of the list has to fit to"
+                                   "the order the network expects them. Alternatively, write [file filepath]"
+                                   "to load the atoms from filepath. In the file the entries are separated "
+                                   "by ;.", "[]");
     parser.add_list_option<string>("defaults", "(Optional) If not given, then"
-                                            "all state atoms values are defaulted to 0. If given, then this needs to "
-                                            "be of the same size as \"atoms\" or as the number of not atoms"
-                                            " not pruned by Fast Downward (if only this is given and not \"atoms\"."
-                                            " Provide 1 for atoms present by default and 0 for atoms absent. (The "
-                                            "goal atoms default always to 0).Alternatively, write [file filepath]"
-                                            "to load the defaults from filepath. The entries shall be separated by ;",
-                                            "[]");
+                                   "all state atoms values are defaulted to 0. If given, then this needs to "
+                                   "be of the same size as \"atoms\" or as the number of not atoms"
+                                   " not pruned by Fast Downward (if only this is given and not \"atoms\"."
+                                   " Provide 1 for atoms present by default and 0 for atoms absent. (The "
+                                   "goal atoms default always to 0).Alternatively, write [file filepath]"
+                                   "to load the defaults from filepath. The entries shall be separated by ;",
+                                   "[]");
     parser.add_option<bool>("allow_unused_atoms",
-            "If \"atoms\" is used, then more atoms could be defined that are"
-            "not given in the current task. This options forbids this.",
-            "true");
+                            "If \"atoms\" is used, then more atoms could be defined that are"
+                            "not given in the current task. This options forbids this.",
+                            "true");
     parser.add_option<double>(
-            "unary_threshold",
-            "Requires classification network. The network outputs the heuristic "
-            "values in unary encoding. Use this parameter as threshold when a "
-            "predicted digit is still counted as 1. If set to 0, the feature is "
-            "deactivated. If it is set to -1, then it will predict the class"
-            "with the highest confidence (p(class_i) - p(class_{i+1})",
-            "0");
+        "unary_threshold",
+        "Requires classification network. The network outputs the heuristic "
+        "values in unary encoding. Use this parameter as threshold when a "
+        "predicted digit is still counted as 1. If set to 0, the feature is "
+        "deactivated. If it is set to -1, then it will predict the class"
+        "with the highest confidence (p(class_i) - p(class_{i+1})",
+        "0");
     parser.add_option<int>(
-            "bin_size",
-            "Size of the bins in which the heuristic values are sorted",
-            "1");
+        "bin_size",
+        "Size of the bins in which the heuristic values are sorted",
+        "1");
     parser.add_option<bool>(
-            "domain_max_is_undefined",
-            "Specifies whether the final value in each domain represents"
-            "that the variable is not defined. An undefined variable is not fed"
-            "into the NN.",
-            "false"
-            );
+        "domain_max_is_undefined",
+        "Specifies whether the final value in each domain represents"
+        "that the variable is not defined. An undefined variable is not fed"
+        "into the NN.",
+        "false"
+        );
     parser.add_option<bool>(
-            "exponentiate_heuristic",
-            "The float heuristic value predicted by the NN will be"
-            "exponentiated (e ^ prediction) prior to being rounded to an "
-            "integer. Use this, if you transformed the label via ln(label)"
-            "during training",
-            "false"
-    );
+        "exponentiate_heuristic",
+        "The float heuristic value predicted by the NN will be"
+        "exponentiated (e ^ prediction) prior to being rounded to an "
+        "integer. Use this, if you transformed the label via ln(label)"
+        "during training",
+        "false"
+        );
     utils::add_rng_options(parser);
 }
 }
@@ -464,7 +459,7 @@ void StateNetwork::add_state_network_options_to_parser(options::OptionParser &pa
 static shared_ptr<neural_networks::AbstractNetwork> _parse(OptionParser &parser) {
     neural_networks::ProtobufNetwork::add_options_to_parser(parser);
     neural_networks::StateNetwork::add_state_network_options_to_parser(
-            parser);
+        parser);
     Options opts = parser.parse();
 
     shared_ptr<neural_networks::StateNetwork> network;

@@ -14,7 +14,6 @@
 
 using namespace std;
 namespace neural_networks {
-
 TorchStateNetwork::TorchStateNetwork(const Options &opts)
     : TorchNetwork(opts),
       heuristic_shift(opts.get<int>("shift")),
@@ -53,8 +52,8 @@ vector<at::Tensor> TorchStateNetwork::get_input_tensors(const State &state) {
 void TorchStateNetwork::parse_output(const torch::jit::IValue &output) {
     at::Tensor tensor = output.toTensor();
     auto accessor = tensor.accessor<float, 2>();
-    for (int64_t i = 0; i < tensor.size(0); ++i){
-        last_h = (accessor[i][0]+heuristic_shift) * heuristic_multiplier;
+    for (int64_t i = 0; i < tensor.size(0); ++i) {
+        last_h = (accessor[i][0] + heuristic_shift) * heuristic_multiplier;
         last_h_batch.push_back(last_h);
     }
 }
@@ -72,14 +71,14 @@ static shared_ptr<neural_networks::AbstractNetwork> _parse(OptionParser &parser)
         "The output is read as and provided as a heuristic.");
     neural_networks::TorchNetwork::add_options_to_parser(parser);
     parser.add_option<int>(
-            "shift",
-            "shift the predicted heuristic value (useful, if the model"
-            "output is expected to be negative up to a certain bound.", "0");
+        "shift",
+        "shift the predicted heuristic value (useful, if the model"
+        "output is expected to be negative up to a certain bound.", "0");
     parser.add_option<int>(
-            "multiplier",
-            "Multiply the predicted (and shifted) heuristic value (useful, if "
-            "the model predicts small float values, but heuristics have to be "
-            "integers", "1");
+        "multiplier",
+        "Multiply the predicted (and shifted) heuristic value (useful, if "
+        "the model predicts small float values, but heuristics have to be "
+        "integers", "1");
     Options opts = parser.parse();
 
     shared_ptr<neural_networks::TorchStateNetwork> network;

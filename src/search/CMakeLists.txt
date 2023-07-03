@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.20.0)
 # For Windows we require CMake 3.12, but this is currently not
 # available for Ubuntu 18.04.
 
@@ -45,6 +45,12 @@ IF (DEFINED ENV{PATH_TORCH})
     list(APPEND CMAKE_PREFIX_PATH "$ENV{PATH_TORCH}")
 ENDIF()
 
+
+find_package(Boost 1.78 COMPONENTS serialization iostreams REQUIRED)
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+target_link_libraries(downward ${Boost_LIBRARIES})
+
+
 foreach(PACKAGE ${PLANNER_REQ_PACKAGES})
     find_package(${PACKAGE} REQUIRED)
     string(TOUPPER ${PACKAGE} CAPITALIZED_PACKAGE)
@@ -67,6 +73,26 @@ endforeach()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
 
 ## == Libraries ==
+
+# get_filename_component(CUDD_SRC_DIR policy_testing/simulations/cudd-2.5.0-64 ABSOLUTE ${CMAKE_CURRENT_SOURCE_DIR})
+# target_include_directories(downward PUBLIC ${CUDD_SRC_DIR})
+# set(CUDD_ROOT ${CUDD_SRC_DIR}/obj/libobj.a)
+# add_custom_target(cudd ALL
+#         COMMAND make objlib
+#         WORKING_DIRECTORY ${CUDD_SRC_DIR}
+#         COMMENT "Building CUDD library")
+# add_library(cudd_library STATIC IMPORTED GLOBAL)
+# set_target_properties(cudd_library PROPERTIES IMPORTED_LOCATION "${CUDD_ROOT}")
+# add_dependencies(cudd_library cudd)
+# target_link_libraries(downward cudd_library
+#         # ${CUDD_ROOT}
+#         ${CUDD_SRC_DIR}/cudd/libcudd.a
+#         ${CUDD_SRC_DIR}/dddmp/libdddmp.a
+#         ${CUDD_SRC_DIR}/mtr/libmtr.a
+#         ${CUDD_SRC_DIR}/epd/libepd.a
+#         ${CUDD_SRC_DIR}/util/libutil.a
+#         ${CUDD_SRC_DIR}/st/libst.a
+#         )
 
 # On Linux, find the rt library for clock_gettime().
 if(UNIX AND NOT APPLE)

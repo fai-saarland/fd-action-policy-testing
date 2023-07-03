@@ -1,13 +1,9 @@
 #include "relaxation_heuristic.h"
 
 #include "../task_utils/task_properties.h"
-#include "../utils/collections.h"
-#include "../utils/logging.h"
-#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
 #include <unordered_map>
 #include <vector>
 
@@ -88,6 +84,40 @@ RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
             precondition_of_pool.append(precondition_of_vec);
         propositions[prop_id].num_precondition_occurences = precondition_of_vec.size();
     }
+}
+
+int RelaxationHeuristic::compute_path_heuristic(const State &start, const State &target) {
+    //build goal propositions for target
+    for (PropID prop_id : goal_propositions) {
+        propositions[prop_id].is_goal = false;
+    }
+    goal_propositions.resize(0);
+    goal_propositions.reserve(target.size());
+    for (FactProxy factProxy : target) {
+        PropID prop_id = get_prop_id(factProxy);
+        propositions[prop_id].is_goal = true;
+        goal_propositions.push_back(prop_id);
+    }
+
+    int h = compute_heuristic(start);
+
+    // reset goal_propositions to make sure that heuristic can be used in expected way after this method has been called
+    // TODO check if this is really necessary
+
+    for (FactProxy factProxy : target) {
+        PropID prop_id = get_prop_id(factProxy);
+        propositions[prop_id].is_goal = false;
+    }
+    GoalsProxy goals = task_proxy.get_goals();
+    goal_propositions.resize(0);
+    goal_propositions.reserve(goals.size());
+    for (FactProxy goal : goals) {
+        PropID prop_id = get_prop_id(goal);
+        propositions[prop_id].is_goal = true;
+        goal_propositions.push_back(prop_id);
+    }
+
+    return h;
 }
 
 bool RelaxationHeuristic::dead_ends_are_reliable() const {
@@ -206,7 +236,7 @@ void RelaxationHeuristic::simplify() {
         Key key(get_preconditions_vector(op_no), op.effect);
         Value value(op.base_cost, op_no);
         auto inserted = unary_operator_index.insert(
-            make_pair(move(key), value));
+            make_pair(std::move(key), value));
         if (!inserted.second) {
             // We already had an element with this key; check its cost.
             Map::iterator iter = inserted.first;

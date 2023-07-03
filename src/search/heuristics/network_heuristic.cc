@@ -45,7 +45,7 @@ std::pair<int, double> NetworkHeuristic::compute_heuristic_and_confidence(const 
 }
 
 vector<EvaluationResult> NetworkHeuristic::compute_results(
-        vector<EvaluationContext> &eval_contexts) {
+    vector<EvaluationContext> &eval_contexts) {
     vector<EvaluationResult> results;
     results.reserve(eval_contexts.size());
 
@@ -81,14 +81,13 @@ vector<EvaluationResult> NetworkHeuristic::compute_results(
             heuristic = network->get_heuristics()[idx_evaluated_states];
             if (cache_evaluator_values) {
                 heuristic_cache[eval_contexts[idx_ec].get_state()] =
-                        HEntry(heuristic, false);
+                    HEntry(heuristic, false);
             }
 
             if (network->is_preferred() && heuristic != DEAD_END) {
-
                 er.set_preferred_operators(
-                   network->get_preferreds()[idx_evaluated_states].
-                   pop_as_vector());
+                    network->get_preferreds()[idx_evaluated_states].
+                    pop_as_vector());
             }
             er.set_count_evaluation(true);
             idx_evaluated_states++;

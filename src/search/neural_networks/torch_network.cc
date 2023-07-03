@@ -42,7 +42,7 @@ void TorchNetwork::evaluate(const vector<State> &states) {
                 samples.push_back(vector<at::Tensor>(state.size()));
             }
         }
-        for (size_t idx = 0; idx < sample.size(); ++idx){
+        for (size_t idx = 0; idx < sample.size(); ++idx) {
             samples[idx].push_back(sample[idx]);
         }
     }

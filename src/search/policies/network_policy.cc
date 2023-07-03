@@ -49,11 +49,11 @@ bool NetworkPolicy::dead_ends_are_reliable() const {
 static shared_ptr<Policy> _parse(OptionParser &parser) {
     parser.document_synopsis("network policy", "");
     parser.document_property("preferred operators",
-        "yes (representing policy)");
+                             "yes (representing policy)");
 
     Policy::add_options_to_parser(parser);
     parser.add_option<shared_ptr<neural_networks::AbstractNetwork>>("network",
-        "Network for state evaluations.");
+                                                                    "Network for state evaluations.");
     Options opts = parser.parse();
     shared_ptr<Policy> policy;
     if (!parser.dry_run()) {

@@ -8,14 +8,13 @@
 #include <memory>
 
 namespace successor_generator {
-    class SuccessorGenerator;
+class SuccessorGenerator;
 }
 class FactProxy;
 class OperatorProxy;
 class PolicyResult;
 
 namespace policies {
-
 /*
     Policy which uses an heuristic and only follows it by choosing
     the action leading to the most promising state (according to the heuristic)

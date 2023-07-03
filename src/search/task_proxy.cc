@@ -14,12 +14,14 @@ const int PartialAssignment::UNASSIGNED = -1;
 
 PartialAssignment::PartialAssignment(const AbstractTask &task)  : task(&task), values(nullptr) {}
 PartialAssignment::PartialAssignment(const AbstractTask &task, vector<int> &&values)
-        : task(&task), values(make_shared<vector<int>>(move(values))) {
+    : task(&task), values(make_shared<vector<int>>(std::move(values))) {
     assert(static_cast<int>(this->values->size()) == task.get_num_variables());
 }
 
+PartialAssignment::PartialAssignment()  : task(nullptr), values(nullptr) {}
+
 PartialAssignment::PartialAssignment(const PartialAssignment &assignment, vector<int> &&values)
-        : task(assignment.task), values(make_shared<vector<int>>(move(values))) {
+    : task(assignment.task), values(make_shared<vector<int>>(std::move(values))) {
     assert(static_cast<int>(this->values->size()) == task->get_num_variables());
 }
 
@@ -38,13 +40,18 @@ State::State(const AbstractTask &task, const StateRegistry &registry,
              vector<int> &&values)
     : State(task, registry, id, buffer) {
     assert(num_variables == static_cast<int>(values.size()));
-    this->values = make_shared<vector<int>>(move(values));
+    this->values = make_shared<vector<int>>(std::move(values));
 }
 
 State::State(const AbstractTask &task, vector<int> &&values)
-    : PartialAssignment(task, move(values)), registry(nullptr), id(StateID::no_state), buffer(nullptr),
+    : PartialAssignment(task, std::move(values)), registry(nullptr), id(StateID::no_state), buffer(nullptr),
       state_packer(nullptr), num_variables(this->values->size()) {
     assert(num_variables == task.get_num_variables());
+}
+
+State::State()
+    : PartialAssignment(), registry(nullptr), id(StateID::no_state), buffer(nullptr),
+      state_packer(nullptr), num_variables(0) {
 }
 
 State State::get_unregistered_successor(const OperatorProxy &op) const {
@@ -64,7 +71,7 @@ State State::get_unregistered_successor(const OperatorProxy &op) const {
         AxiomEvaluator &axiom_evaluator = g_axiom_evaluators[TaskProxy(*task)];
         axiom_evaluator.evaluate(new_values);
     }
-    return State(*task, move(new_values));
+    return State(*task, std::move(new_values));
 }
 
 
@@ -75,8 +82,8 @@ const causal_graph::CausalGraph &TaskProxy::get_causal_graph() const {
 
 
 bool contains_mutex_with_variable(
-        const AbstractTask *task, size_t var, const vector<int> &values,
-        size_t first_var2_index = 0) {
+    const AbstractTask *task, size_t var, const vector<int> &values,
+    size_t first_var2_index = 0) {
     assert(utils::in_bounds(var, values));
     if (values[var] == PartialAssignment::UNASSIGNED) {
         return false;
@@ -110,8 +117,8 @@ bool contains_mutex(const AbstractTask *task, const vector<int> &values) {
   non-mutex value could be found.
  */
 static bool replace_with_non_mutex_value(
-        const AbstractTask *task, vector<int> &values,
-        const int idx_var, utils::RandomNumberGenerator &rng) {
+    const AbstractTask *task, vector<int> &values,
+    const int idx_var, utils::RandomNumberGenerator &rng) {
     utils::in_bounds(idx_var, values);
     int old_value = values[idx_var];
     vector<int> domain(task->get_variable_domain_size(idx_var));
@@ -130,9 +137,9 @@ static bool replace_with_non_mutex_value(
 
 static const int MAX_TRIES_EXTEND = 10000;
 static bool replace_dont_cares_with_non_mutex_values(
-        const AbstractTask *task, vector<int> &values,
-        utils::RandomNumberGenerator &rng) {
-    assert(values.size() == (size_t) task->get_num_variables());
+    const AbstractTask *task, vector<int> &values,
+    utils::RandomNumberGenerator &rng) {
+    assert(values.size() == (size_t)task->get_num_variables());
     vector<int> vars_order(task->get_num_variables());
     iota(vars_order.begin(), vars_order.end(), 0);
 
@@ -162,18 +169,17 @@ bool PartialAssignment::violates_mutexes() const {
     return contains_mutex(task, get_unpacked_values());
 }
 pair<bool, State> PartialAssignment::get_full_state(
-        bool check_mutexes,
-        utils::RandomNumberGenerator &rng) const {
+    bool check_mutexes,
+    utils::RandomNumberGenerator &rng) const {
     vector<int> new_values = get_unpacked_values();
     bool success = true;
     if (check_mutexes) {
         if (contains_mutex(task, new_values)) {
-            return make_pair(false, State(*task, move(new_values)));
+            return make_pair(false, State(*task, std::move(new_values)));
         } else {
             success = replace_dont_cares_with_non_mutex_values(
-                    task, new_values, rng);
+                task, new_values, rng);
         }
-
     } else {
         for (VariableProxy var : VariablesProxy(*task)) {
             int &value = new_values[var.get_id()];
@@ -183,12 +189,12 @@ pair<bool, State> PartialAssignment::get_full_state(
             }
         }
     }
-    return make_pair(success, State(*task, move(new_values)));
+    return make_pair(success, State(*task, std::move(new_values)));
 }
 
 
 pair<bool, State> TaskProxy::convert_to_full_state(
-        PartialAssignment &assignment,
-        bool check_mutexes, utils::RandomNumberGenerator &rng) const {
+    PartialAssignment &assignment,
+    bool check_mutexes, utils::RandomNumberGenerator &rng) const {
     return assignment.get_full_state(check_mutexes, rng);
 }

@@ -27,10 +27,10 @@ bool Evaluator::dead_ends_are_reliable() const {
 }
 
 vector<EvaluationResult> Evaluator::compute_results(
-    vector<EvaluationContext>& eval_contexts) {
+    vector<EvaluationContext> &eval_contexts) {
     vector<EvaluationResult> eval_results;
     for (vector<EvaluationContext>::iterator ec = eval_contexts.begin();
-        ec != eval_contexts.end(); ++ec) {
+         ec != eval_contexts.end(); ++ec) {
         eval_results.push_back(compute_result(*ec));
     }
     return eval_results;

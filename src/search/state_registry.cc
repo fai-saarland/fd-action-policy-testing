@@ -59,7 +59,7 @@ const State &StateRegistry::get_initial_state() {
     return *cached_initial_state;
 }
 
-State StateRegistry::insert_state(std::vector<int>&& state) {
+State StateRegistry::insert_state(std::vector<int> &&state) {
     int num_bins = get_bins_per_state();
     unique_ptr<PackedStateBin[]> buffer(new PackedStateBin[num_bins]);
     // Avoid garbage values in half-full bins.
@@ -72,7 +72,22 @@ State StateRegistry::insert_state(std::vector<int>&& state) {
     // buffer is copied by push_back
     StateID id = insert_id_or_pop_state();
     return lookup_state(id);
- }
+}
+
+State StateRegistry::insert_state(const std::vector<int> &state) {
+    int num_bins = get_bins_per_state();
+    unique_ptr<PackedStateBin[]> buffer(new PackedStateBin[num_bins]);
+    // Avoid garbage values in half-full bins.
+    fill_n(buffer.get(), num_bins, 0);
+
+    for (size_t i = 0; i < state.size(); ++i) {
+        state_packer.set(buffer.get(), i, state[i]);
+    }
+    state_data_pool.push_back(buffer.get());
+    // buffer is copied by push_back
+    StateID id = insert_id_or_pop_state();
+    return lookup_state(id);
+}
 
 //TODO it would be nice to move the actual state creation (and operator application)
 //     out of the StateRegistry. This could for example be done by global functions
@@ -97,7 +112,7 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
             state_packer.set(buffer, i, new_values[i]);
         }
         StateID id = insert_id_or_pop_state();
-        return task_proxy.create_state(*this, id, buffer, move(new_values));
+        return task_proxy.create_state(*this, id, state_data_pool[id.value], std::move(new_values));
     } else {
         for (EffectProxy effect : op.get_effects()) {
             if (does_fire(effect, predecessor)) {
@@ -106,7 +121,7 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
             }
         }
         StateID id = insert_id_or_pop_state();
-        return task_proxy.create_state(*this, id, buffer);
+        return task_proxy.create_state(*this, id, state_data_pool[id.value]);
     }
 }
 

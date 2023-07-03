@@ -52,9 +52,8 @@ using namespace std;
 */
 
 namespace operator_generator {
-
 OperatorRange::OperatorRange(int begin, int end)
-        : begin(begin), end(end) {}
+    : begin(begin), end(end) {}
 
 bool OperatorRange::empty() const {
     return begin == end;
@@ -66,7 +65,7 @@ int OperatorRange::span() const {
 
 OperatorInfo::OperatorInfo(OperatorID op, std::vector<FactPair> precondition)
     : op(op),
-      precondition(move(precondition)) {
+      precondition(std::move(precondition)) {
 }
 
 bool OperatorInfo::operator<(const OperatorInfo &other) const {
@@ -105,14 +104,14 @@ int OperatorGrouper::get_current_group_key() const {
 }
 
 OperatorGrouper::OperatorGrouper(
-        const std::vector<OperatorInfo> &operator_infos,
-        int depth,
-        GroupOperatorsBy group_by,
-        OperatorRange range)
-        : operator_infos(operator_infos),
-          depth(depth),
-          group_by(group_by),
-          range(range) {
+    const std::vector<OperatorInfo> &operator_infos,
+    int depth,
+    GroupOperatorsBy group_by,
+    OperatorRange range)
+    : operator_infos(operator_infos),
+      depth(depth),
+      group_by(group_by),
+      range(range) {
 }
 
 bool OperatorGrouper::done() const {
@@ -132,22 +131,22 @@ std::pair<int, OperatorRange> OperatorGrouper::next() {
 
 
 GeneratorPtr OperatorGeneratorFactory::construct_fork(
-        vector<GeneratorPtr> nodes) const {
+    vector<GeneratorPtr> nodes) const {
     int size = nodes.size();
     if (size == 1) {
-        return move(nodes.at(0));
+        return std::move(nodes.at(0));
     } else if (size == 2) {
         return utils::make_unique_ptr<GeneratorForkBinary>(
-                move(nodes.at(0)), move(nodes.at(1)));
+            std::move(nodes.at(0)), std::move(nodes.at(1)));
     } else {
         /* This general case includes the case size == 0, which can
            (only) happen for the root for tasks with no operators. */
-        return utils::make_unique_ptr<GeneratorForkMulti>(move(nodes));
+        return utils::make_unique_ptr<GeneratorForkMulti>(std::move(nodes));
     }
 }
 
 GeneratorPtr OperatorGeneratorFactory::construct_leaf(
-        OperatorRange range) const {
+    OperatorRange range) const {
     assert(!range.empty());
     vector<OperatorID> operators;
     operators.reserve(range.span());
@@ -159,12 +158,12 @@ GeneratorPtr OperatorGeneratorFactory::construct_leaf(
     if (operators.size() == 1) {
         return utils::make_unique_ptr<GeneratorLeafSingle>(operators.front());
     } else {
-        return utils::make_unique_ptr<GeneratorLeafVector>(move(operators));
+        return utils::make_unique_ptr<GeneratorLeafVector>(std::move(operators));
     }
 }
 
 GeneratorPtr OperatorGeneratorFactory::construct_switch(
-        int switch_var_id, ValuesAndGenerators values_and_generators) const {
+    int switch_var_id, ValuesAndGenerators values_and_generators) const {
     VariablesProxy variables = get_variables();
     int var_domain = variables[switch_var_id].get_domain_size();
     int num_children = values_and_generators.size();
@@ -173,9 +172,9 @@ GeneratorPtr OperatorGeneratorFactory::construct_switch(
 
     if (num_children == 1) {
         int value = values_and_generators[0].first;
-        GeneratorPtr generator = move(values_and_generators[0].second);
+        GeneratorPtr generator = std::move(values_and_generators[0].second);
         return utils::make_unique_ptr<GeneratorSwitchSingle>(
-                switch_var_id, value, move(generator));
+            switch_var_id, value, std::move(generator));
     }
 
     int vector_bytes = utils::estimate_vector_bytes<GeneratorPtr>(var_domain);
@@ -183,23 +182,23 @@ GeneratorPtr OperatorGeneratorFactory::construct_switch(
     if (hash_bytes < vector_bytes) {
         unordered_map<int, GeneratorPtr> generator_by_value;
         for (auto &item : values_and_generators)
-            generator_by_value[item.first] = move(item.second);
+            generator_by_value[item.first] = std::move(item.second);
         return utils::make_unique_ptr<GeneratorSwitchHash>(
-                switch_var_id, move(generator_by_value));
+            switch_var_id, std::move(generator_by_value));
     } else {
         vector<GeneratorPtr> generator_by_value(var_domain);
         for (auto &item : values_and_generators)
-            generator_by_value[item.first] = move(item.second);
+            generator_by_value[item.first] = std::move(item.second);
         return utils::make_unique_ptr<GeneratorSwitchVector>(
-                switch_var_id, move(generator_by_value));
+            switch_var_id, std::move(generator_by_value));
     }
 }
 
 GeneratorPtr OperatorGeneratorFactory::construct_recursive(
-        int depth, OperatorRange range) const {
+    int depth, OperatorRange range) const {
     vector<GeneratorPtr> nodes;
     OperatorGrouper grouper_by_var(
-            operator_infos, depth, GroupOperatorsBy::VAR, range);
+        operator_infos, depth, GroupOperatorsBy::VAR, range);
     while (!grouper_by_var.done()) {
         auto var_group = grouper_by_var.next();
         int var = var_group.first;
@@ -212,20 +211,20 @@ GeneratorPtr OperatorGeneratorFactory::construct_recursive(
             // Handle a group of operators sharing the first precondition variable.
             ValuesAndGenerators values_and_generators;
             OperatorGrouper grouper_by_value(
-                    operator_infos, depth, GroupOperatorsBy::VALUE, var_range);
+                operator_infos, depth, GroupOperatorsBy::VALUE, var_range);
             while (!grouper_by_value.done()) {
                 auto value_group = grouper_by_value.next();
                 int value = value_group.first;
                 OperatorRange value_range = value_group.second;
 
                 values_and_generators.emplace_back(
-                        value, construct_recursive(depth + 1, value_range));
+                    value, construct_recursive(depth + 1, value_range));
             }
 
             nodes.push_back(construct_switch(
-                    var, move(values_and_generators)));
+                                var, std::move(values_and_generators)));
         }
     }
-    return construct_fork(move(nodes));
+    return construct_fork(std::move(nodes));
 }
 }

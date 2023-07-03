@@ -1,6 +1,7 @@
 **/*.tmp
 .idea/
 *.o
+/**/cmake-build-release
 /**/cmake-build-debug
 /builds/
 /experiments/issue*/.venv/
@@ -9,6 +10,12 @@
 /misc/autodoc/downward-xmlrpc.secret
 /output.sas
 /sas_plan*
+/metamorphic-experiments-copy
+/old_metamorphic_experiments
+/old_bias_experiments
+/resources
 __pycache__/
 pool.txt
 bugs.txt
+/copy_experiments
+/metamorphic-experiments-old

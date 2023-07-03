@@ -42,5 +42,4 @@ bool extra_memory_padding_is_reserved() {
 bool is_out_of_memory() {
     return has_gone_out_of_memory;
 }
-
 }

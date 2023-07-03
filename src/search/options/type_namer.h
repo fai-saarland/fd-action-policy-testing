@@ -46,6 +46,13 @@ struct TypeNamer<int> {
 };
 
 template<>
+struct TypeNamer<unsigned int> {
+    static std::string name(const Registry &) {
+        return "unsigned int";
+    }
+};
+
+template<>
 struct TypeNamer<bool> {
     static std::string name(const Registry &) {
         return "bool";
@@ -56,6 +63,13 @@ template<>
 struct TypeNamer<double> {
     static std::string name(const Registry &) {
         return "double";
+    }
+};
+
+template<>
+struct TypeNamer<long> {
+    static std::string name(const Registry &) {
+        return "long";
     }
 };
 

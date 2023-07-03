@@ -28,7 +28,7 @@ public:
     bool silence = false;
     template<typename T>
     Log &operator<<(const T &elem) {
-        if (silence){
+        if (silence) {
             return *this;
         } else {
             if (!line_has_started) {

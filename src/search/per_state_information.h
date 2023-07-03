@@ -11,6 +11,8 @@
 #include <iostream>
 #include <unordered_map>
 
+using state_vec_t = const std::vector<int>;
+
 /*
   PerStateInformation is used to associate information with states.
   PerStateInformation<Entry> logically behaves somewhat like an unordered map
@@ -104,7 +106,7 @@ public:
     PerStateInformation(const PerStateInformation<Entry> &) = delete;
     PerStateInformation &operator=(const PerStateInformation<Entry> &) = delete;
 
-    virtual ~PerStateInformation() override {
+    ~PerStateInformation() override {
         for (auto it : entries_by_registry) {
             delete it.second;
         }
@@ -149,7 +151,56 @@ public:
         return (*entries)[state_id];
     }
 
-    virtual void notify_service_destroyed(const StateRegistry *registry) override {
+    const Entry &read(const StateRegistry &registry, StateID state) const {
+        const segmented_vector::SegmentedVector<Entry> *entries = get_entries(&registry);
+        if (!entries) {
+            return default_value;
+        }
+        int state_id = state.value;
+        assert(state != StateID::no_state);
+        assert(utils::in_bounds(state_id, registry));
+        int num_entries = entries->size();
+        if (state_id >= num_entries) {
+            return default_value;
+        }
+        return (*entries)[state_id];
+    }
+
+    void write(const StateRegistry &registry, StateID state, const Entry &val) {
+        segmented_vector::SegmentedVector<Entry> *entries = get_entries(&registry);
+        int state_id = state.value;
+        assert(state != StateID::no_state);
+        size_t virtual_size = registry.size();
+        assert(utils::in_bounds(state_id, registry));
+        if (entries->size() < virtual_size) {
+            entries->resize(virtual_size, default_value);
+        }
+        (*entries)[state_id] = val;
+    }
+
+    /**
+     * @brief Compute a vector of all state entry pairs where entry is non default.
+     * @note only considers states associated with the passed state registry
+     */
+    std::vector<std::pair<state_vec_t, Entry>> get_non_default_entries(const StateRegistry &registry) const {
+        std::vector<std::pair<state_vec_t, Entry>> result;
+        const segmented_vector::SegmentedVector<Entry> *entries = get_entries(&registry);
+        if (!entries) {
+            return {};
+        }
+        for (int state_id = 0; state_id < entries->size(); ++state_id) {
+            const Entry &entry = (*entries)[state_id];
+            if (entry == default_value) {
+                continue;
+            }
+            const State &s = registry.lookup_state(StateID(state_id));
+            s.unpack();
+            result.template emplace_back(s.get_unpacked_values(), entry);
+        }
+        return result;
+    }
+
+    void notify_service_destroyed(const StateRegistry *registry) override {
         delete entries_by_registry[registry];
         entries_by_registry.erase(registry);
         if (registry == cached_registry) {

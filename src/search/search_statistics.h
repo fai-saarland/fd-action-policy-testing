@@ -47,7 +47,8 @@ class SearchStatistics {
 
     void print_f_line() const;
 public:
-    explicit SearchStatistics(utils::Verbosity verbosity, int maximum_expansions = std::numeric_limits<int>::infinity());
+    explicit SearchStatistics(utils::Verbosity verbosity,
+                              int maximum_expansions = std::numeric_limits<int>::infinity());
     ~SearchStatistics() = default;
 
     // Methods that update statistics.

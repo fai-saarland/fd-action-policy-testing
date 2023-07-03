@@ -24,18 +24,18 @@ template<typename T>
 void Distribution<T>::upgrade_parameters() {}
 
 UniformIntDistribution::UniformIntDistribution(
-        int min, int max, float upgrade_min, float upgrade_max, std::mt19937 rng)
+    int min, int max, float upgrade_min, float upgrade_max, std::mt19937 rng)
     : DiscreteDistribution(rng),
       min(min),
       max(max),
       upgrade_min(upgrade_min),
       upgrade_max(upgrade_max),
       dist(std::uniform_int_distribution<int>(min, max - 1)) {
-          if (max <= min) {
-              cerr << "Random distribution bounds may not overlap" << endl;
-              utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-          }
-      }
+    if (max <= min) {
+        cerr << "Random distribution bounds may not overlap" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
+}
 
 UniformIntDistribution::UniformIntDistribution(const options::Options &opts)
     : DiscreteDistribution(opts),
@@ -58,7 +58,7 @@ void UniformIntDistribution::dump_parameters(std::ostream &stream) {
 void UniformIntDistribution::upgrade_parameters() {
     min *= upgrade_min;
     max *= upgrade_max;
-    assert (max >= min);
+    assert(max >= min);
     dist = uniform_int_distribution<int>(min, max);
 }
 
@@ -80,13 +80,13 @@ static shared_ptr<DiscreteDistribution> _parse_uniform_int_distribution(
     parser.add_option<int>("max",
                            "Maximum value (excluded) to return from the distribution");
     parser.add_option<double>(
-            "upgrade_min",
-            "constant to multiple min with at each upgrade. Use 0 to disable",
-            "0");
+        "upgrade_min",
+        "constant to multiple min with at each upgrade. Use 0 to disable",
+        "0");
     parser.add_option<double>(
-            "upgrade_max",
-            "constant to multiple max with at each upgrade. Use 0 to disable",
-            "0");
+        "upgrade_max",
+        "constant to multiple max with at each upgrade. Use 0 to disable",
+        "0");
     add_general_parser_options(parser);
 
     options::Options opts = parser.parse();
@@ -102,7 +102,6 @@ static Plugin<DiscreteDistribution> _plugin_uniform_int_distribution(
     "uniform_int_dist", _parse_uniform_int_distribution);
 
 static PluginTypePlugin<DiscreteDistribution> _type_plugin(
-        "DiscreteDistribution",
-        "Kinds of Discrete distributions");
-
+    "DiscreteDistribution",
+    "Kinds of Discrete distributions");
 }

@@ -27,7 +27,7 @@ class OperatorID {
     int index;
 
 public:
-    explicit OperatorID(int index)
+    explicit constexpr OperatorID(int index)
         : index(index) {
     }
 
@@ -47,6 +47,14 @@ public:
 
     int hash() const {
         return index;
+    }
+
+    explicit operator int() const {
+        return index;
+    }
+
+    std::strong_ordering operator<=>(const OperatorID &other) const {
+        return index <=> other.index;
     }
 };
 
