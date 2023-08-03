@@ -12,6 +12,7 @@ _testing = [ "-DDISABLE_PLUGINS_BY_DEFAULT=YES" ] + [ "-DPLUGIN_{0}_ENABLED=YES"
             "LANDMARKS",
             # "MAS_HEURISTIC",
             "ENFORCED_HILL_CLIMBING_SEARCH",
+            "BLIND_SEARCH_HEURISTIC",
             ]]
 
 testing = ["-DCMAKE_BUILD_TYPE=Release"] + _testing

@@ -919,6 +919,7 @@ fast_downward_plugin(
         policy_testing/policies/asnet_policy
         policy_testing/policies/heuristic_descend_policy
         policy_testing/policies/hill_climbing_policy
+        policy_testing/policies/remote_policy
         policy_testing/oracles/aras_wrapper
         policy_testing/oracles/aras_oracle
         policy_testing/oracles/invertible_domain_oracle

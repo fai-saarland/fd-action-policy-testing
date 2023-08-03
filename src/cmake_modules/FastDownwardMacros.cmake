@@ -14,7 +14,7 @@ macro(fast_downward_set_compiler_flags)
         endif()
 
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wnon-virtual-dtor -Wno-sign-compare -Werror")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wnon-virtual-dtor -Wno-sign-compare")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=unused-result")
 
         ## Configuration-specific flags
