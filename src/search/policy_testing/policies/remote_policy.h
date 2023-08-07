@@ -5,6 +5,7 @@
 #include "../utils/exceptions.h"
 #include "../task_proxy.h"
 #include "../pruning_method.h"
+#include "../policy.h"
 
 namespace policy_testing {
 class RemotePolicyError : public utils::Exception {
@@ -15,31 +16,44 @@ public:
     void print() const override;
 };
 
-class RemotePolicy {
-    phrm_policy_t *_policy;
+class RemotePolicy : public Policy {
+    inline static phrm_policy_t *pheromone_policy = nullptr;
 
 public:
-    explicit RemotePolicy(const std::string &url);
-    ~RemotePolicy();
+    explicit RemotePolicy(const options::Options &opts);
+    RemotePolicy() = default;
+    ~RemotePolicy() override;
+    static void add_options_to_parser(options::OptionParser &parser);
+
+    /**
+     * Establishes a connection to the remote server.
+     */
+    static void establish_connection(const std::string &url);
+
+    /**
+     * Establishes a connection to the remote server.
+     */
+    static bool connection_established() {return pheromone_policy;}
 
     /**
      * Returns FDR planning task in the Fast Downward format
      * https://www.fast-downward.org/TranslatorOutputFormat
      */
-    std::string input_fdr();
+
+    static std::string input_fdr();
 
     /**
      * Apply policy on the state and retrieve the selected operator.
      */
-    OperatorID apply_on_state(const State &state);
+    OperatorID apply(const State &state) override;
+    static OperatorID static_apply(const State &state);
 };
 
-/**
- * Global policy created from the main program using the --remote-policy
- * option.
- */
-extern std::shared_ptr<RemotePolicy> g_policy;
 
+/**
+ * Class implementing pruning based on remote policy.
+ * Only works with global policy created from the main program using the --remote-policy option.
+ */
 class RemotePolicyPruning : public PruningMethod {
 public:
     explicit RemotePolicyPruning(options::Options &opts);

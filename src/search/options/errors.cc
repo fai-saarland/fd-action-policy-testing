@@ -1,10 +1,12 @@
 #include "errors.h"
 
+#include <utility>
+
 using namespace std;
 
 namespace options {
-OptionParserError::OptionParserError(const string &msg)
-    : msg(msg) {
+OptionParserError::OptionParserError(string msg)
+    : msg(std::move(msg)) {
 }
 
 void OptionParserError::print() const {
@@ -13,10 +15,10 @@ void OptionParserError::print() const {
 
 
 ParseError::ParseError(
-    const string &msg, const ParseTree &parse_tree, const string &substring)
-    : msg(msg),
+    string msg, const ParseTree &parse_tree, string substring)
+    : msg(std::move(msg)),
       parse_tree(parse_tree),
-      substring(substring) {
+      substring(std::move(substring)) {
 }
 
 void ParseError::print() const {

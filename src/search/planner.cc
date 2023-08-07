@@ -20,16 +20,14 @@ int main(int argc, const char **argv) {
 
     if (argc >= 3 && static_cast<string>(argv[1]) == "--remote-policy") {
         try {
-            policy_testing::g_policy =
-                make_shared<policy_testing::RemotePolicy>(static_cast<string>(argv[2]));
-            utils::g_log << "Connected to remote policy at " << argv[2] << endl;
+            policy_testing::RemotePolicy::establish_connection(static_cast<string>(argv[2]));
         } catch (const policy_testing::RemotePolicyError &err) {
             err.print();
             utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
         }
-
-        for (int i = 3; i < argc; ++i)
+        for (int i = 3; i < argc; ++i) {
             argv[i - 2] = argv[i];
+        }
         argc -= 2;
     }
 
@@ -41,11 +39,11 @@ int main(int argc, const char **argv) {
     bool unit_cost = false;
     if (static_cast<string>(argv[1]) != "--help") {
         utils::g_log << "reading input..." << endl;
-        if (!policy_testing::g_policy) {
+        if (!policy_testing::RemotePolicy::connection_established()) {
             tasks::read_root_task(cin);
         } else {
             try {
-                std::string task = policy_testing::g_policy->input_fdr();
+                std::string task = policy_testing::RemotePolicy::input_fdr();
                 std::istringstream strin(task);
                 tasks::read_root_task(strin);
             } catch (const policy_testing::RemotePolicyError &err) {

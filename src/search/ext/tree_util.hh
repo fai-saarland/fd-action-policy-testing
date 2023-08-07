@@ -51,7 +51,7 @@ void print_tree_bracketed(const tree<T>& t, std::ostream& str)
 	int headNum = 0;
 	for(auto iRoots = t.begin(); iRoots != t.end(); ++iRoots, ++headNum) {
 		print_subtree_bracketed(t,iRoots,str);
-		if (headNum != headCount) {
+		if (headNum != headCount || headNum == 0) {
 			str << std::endl;
 			}
 		}

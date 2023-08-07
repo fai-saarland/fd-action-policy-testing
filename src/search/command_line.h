@@ -15,7 +15,7 @@ class SearchEngine;
 class ArgError : public utils::Exception {
     std::string msg;
 public:
-    explicit ArgError(const std::string &msg);
+    explicit ArgError(std::string msg);
 
     virtual void print() const override;
 };

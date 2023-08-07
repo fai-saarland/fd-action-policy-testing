@@ -63,6 +63,5 @@ ASNetPolicy::apply(const State &state) {
     return result;
 }
 
-static Plugin<Policy>
-_plugin("asnet_policy", options::parse<Policy, ASNetPolicy>);
+static Plugin<Policy> _plugin("asnet_policy", options::parse<Policy, ASNetPolicy>);
 } // namespace policy_testing

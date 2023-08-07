@@ -122,6 +122,7 @@ public:
     }
 
     explicit Policy(const options::Options &opts);
+    Policy();
 
     /**
      * Executes the policy starting from the given state.

@@ -10,12 +10,13 @@
 #include "utils/strings.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 using namespace std;
 
-ArgError::ArgError(const string &msg)
-    : msg(msg) {
+ArgError::ArgError(string msg)
+    : msg(std::move(msg)) {
 }
 
 void ArgError::print() const {
@@ -143,7 +144,7 @@ shared_ptr<SearchEngine> parse_cmd_line(
             active = true;
         } else if (active) {
             // We use the unsanitized arguments because sanitizing is inappropriate for things like filenames.
-            args.push_back(argv[i]);
+            args.emplace_back(argv[i]);
         }
     }
     return parse_cmd_line_aux(args, registry, dry_run);

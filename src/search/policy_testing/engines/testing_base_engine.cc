@@ -8,6 +8,7 @@
 #include "../pool.h"
 #include "../state_regions.h"
 #include "../oracle.h"
+#include "../policies/remote_policy.h"
 
 #include <iomanip>
 #include <iostream>
@@ -28,16 +29,21 @@ PolicyTestingBaseEngine::PolicyTestingBaseEngine(const options::Options &opts)
     if (oracle_ != nullptr && opts.contains("bugs_file")) {
         bugs_store_ = std::make_unique<BugStoreFile>(task, opts.get<std::string>("bugs_file"));
     }
-    if (policy_) {
-        components_.insert(policy_.get());
-    }
 
     if (read_policy_cache_ || just_write_policy_cache_) {
         if (!opts.contains("policy_cache_file")) {
             std::cerr << "You need to provide a policy cache file if you plan to write to or read from it" << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
-        if (!policy_) {
+    }
+
+    if (!policy_ && !read_policy_cache_) {
+        if (RemotePolicy::connection_established()) {
+            utils::g_log <<
+                "No additional policy specification found. Assuming remote_policy with standard configuration." <<
+                std::endl;
+            policy_ = std::make_shared<RemotePolicy>();
+        } else {
             std::cerr << "You need to provide a policy." << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
@@ -46,6 +52,10 @@ PolicyTestingBaseEngine::PolicyTestingBaseEngine(const options::Options &opts)
     if (read_policy_cache_ && just_write_policy_cache_) {
         std::cerr << "You cannot read and write to the policy cache in the same run." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+
+    if (policy_) {
+        components_.insert(policy_.get());
     }
 
     if (oracle_) {
@@ -58,14 +68,11 @@ void
 PolicyTestingBaseEngine::add_options_to_parser(
     options::OptionParser &parser,
     bool testing_arguments_mandatory) {
+    parser.add_option<std::shared_ptr<Policy>>("policy", "", options::OptionParser::NONE);
     if (testing_arguments_mandatory) {
-        parser.add_option<std::shared_ptr<Policy>>("policy");
         parser.add_option<std::shared_ptr<Oracle>>("testing_method");
     } else {
-        parser.add_option<std::shared_ptr<Policy>>(
-            "policy", "", options::OptionParser::NONE);
-        parser.add_option<std::shared_ptr<Oracle>>(
-            "testing_method", "", options::OptionParser::NONE);
+        parser.add_option<std::shared_ptr<Oracle>>("testing_method", "", options::OptionParser::NONE);
     }
     parser.add_option<std::string>(
         "bugs_file", "", options::OptionParser::NONE);

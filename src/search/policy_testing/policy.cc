@@ -24,6 +24,13 @@ Policy::Policy(const options::Options &opts)
       steps_limit(opts.get<unsigned int>("steps_limit")) {
 }
 
+Policy::Policy()
+    : TestingBaseComponent(),
+      operator_cache_(NO_CACHED_OPERATOR),
+      policy_cost_cache_(UNKNOWN),
+      steps_limit(0) {
+}
+
 void
 Policy::store_operator(const State &state, const OperatorID &op_id) {
     // assume deterministic policy:

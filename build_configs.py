@@ -15,7 +15,7 @@ _testing = [ "-DDISABLE_PLUGINS_BY_DEFAULT=YES" ] + [ "-DPLUGIN_{0}_ENABLED=YES"
             "BLIND_SEARCH_HEURISTIC",
             ]]
 
-testing = ["-DCMAKE_BUILD_TYPE=Release"] + _testing
+# testing = ["-DCMAKE_BUILD_TYPE=Release"] + _testing
 release = ["-DCMAKE_BUILD_TYPE=Release"] + _testing
 release_custom_boost = ["-DCMAKE_BUILD_TYPE=Release", "-DBoost_NO_SYSTEM_PATHS=TRUE", "-DBOOST_ROOT=/mnt/data_server/eisenhut/opt"] + _testing
 debug = ["-DCMAKE_BUILD_TYPE=Debug"] + _testing
