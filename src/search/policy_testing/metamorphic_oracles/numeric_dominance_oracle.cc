@@ -270,11 +270,11 @@ NumericDominanceOracle::add_options_to_parser(options::OptionParser &parser) {
     simulations::TauLabelManager<int>::add_options_to_parser(parser);
     parser.add_option<int>("truncate_value", "Assume -infinity if below minus this value", "1000");
     parser.add_option<int>("max_simulation_time",
-                           "Maximum number of seconds spent in computing a single update of a simulation", "3600");
+                           "Maximum number of seconds spent in computing a single update of a simulation", "1800");
     parser.add_option<int>("min_simulation_time",
                            "Minimum number of seconds spent in computing a single update of a simulation", "1");
     parser.add_option<int>("max_total_time",
-                           "Maximum number of seconds spent in computing all updates of a simulation", "14400");
+                           "Maximum number of seconds spent in computing all updates of a simulation", "7200");
     parser.add_option<int>("max_lts_size_to_compute_simulation",
                            "Avoid computing simulation on ltss that have more states than this number",
                            "1000000");
