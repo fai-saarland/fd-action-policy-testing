@@ -39,10 +39,9 @@ PolicyTestingBaseEngine::PolicyTestingBaseEngine(const options::Options &opts)
 
     if (!policy_ && !read_policy_cache_) {
         if (RemotePolicy::connection_established()) {
-            utils::g_log <<
-                "No additional policy specification found. Assuming remote_policy with standard configuration." <<
-                std::endl;
-            policy_ = std::make_shared<RemotePolicy>();
+            utils::g_log << "No additional policy specification found. "
+                "Assuming global remote_policy with standard configuration." << std::endl;
+            policy_ = RemotePolicy::get_global_default_policy();
         } else {
             std::cerr << "You need to provide a policy." << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);

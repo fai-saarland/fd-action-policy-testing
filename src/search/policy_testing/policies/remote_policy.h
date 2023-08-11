@@ -18,10 +18,11 @@ public:
 
 class RemotePolicy : public Policy {
     inline static phrm_policy_t *pheromone_policy = nullptr;
+    inline static std::shared_ptr<RemotePolicy> g_default_policy = nullptr;
 
 public:
-    explicit RemotePolicy(const options::Options &opts);
     RemotePolicy() = default;
+    explicit RemotePolicy(const options::Options &opts);
     ~RemotePolicy() override;
     static void add_options_to_parser(options::OptionParser &parser);
 
@@ -34,6 +35,8 @@ public:
      * Establishes a connection to the remote server.
      */
     static bool connection_established() {return pheromone_policy;}
+
+    static std::shared_ptr<RemotePolicy> get_global_default_policy();
 
     /**
      * Returns FDR planning task in the Fast Downward format

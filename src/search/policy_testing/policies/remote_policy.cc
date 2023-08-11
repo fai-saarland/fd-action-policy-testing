@@ -31,6 +31,15 @@ void RemotePolicy::establish_connection(const std::string &url) {
         throw RemotePolicyError("Cannot connect to " + url);
     }
     utils::g_log << "Connection to " << url << " established" << std::endl;
+    g_default_policy = std::make_shared<RemotePolicy>();
+}
+
+std::shared_ptr<RemotePolicy> RemotePolicy::get_global_default_policy() {
+    if (!pheromone_policy) {
+        throw RemotePolicyError("Global default policy not available, no connection established");
+    }
+    assert(g_default_policy);
+    return g_default_policy;
 }
 
 std::string RemotePolicy::input_fdr() {
