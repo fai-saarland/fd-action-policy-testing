@@ -23,7 +23,7 @@ int main(int argc, const char **argv) {
             policy_testing::RemotePolicy::establish_connection(static_cast<string>(argv[2]));
         } catch (const policy_testing::RemotePolicyError &err) {
             err.print();
-            utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+            utils::exit_with(ExitCode::REMOTE_POLICY_ERROR);
         }
         for (int i = 3; i < argc; ++i) {
             argv[i - 2] = argv[i];
@@ -48,7 +48,7 @@ int main(int argc, const char **argv) {
                 tasks::read_root_task(strin);
             } catch (const policy_testing::RemotePolicyError &err) {
                 err.print();
-                utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+                utils::exit_with(ExitCode::REMOTE_POLICY_ERROR);
             }
         }
         utils::g_log << "done reading input!" << endl;

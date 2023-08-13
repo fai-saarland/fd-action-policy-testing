@@ -108,7 +108,7 @@ void SearchEngine::search() {
     while (status == IN_PROGRESS) {
         try {
             status = step();
-        } catch (MaximumExpansionsError e) {
+        } catch (const MaximumExpansionsError &e) {
             cout << "Maximum number of expansions reached. Abort search."
                  << endl;
             break;

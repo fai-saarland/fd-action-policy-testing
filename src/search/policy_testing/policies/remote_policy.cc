@@ -66,10 +66,14 @@ OperatorID RemotePolicy::static_apply(const State &state_in) {
     const std::vector<int> &state = state_in.get_values();
     int op_id =
         phrmPolicyFDRStateOperator(pheromone_policy, state.data(), state.size());
-    if (op_id < 0) {
+    if (op_id >= 0) {
+        return OperatorID(op_id);
+    } else if (op_id == OperatorID::no_operator_index) {
         return OperatorID::no_operator;
+    } else {
+        std::cerr << "phrmPolicyFDRStateOperator failed" << std::endl;
+        utils::exit_with(utils::ExitCode::REMOTE_POLICY_ERROR);
     }
-    return OperatorID(op_id);
 }
 
 OperatorID RemotePolicy::apply(const State &state_in) {

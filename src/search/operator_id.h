@@ -31,6 +31,7 @@ public:
         : index(index) {
     }
 
+    static constexpr int no_operator_index = -1;
     static const OperatorID no_operator;
 
     int get_index() const {
