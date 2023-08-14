@@ -9,4 +9,4 @@ ostream &operator<<(ostream &os, OperatorID id) {
     return os;
 }
 
-const OperatorID OperatorID::no_operator = OperatorID(-no_operator_index);
+const OperatorID OperatorID::no_operator = OperatorID(no_operator_index);
