@@ -66,15 +66,15 @@ slopeBias::bias(const State &state, unsigned int budget) {
 
             int new_value = 0;
             if ((h_values[i] - h_values[j]) <= 0) {
-                if (INT_MAX / 100 <= path_fragment_cost) {
+                if (std::numeric_limits<int>::max() / 100 <= path_fragment_cost) {
                     new_value = path_fragment_cost * 100;
                 } else {
                     return POSITIVE_INFINITY;
                 }
             } else {
-                float division = (((float) path_fragment_cost) / ((float) (h_values[i] - h_values[j])));
-                if (INT_MAX / 100 <= division) {
-                    new_value = (int) (division * 100);
+                float division = (((float)path_fragment_cost) / ((float)(h_values[i] - h_values[j])));
+                if (std::numeric_limits<int>::max() / 100 <= division) {
+                    new_value = (int)(division * 100);
                 } else {
                     return POSITIVE_INFINITY;
                 }

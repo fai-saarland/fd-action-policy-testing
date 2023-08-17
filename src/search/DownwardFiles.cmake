@@ -942,6 +942,7 @@ fast_downward_plugin(
         policy_testing/fuzzing_biases/surface_bias
         policy_testing/fuzzing_biases/dominance_bias
         policy_testing/fuzzing_biases/policy_heuristic_bias
+        policy_testing/fuzzing_biases/slope_bias
         policy_testing/pool_filters/novelty_filter
         policy_testing/engines/asnet_benchmarking
         policy_testing/engines/testing_base_engine
