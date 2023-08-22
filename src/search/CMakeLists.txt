@@ -46,7 +46,7 @@ IF (DEFINED ENV{PATH_TORCH})
 ENDIF()
 
 
-find_package(Boost 1.78 COMPONENTS serialization iostreams REQUIRED)
+find_package(Boost 1.74 COMPONENTS serialization iostreams REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 target_link_libraries(downward ${Boost_LIBRARIES})
 
