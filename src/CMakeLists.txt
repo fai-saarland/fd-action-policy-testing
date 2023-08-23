@@ -5,7 +5,7 @@
 #         make [-j4]
 # The call to cmake caches settings in the build directory and reads
 # them from the cache on subsequent builds. If you want to change the
-# settings of some options, do _not_ change the CMakeLIsts.txt files.
+# settings of some options, do _not_ change the CMakeLists.txt files.
 # Instead, create a new build directory, pass -DMY_OPTION=my_value to
 # cmake. Alternatively, you can use a cmake GUI like ccmake to edit
 # the cache.
