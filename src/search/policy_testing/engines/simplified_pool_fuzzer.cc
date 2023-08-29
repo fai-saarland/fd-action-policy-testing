@@ -120,7 +120,7 @@ SimplifiedPoolFuzzerEngine::print_status_line() const {
 
 SearchStatus
 SimplifiedPoolFuzzerEngine::step() {
-    utils::reserve_extra_memory_padding(75);
+    utils::reserve_extra_memory_padding(50);
 
     bool state_inserted = false;
     if (step_ == 0 || (!frontier.empty() && step_ < max_steps_ && pool_.size() < max_pool_size_)) {

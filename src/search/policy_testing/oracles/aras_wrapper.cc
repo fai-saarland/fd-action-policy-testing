@@ -46,12 +46,15 @@ ArasWrapper::call_aras(int time_limit) {
     std::string command =
         aras_directory + "/src/preprocess/preprocess < aras_output.sas  >>/dev/null 2>>/dev/null";
     [[maybe_unused]] const int preprocess_ret_code = system(command.c_str());
+    unsigned long aras_mem_limit = std::min<unsigned long>(1000000, utils::get_available_mem_in_kb());
+    // reserve some margin for current process
+    if (aras_mem_limit > 50000) {
+        aras_mem_limit -= 50000;
+    }
     std::string command_downward = aras_directory
         + "/src/search/downward"
-        " --postprocessor \"aras(reg_graph=false, memory_limit=1000000, "
-        "time_limit="
-        + std::to_string(time_limit)
-        + ")\""
+        " --postprocessor \"aras(reg_graph=false, "
+        "memory_limit=" + std::to_string(aras_mem_limit) + ", time_limit=" + std::to_string(time_limit) + ")\""
         " --input-plan-file aras_sas_plan_input"
         " --plan-file aras_sas_plan_output"
         " < output >>/dev/null 2>>/dev/null";

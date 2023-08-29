@@ -136,7 +136,7 @@ PoolFuzzerEngine::step() {
         return FAILED;
     }
 
-    utils::reserve_extra_memory_padding(75);
+    utils::reserve_extra_memory_padding(50);
     try {
         set_max_time(timer->get_remaining_time());
         if (fuzzing_step == 0) {

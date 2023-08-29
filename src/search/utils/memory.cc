@@ -27,8 +27,14 @@ void reserve_extra_memory_padding(int memory_in_mb) {
     has_gone_out_of_memory = false;
 }
 
+void reestablish_extra_memory_padding(int memory_in_mb) {
+    delete[] extra_memory_padding;
+    extra_memory_padding = new char[memory_in_mb * 1024 * 1024];
+    set_new_handler(continuing_out_of_memory_handler);
+    has_gone_out_of_memory = false;
+}
+
 void release_extra_memory_padding() {
-    assert(extra_memory_padding);
     delete[] extra_memory_padding;
     extra_memory_padding = nullptr;
     assert(standard_out_of_memory_handler);

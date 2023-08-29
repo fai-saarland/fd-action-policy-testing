@@ -25,15 +25,16 @@
 #include <csignal>
 #include <cstdio>
 #include <cstring>
-#include <ctype.h>
-#include <errno.h>
+#include <cctype>
+#include <cerrno>
 #include <fcntl.h>
 #include <fstream>
 #include <iostream>
 #include <limits>
 #include <new>
-#include <stdlib.h>
+#include <cstdlib>
 #include <unistd.h>
+#include <sys/resource.h>
 
 #if OPERATING_SYSTEM == OSX
 #include <mach/mach.h>
@@ -219,6 +220,31 @@ int get_peak_memory_in_kb() {
     return memory_in_kb;
 }
 
+unsigned long get_current_memory_in_kb() {
+    unsigned long vsize;
+    std::string ignore;
+    std::ifstream ifs("/proc/self/stat", std::ios_base::in);
+    ifs >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
+    >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
+    >> ignore >> ignore >> vsize;
+    return vsize / 1024;
+}
+
+unsigned long get_mem_limit_in_kb() {
+    rlimit current_limit{};
+    getrlimit(RLIMIT_AS, &current_limit);
+    return current_limit.rlim_cur / 1024;
+}
+
+unsigned long get_available_mem_in_kb() {
+    unsigned long mem_limit = get_mem_limit_in_kb();
+    unsigned long current_mem = get_current_memory_in_kb();
+    if (current_mem >= mem_limit) {
+        return 0;
+    }
+    return mem_limit - current_mem;
+}
+
 void register_event_handlers() {
     // Terminate when running out of memory.
     set_new_handler(out_of_memory_handler);
@@ -242,11 +268,11 @@ void register_event_handlers() {
     // Reset handler to default action after completion.
     default_signal_action.sa_flags = SA_RESETHAND;
 
-    sigaction(SIGABRT, &default_signal_action, 0);
-    sigaction(SIGTERM, &default_signal_action, 0);
-    sigaction(SIGSEGV, &default_signal_action, 0);
-    sigaction(SIGINT, &default_signal_action, 0);
-    sigaction(SIGXCPU, &default_signal_action, 0);
+    sigaction(SIGABRT, &default_signal_action, nullptr);
+    sigaction(SIGTERM, &default_signal_action, nullptr);
+    sigaction(SIGSEGV, &default_signal_action, nullptr);
+    sigaction(SIGINT, &default_signal_action, nullptr);
+    sigaction(SIGXCPU, &default_signal_action, nullptr);
 }
 
 void report_exit_code_reentrant(ExitCode exitcode) {

@@ -86,7 +86,7 @@ PoolPolicyTestingEngine::step() {
         return FAILED;
     }
 
-    utils::reserve_extra_memory_padding(75);
+    utils::reserve_extra_memory_padding(50);
 
     const PoolEntry &entry = pool_[step_];
     step_++;
