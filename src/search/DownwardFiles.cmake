@@ -80,6 +80,9 @@ fast_downward_plugin(
         state_registry
         task_id
         task_proxy
+        policy
+        policy_result
+        policy_cache
 
     DEPENDS CAUSAL_GRAPH INT_HASH_SET INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUBSCRIBER SUCCESSOR_GENERATOR TASK_PROPERTIES
     CORE_PLUGIN
@@ -630,9 +633,6 @@ fast_downward_plugin(
     NAME POLICIES
     HELP "The heuristic preferred operators policy"
     SOURCES
-        policy
-        policy_cache
-        policy_result
         policies/heuristic_policy
         policies/pref_ops_policy
     DEPENDENCY ONLY

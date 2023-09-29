@@ -208,6 +208,7 @@ function(fast_downward_add_plugin_sources_and_packages _SOURCES_LIST_VAR _PACKAG
             source_group(${PLUGIN_${PLUGIN}_DISPLAY_NAME} FILES ${PLUGIN_${PLUGIN}_SOURCES})
             list(APPEND ${_SOURCES_LIST_VAR} "${PLUGIN_${PLUGIN}_SOURCES}")
             list(APPEND _PACKAGES_LIST_VAR ${PLUGIN_${PLUGIN}_PACKAGES})
+            add_compile_definitions(DOWNWARD_PLUGIN_${PLUGIN})
         endif()
     endforeach()
     
