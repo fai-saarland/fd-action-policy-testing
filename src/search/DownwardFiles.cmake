@@ -492,6 +492,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME RANDOM_SEARCH
+    HELP "Search guided by random selection of applicable actions"
+    SOURCES
+        search_engines/random_search
+    DEPENDS SEARCH_COMMON
+)
+
+fast_downward_plugin(
     NAME LP_SOLVER
     HELP "Interface to an LP solver"
     SOURCES

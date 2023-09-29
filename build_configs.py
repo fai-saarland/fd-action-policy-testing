@@ -26,6 +26,12 @@ debug_gcc = ["-DCMAKE_BUILD_TYPE=Debug", "-DCMAKE_CXX_COMPILER=/usr/bin/g++"] + 
 # USE_GLIBCXX_DEBUG is not compatible with USE_LP (see issue983).
 glibcxx_debug = ["-DCMAKE_BUILD_TYPE=Debug", "-DUSE_LP=NO", "-DUSE_GLIBCXX_DEBUG=YES"] + _testing
 minimal = ["-DCMAKE_BUILD_TYPE=Release", "-DDISABLE_PLUGINS_BY_DEFAULT=YES"]
+random_policies = ["-DCMAKE_BUILD_TYPE=Release",
+                   "-DDISABLE_PLUGINS_BY_DEFAULT=YES",
+                   "-DPLUGIN_RANDOM_SEARCH_ENABLED=YES",
+                   "-DPLUGIN_PLUGIN_ASTAR_ENABLED=YES",
+                   "-DPLUGIN_PLUGIN_LAZY_GREEDY_ENABLED=YES",
+                   "-DPLUGIN_BLIND_SEARCH_HEURISTIC_ENABLED=YES"]
 
 DEFAULT = "release"
 DEBUG = "debug"
