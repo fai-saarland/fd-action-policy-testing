@@ -54,11 +54,11 @@ SequenceOracle::test(Policy &, const State &) {
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
-BugValue
+TestResult
 SequenceOracle::test_driver(Policy &policy, const PoolEntry &entry) {
-    BugValue first_bug_value = first_oracle->test_driver(policy, entry);
-    if (first_bug_value > 0) {
-        return first_bug_value;
+    TestResult first_test_result = first_oracle->test_driver(policy, entry);
+    if (first_test_result.bug_value > 0) {
+        return first_test_result;
     }
     return second_oracle->test_driver(policy, entry);
 }

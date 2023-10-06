@@ -52,36 +52,61 @@ Oracle::confirm_bug(const State &state, BugValue bug_value) const {
     }
 }
 
-void Oracle::report_parents_as_bugs(Policy &policy, const State &s, BugValue bug_value) {
-    if (bug_value <= 0) {
+void Oracle::report_parents_as_bugs(Policy &policy, const State &s, TestResult test_result) {
+    if (test_result.bug_value <= 0) {
         return;
     }
-    std::queue<StateID> queue;
-    queue.push(s.get_id());
-    std::unordered_set<int> processed;
-    while (!queue.empty()) {
-        StateID current_state = queue.front();
-        queue.pop();
-        if (!processed.insert(current_state.get_value()).second) {
-            continue;
-        }
-        for (StateID parent : policy.get_policy_parent_states(current_state)) {
-            State parent_state = get_state_registry().lookup_state(parent);
-            const BugValue old_parent_bug_value = engine_->get_stored_bug_value(parent_state);
-            if (bug_value <= old_parent_bug_value) {
+    if (test_result.upper_cost_bound == Policy::UNSOLVED) {
+        // cannot update cost bounds
+        std::queue<StateID> queue;
+        queue.push(s.get_id());
+        std::unordered_set<int> processed;
+        while (!queue.empty()) {
+            StateID current_state = queue.front();
+            queue.pop();
+            if (!processed.insert(current_state.get_value()).second) {
                 continue;
             }
-            engine_->add_additional_bug(parent_state, bug_value);
-            queue.push(parent);
+            for (StateID parent : policy.get_policy_parent_states(current_state)) {
+                State parent_state = get_state_registry().lookup_state(parent);
+                const BugValue old_parent_bug_value = engine_->get_stored_bug_result(parent_state).bug_value;
+                if (test_result.bug_value <= old_parent_bug_value) {
+                    continue;
+                }
+                engine_->add_additional_bug(parent_state, test_result);
+                queue.push(parent);
+            }
+        }
+    } else {
+        // update parent cost bounds
+        std::queue<std::pair<StateID, PolicyCost>> queue; // pairs of state and upper cost bounds
+        queue.emplace(s.get_id(), test_result.upper_cost_bound);
+        std::unordered_set<int> processed;
+        while (!queue.empty()) {
+            auto [current_state, current_cost_bound] = queue.front();
+            queue.pop();
+            if (!processed.insert(current_state.get_value()).second) {
+                continue;
+            }
+            for (StateID parent : policy.get_policy_parent_states(current_state)) {
+                State parent_state = get_state_registry().lookup_state(parent);
+                const BugValue old_parent_bug_value = engine_->get_stored_bug_result(parent_state).bug_value;
+                if (test_result.bug_value <= old_parent_bug_value) {
+                    continue;
+                }
+                PolicyCost parent_cost_bound = current_cost_bound + policy.read_action_cost(parent_state);
+                engine_->add_additional_bug(parent_state, TestResult(test_result.bug_value, parent_cost_bound));
+                queue.emplace(parent, parent_cost_bound);
+            }
         }
     }
 }
 
-BugValue
+TestResult
 Oracle::test_driver(Policy &policy, const PoolEntry &entry) {
     const State &pool_state = entry.state;
     if (engine_->is_known_bug(pool_state) && !enforce_intermediate) {
-        return engine_->get_stored_bug_value(pool_state);
+        return engine_->get_stored_bug_result(pool_state);
     }
     if (consider_intermediate_states || enforce_intermediate) {
         std::vector<State> path = policy.execute_get_path_fragment(pool_state);
@@ -92,27 +117,27 @@ Oracle::test_driver(Policy &policy, const PoolEntry &entry) {
             if (policy.is_goal(intermediate_state) || engine_->is_known_bug(intermediate_state)) {
                 continue;
             }
-            const BugValue intermediate_bug_value = test(policy, intermediate_state).bug_value;
-            if (intermediate_bug_value > 0) {
-                engine_->add_additional_bug(intermediate_state, intermediate_bug_value);
+            const TestResult intermediate_test_result = test(policy, intermediate_state);
+            if (intermediate_test_result.bug_value > 0) {
+                engine_->add_additional_bug(intermediate_state, intermediate_test_result);
                 if (report_parent_bugs) {
-                    report_parents_as_bugs(policy, intermediate_state, intermediate_bug_value);
-                    return intermediate_bug_value;
+                    report_parents_as_bugs(policy, intermediate_state, intermediate_test_result);
+                    return intermediate_test_result;
                 }
             }
         }
 
         if (engine_->is_known_bug(pool_state)) {
-            return engine_->get_stored_bug_value(pool_state);
+            return engine_->get_stored_bug_result(pool_state);
         }
     }
 
     // main test
-    BugValue bug_value = test(policy, pool_state).bug_value;
-    if (bug_value > 0 && report_parent_bugs) {
-        report_parents_as_bugs(policy, pool_state, bug_value);
+    const TestResult test_result = test(policy, pool_state);
+    if (test_result.bug_value > 0 && report_parent_bugs) {
+        report_parents_as_bugs(policy, pool_state, test_result);
     }
-    return bug_value;
+    return test_result;
 }
 
 void

@@ -66,7 +66,7 @@ IterativeImprovementOracle::add_options_to_parser(options::OptionParser &parser)
 BugValue IterativeImprovementOracle::test_impl(Policy &policy, const State &state, bool local_test, bool lookahead) {
     // skip if state is already known to be a bug
     if (!tested_states.insert(state.get_id()).second) {
-        const BugValue stored_bug_value = engine_->get_stored_bug_value(state);
+        const BugValue stored_bug_value = engine_->get_stored_bug_result(state).bug_value;
         if (stored_bug_value > 0) {
             return stored_bug_value;
         }
@@ -146,7 +146,8 @@ BugValue IterativeImprovementOracle::test_impl(Policy &policy, const State &stat
                             (lower_policy_cost_bound_old_state - improved_cost_old_state);
                         assert(engine_);
                         assert(old_state_bug_value > 0);
-                        engine_->add_additional_bug(old_state, old_state_bug_value);
+                        engine_->add_additional_bug(old_state,
+                                                    TestResult(old_state_bug_value, improved_cost_old_state));
 #ifndef NDEBUG
                         if (debug_) {
                             assert(confirm_bug(old_state, old_state_bug_value));
@@ -172,8 +173,7 @@ BugValue IterativeImprovementOracle::test_impl(Policy &policy, const State &stat
     // make sure upper_cost_bounds are again consistent with state sets and update their parent states
     reorder_state_sets_with_parent_updates(policy);
 
-    // potentially conduct lookahead search
-    // lookahead search updates the cost bound on its own
+    // potentially conduct lookahead search, which updates the cost bound on its own
     if (lookahead &&
         ((upper_policy_cost_bound_new_state == improved_cost_new_state && policy_bound_is_exact) ||
          !policy_bound_is_exact)) {
@@ -205,10 +205,10 @@ IterativeImprovementOracle::test(Policy &, const State &) {
 }
 
 
-BugValue
+TestResult
 IterativeImprovementOracle::test_driver(Policy &policy, const PoolEntry &entry) {
     const State &new_state = entry.state;
-    BugValue result = 0;
+    BugValue bug_value = 0;
 
     // execute policy on new_state; needs to be done once -> do not replace with read_lower_policy_cost_bound(new_state)
     const PolicyCost lower_policy_cost_bound = policy.compute_lower_policy_cost_bound(new_state).first;
@@ -218,28 +218,34 @@ IterativeImprovementOracle::test_driver(Policy &policy, const PoolEntry &entry) 
     if (domain_unit_cost_and_invertible) {
         // make sure unsolved states are reported as bugs
         if (lower_policy_cost_bound == Policy::UNSOLVED) {
-            result = UNSOLVED_BUG_VALUE;
-            report_parents_as_bugs(policy, new_state, UNSOLVED_BUG_VALUE);
+            bug_value = UNSOLVED_BUG_VALUE;
         }
         // attempt to get cost bound
-        if (entry.ref_state == StateID::no_state)
+        if (entry.ref_state == StateID::no_state) {
             goto main_test;
+        }
         const State &ref_state = get_state_registry().lookup_state(entry.ref_state);
         const PolicyCost ref_cost_bound =
             Policy::min_cost(upper_cost_bounds[ref_state], policy.read_upper_policy_cost_bound(ref_state).first);
-        if (ref_cost_bound == Policy::UNSOLVED)
+        if (ref_cost_bound == Policy::UNSOLVED) {
+            if (bug_value > 0) {
+                report_parents_as_bugs(policy, new_state, TestResult(bug_value));
+            }
             goto main_test;
+        }
         preprocessing_cost_bound = ref_cost_bound + entry.steps;
         // report solved states as bugs if possible
         assert(preprocessing_cost_bound != Policy::UNSOLVED);
         if (lower_policy_cost_bound != Policy::UNSOLVED && preprocessing_cost_bound < lower_policy_cost_bound) {
-            result = lower_policy_cost_bound - preprocessing_cost_bound;
-            report_parents_as_bugs(policy, new_state, result);
+            bug_value = lower_policy_cost_bound - preprocessing_cost_bound;
+        }
+        if (bug_value > 0) {
+            report_parents_as_bugs(policy, new_state, TestResult(bug_value, preprocessing_cost_bound));
         }
     }
 
  main_test:
-    if (consider_intermediate_states && result <= 0) {
+    if (consider_intermediate_states && bug_value <= 0) {
         std::vector<State> path = policy.execute_get_path_fragment(new_state);
         assert(!path.empty());
         // call test for intermediate states (in reverse order)
@@ -247,21 +253,22 @@ IterativeImprovementOracle::test_driver(Policy &policy, const PoolEntry &entry) 
             const State &intermediate_state = *it;
             const BugValue intermediate_bug_value = test_impl(policy, intermediate_state, false, false);
             if (intermediate_bug_value > 0) {
-                engine_->add_additional_bug(intermediate_state, intermediate_bug_value);
+                engine_->add_additional_bug(intermediate_state,
+                                            TestResult(intermediate_bug_value, upper_cost_bounds[intermediate_state]));
             }
             update_parent_cost(policy, intermediate_state);
             reorder_state_sets();
         }
     }
-    result = std::max(result, test_impl(policy, new_state, true, conduct_lookahead_search && result <= 0));
-    if (result > 0 && update_parents) {
+    bug_value = std::max(bug_value, test_impl(policy, new_state, true, conduct_lookahead_search && bug_value <= 0));
+    if (bug_value > 0 && update_parents) {
         update_parent_cost(policy, new_state);
         reorder_state_sets();
     }
-    if (result > 0 && preprocessing_cost_bound != Policy::UNSOLVED) {
+    if (bug_value > 0 && preprocessing_cost_bound != Policy::UNSOLVED) {
         add_external_cost_bound(policy, new_state, preprocessing_cost_bound);
     }
-    return result;
+    return TestResult(bug_value, upper_cost_bounds[new_state]);
 }
 
 void
@@ -342,7 +349,7 @@ void IterativeImprovementOracle::update_parent_cost(Policy &policy, const State 
                     (lower_policy_cost_bound_parent - new_parent_bound);
                 assert(parent_bug_value > 0);
                 assert(engine_);
-                engine_->add_additional_bug(parent_state, parent_bug_value);
+                engine_->add_additional_bug(parent_state, TestResult(parent_bug_value, new_parent_bound));
 #ifndef NDEBUG
                 if (debug_) {
                     assert(confirm_bug(parent_state, parent_bug_value));
@@ -415,7 +422,7 @@ PolicyCost IterativeImprovementOracle::infer_upper_bound(Policy &policy, const S
                     (lower_policy_bound_new_state - new_cost_bound);
                 assert(bug_value > 0);
                 assert(engine_);
-                engine_->add_additional_bug(new_state, bug_value);
+                engine_->add_additional_bug(new_state, TestResult(bug_value, new_cost_bound));
 #ifndef NDEBUG
                 if (debug_) {
                     assert(confirm_bug(new_state, bug_value));
@@ -483,7 +490,7 @@ void IterativeImprovementOracle::add_external_cost_bound(
                         (lower_policy_cost_bound - improved_cost_old_state);
                     assert(engine_);
                     assert(old_state_bug_value > 0);
-                    engine_->add_additional_bug(old_state, old_state_bug_value);
+                    engine_->add_additional_bug(old_state, TestResult(old_state_bug_value, improved_cost_old_state));
 #ifndef NDEBUG
                     if (debug_) {
                         assert(confirm_bug(old_state, old_state_bug_value));

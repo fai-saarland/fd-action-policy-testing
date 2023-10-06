@@ -15,6 +15,6 @@ public:
     explicit InvertibleDomainOracle(const options::Options &opts);
     static void add_options_to_parser(options::OptionParser &parser);
 
-    BugValue test_driver(Policy &policy, const PoolEntry &pool_entry) override;
+    TestResult test_driver(Policy &policy, const PoolEntry &pool_entry) override;
 };
 } // namespace policy_testing

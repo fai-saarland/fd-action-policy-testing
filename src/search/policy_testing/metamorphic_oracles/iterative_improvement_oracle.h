@@ -245,7 +245,7 @@ public:
 
     static void add_options_to_parser(options::OptionParser &parser);
 
-    BugValue test_driver(Policy &policy, const PoolEntry &pool_entry) override;
+    TestResult test_driver(Policy &policy, const PoolEntry &pool_entry) override;
 
     void add_external_cost_bound(Policy &policy, const State &s, PolicyCost cost_bound) override;
 };

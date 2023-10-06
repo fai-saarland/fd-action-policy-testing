@@ -30,6 +30,6 @@ public:
 
     static void add_options_to_parser(options::OptionParser &parser);
 
-    BugValue test_driver(Policy &policy, const PoolEntry &entry) override;
+    TestResult test_driver(Policy &policy, const PoolEntry &entry) override;
 };
 } // namespace policy_testing

@@ -97,7 +97,7 @@ CompositeOracle::test(Policy &, const State &) {
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
-BugValue
+TestResult
 CompositeOracle::test_driver(Policy &policy, const PoolEntry &entry) {
     const State &state = entry.state;
     const PolicyCost upper_policy_cost_bound = policy.compute_upper_policy_cost_bound(state).first;
@@ -105,12 +105,12 @@ CompositeOracle::test_driver(Policy &policy, const PoolEntry &entry) {
         ((quant_oracle && quant_oracle->consider_intermediate_states) ||
          (qual_oracle && qual_oracle->consider_intermediate_states))) {
         // first run metamorphic oracle
-        BugValue metamorphic_bug_value = metamorphic_oracle->test_driver(policy, entry);
-        if (metamorphic_bug_value > 0 && !enforce_external) {
-            return metamorphic_bug_value;
+        TestResult metamorphic_test_result = metamorphic_oracle->test_driver(policy, entry);
+        if (metamorphic_test_result.bug_value > 0 && !enforce_external) {
+            return metamorphic_test_result;
         }
         if (engine_->is_known_bug(state) && !enforce_external) {
-            return engine_->get_stored_bug_value(state);
+            return engine_->get_stored_bug_result(state);
         }
         // run other oracle
         TestResult result;
@@ -125,10 +125,10 @@ CompositeOracle::test_driver(Policy &policy, const PoolEntry &entry) {
                         }
                         const TestResult intermediate_test = quant_oracle->test(policy, intermediate_state);
                         if (intermediate_test.bug_value > 0) {
-                            engine_->add_additional_bug(intermediate_state, intermediate_test.bug_value);
+                            engine_->add_additional_bug(intermediate_state, intermediate_test);
                             metamorphic_oracle->add_external_cost_bound(policy, intermediate_state,
                                                                         intermediate_test.upper_cost_bound);
-                            return std::max(intermediate_test.bug_value, metamorphic_bug_value);
+                            return best_of(intermediate_test, metamorphic_test_result);
                         }
                     }
                 } else {
@@ -147,10 +147,10 @@ CompositeOracle::test_driver(Policy &policy, const PoolEntry &entry) {
                         }
                         const TestResult intermediate_test = qual_oracle->test(policy, intermediate_state);
                         if (intermediate_test.bug_value > 0) {
-                            engine_->add_additional_bug(intermediate_state, intermediate_test.bug_value);
+                            engine_->add_additional_bug(intermediate_state, intermediate_test);
                             metamorphic_oracle->add_external_cost_bound(policy, intermediate_state,
                                                                         intermediate_test.upper_cost_bound);
-                            return std::max(intermediate_test.bug_value, metamorphic_bug_value);
+                            return best_of(intermediate_test, metamorphic_test_result);
                         }
                     }
                 } else {
@@ -159,21 +159,21 @@ CompositeOracle::test_driver(Policy &policy, const PoolEntry &entry) {
             }
         }
         if (result.bug_value <= 0) {
-            // other oracle could not confirm bug, return bug value found by metamorphic oracle
-            return metamorphic_bug_value;
+            // other oracle could not confirm bug, return test result of metamorphic oracle
+            return metamorphic_test_result;
         }
         // further oracle could confirm bug, make use of improved upper bound in iterative improvement oracle
         metamorphic_oracle->add_external_cost_bound(policy, state, result.upper_cost_bound);
-        return std::max(result.bug_value, metamorphic_bug_value);
+        return best_of(result, metamorphic_test_result);
     } else {
         if (metamorphic_oracle) {
             // first run metamorphic oracle
-            BugValue metamorphic_bug_value = metamorphic_oracle->test_driver(policy, entry);
-            if (metamorphic_bug_value > 0) {
-                return metamorphic_bug_value;
+            TestResult metamorphic_test_result = metamorphic_oracle->test_driver(policy, entry);
+            if (metamorphic_test_result.bug_value > 0) {
+                return metamorphic_test_result;
             }
             if (engine_->is_known_bug(state)) {
-                return engine_->get_stored_bug_value(state);
+                return engine_->get_stored_bug_result(state);
             }
             // metamorphic oracle could not confirm bug, run other oracle
             TestResult result;
@@ -188,11 +188,11 @@ CompositeOracle::test_driver(Policy &policy, const PoolEntry &entry) {
             }
             if (result.bug_value <= 0) {
                 // test could not prove bug
-                return 0;
+                return {};
             }
             // further oracle could confirm bug, make use of improved upper bound in iterative improvement oracle
             metamorphic_oracle->add_external_cost_bound(policy, state, result.upper_cost_bound);
-            return result.bug_value;
+            return result;
         } else {
             if (upper_policy_cost_bound != Policy::UNSOLVED) {
                 if (quant_oracle) {
@@ -203,7 +203,7 @@ CompositeOracle::test_driver(Policy &policy, const PoolEntry &entry) {
                     return qual_oracle->test_driver(policy, entry);
                 }
             }
-            return 0;
+            return {};
         }
     }
 }

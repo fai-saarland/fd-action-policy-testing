@@ -79,7 +79,7 @@ SimplifiedPoolFuzzerEngine::print_statistics() const {
         auto it = bugs_.find(pool_state);
         if (it != bugs_.end()) {
             pool_bugs.insert(pool_state);
-            if (it->second == UNSOLVED_BUG_VALUE) {
+            if (it->second.bug_value == UNSOLVED_BUG_VALUE) {
                 qualitative_pool_bugs.insert(pool_state);
             }
         }

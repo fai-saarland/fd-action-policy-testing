@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bug_store.h"
+#include "bug_value.h"
 #include "component.h"
 #include "policy.h"
 #include "pool.h"
@@ -25,7 +25,17 @@ struct TestResult {
     explicit TestResult(BugValue bug_value) : bug_value(bug_value), upper_cost_bound(Policy::UNSOLVED) {}
 
     TestResult() : bug_value(0), upper_cost_bound(Policy::UNSOLVED) {}
+
+    [[nodiscard]] std::string to_string() const {
+        return "result\n" + std::to_string((bug_value < UNSOLVED_BUG_VALUE ? bug_value : -1)) + "\n" + std::to_string(
+            upper_cost_bound) + "\n";
+    }
 };
+
+TestResult best_of(const TestResult &left, const TestResult &right) {
+    return TestResult(bug_value_best_of(left.bug_value, right.bug_value),
+                      Policy::min_cost(left.upper_cost_bound, right.upper_cost_bound));
+}
 
 class Oracle : public TestingBaseComponent {
     friend class CompositeOracle;
@@ -52,7 +62,7 @@ public:
      * is solvable but the policy does not induce a plan.
      * Should throw OutOfResourceException if runtime or memory limits are exceeded.
      **/
-    virtual BugValue test_driver(Policy &policy, const PoolEntry &pool_entry);
+    virtual TestResult test_driver(Policy &policy, const PoolEntry &pool_entry);
 
     /** @brief adds a further cost bound for a state to the oracle
      * @warning does not guarantee to flag the state itself as a bug
@@ -63,7 +73,7 @@ public:
      * and reports them as bugs. Increases their bug value if the provided bug value is higher.
      * Stops if the bug_value is not higher than the previously found bug value.
      */
-    void report_parents_as_bugs(Policy &policy, const State &state, BugValue bug_value);
+    void report_parents_as_bugs(Policy &policy, const State &state, TestResult test_result);
 
     /**
      * Debug method to compute the optimal cost of a state.

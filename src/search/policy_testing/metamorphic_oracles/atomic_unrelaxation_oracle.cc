@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "../simulations/merge_and_shrink/abstraction_builder.h"
-#include "../simulations/numeric_dominance/numeric_dominance_relation.h"
 
 #include "../../plugin.h"
 

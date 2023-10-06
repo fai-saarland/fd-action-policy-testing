@@ -3,8 +3,10 @@
 #include "../../search_engine.h"
 #include "../../utils/hash.h"
 #include "../../utils/timer.h"
-#include "../bug_store.h"
+#include "../bug_value.h"
 #include "../testing_environment.h"
+#include "../policy.h"
+#include "../oracle.h"
 
 #include <initializer_list>
 #include <memory>
@@ -26,7 +28,11 @@ public:
     void print_statistics() const override {print_bug_statistics();}
     void print_timed_statistics() const override { }
 
-    static void print_new_bug_info(const State &state, StateID state_id);
+    /**
+     * Print out bug message for given state. If bugs are logged in bugs file, add entry there
+     */
+    void print_new_bug_info(const State &state, StateID state_id);
+
     static void report_initialized() {
         std::cout << "Testing engine initialized [t=" << utils::g_timer << "]" << std::endl;
     }
@@ -36,19 +42,22 @@ public:
      * for which a higher bug value has been confirmed, or which has not been handled at all.
      * Does nothing if the state is already known as a bug with the given bug_value.
      * @param state The state to flag as a bug.
-     * @param bug_value The corresponding bug value (must be >0).
+     * @param test_result The corresponding test_result consisting of a bug value (must be >0) and an upper bound for hstar(state).
      * @note removes @param state from the list of non-bug states (if present).
      * @warning bug_value must be greater than 0, otherwise state is no bug.
      */
-    void add_additional_bug(const State &state, BugValue bug_value);
+    void add_additional_bug(const State &state, TestResult test_result);
 
     /**
-     * @brief Read the stored bug value (if stored) otherwise return 0.
+     * @brief Read the stored bug value and the associated upper cost bound (if stored) otherwise return 0.
+     * Can only be used to look up upper bounds on bug states.
+     * Upper bounds can be higher than the one stored internally be the oracles (especially for qualitative bug states),
+     * as the respective data stored in the test engine is only updated if a better bug value has been found.
      */
-    BugValue get_stored_bug_value(const State &state);
+    TestResult get_stored_bug_result(const State &state);
 
     bool is_known_bug(const State &state) {
-        return get_stored_bug_value(state) > 0;
+        return get_stored_bug_result(state).bug_value > 0;
     }
 
     std::shared_ptr<Policy> get_policy() const {
@@ -73,13 +82,14 @@ protected:
 
     TestingEnvironment env_;
 
-    utils::HashMap<StateID, BugValue> bugs_;
-    utils::HashSet<StateID> non_bugs_;
+    utils::HashMap<StateID, TestResult> bugs_;
+    utils::HashSet<StateID> non_bugs_; // states that have been tested but that have not been reported as bugs
 
     std::shared_ptr<Policy> policy_;
     std::shared_ptr<Oracle> oracle_;
-    std::unique_ptr<BugStoreFile> bugs_store_;
     std::string policy_cache_file_;
+    bool write_bugs_file_;
+    std::ofstream bugs_stream_;
     bool read_policy_cache_;
     bool just_write_policy_cache_;
 

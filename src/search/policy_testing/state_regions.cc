@@ -1,7 +1,7 @@
 #include "state_regions.h"
 
 #include "../task_utils/successor_generator.h"
-#include "bug_store.h"
+#include "oracle.h"
 
 #include <algorithm>
 
@@ -12,7 +12,7 @@ compute_state_regions(
     const std::shared_ptr<AbstractTask> &task,
     StateRegistry &state_registry,
     const StateContainer &state_ids) {
-    constexpr const bool is_map_t = std::is_same_v<StateContainer, utils::HashMap<StateID, BugValue>>;
+    constexpr const bool is_map_t = std::is_same_v<StateContainer, utils::HashMap<StateID, TestResult>>;
 
     StateRegions regions;
     utils::HashMap<StateID, unsigned> state_to_region;
@@ -105,7 +105,7 @@ template
 StateRegions compute_state_regions(
     const std::shared_ptr<AbstractTask> &task,
     StateRegistry &state_registry,
-    const utils::HashMap<StateID, BugValue> &state_ids);
+    const utils::HashMap<StateID, TestResult> &state_ids);
 
 template
 StateRegions compute_state_regions(

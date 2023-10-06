@@ -182,15 +182,24 @@ NumericDominanceOracle::local_bug_test_step(Policy &policy, const State &s, Oper
                                             BugValue additional_bug_value) {
     assert(t == get_successor_state(s, op));
     assert(additional_bug_value >= 0);
+    assert(additional_bug_value < UNSOLVED_BUG_VALUE);
     const int action_cost = policy.get_operator_cost(op);
     // dominance_value = D(t,s)
     const DominanceValue dominance_value = D(t, s);
+    PolicyCost policy_cost = policy.read_upper_policy_cost_bound(s).first;
     if (dominance_value > simulations::MINUS_INFINITY && action_cost > -dominance_value) {
         const BugValue local_bug_value = action_cost + dominance_value;
         assert(local_bug_value > 0);
+        assert(local_bug_value < UNSOLVED_BUG_VALUE);
         const BugValue combined_bug_value = local_bug_value + additional_bug_value;
         assert(combined_bug_value > 0);
-        engine_->add_additional_bug(s, combined_bug_value);
+        assert(combined_bug_value < UNSOLVED_BUG_VALUE);
+        if (policy_cost == Policy::UNSOLVED) {
+            engine_->add_additional_bug(s, TestResult(combined_bug_value));
+        } else {
+            assert(policy_cost > combined_bug_value);
+            engine_->add_additional_bug(s, TestResult(combined_bug_value, policy_cost - combined_bug_value));
+        }
 #ifndef NDEBUG
         if (debug_) {
             assert(confirm_bug(s, combined_bug_value));
@@ -199,7 +208,12 @@ NumericDominanceOracle::local_bug_test_step(Policy &policy, const State &s, Oper
         return combined_bug_value;
     } else {
         if (additional_bug_value > 0) {
-            engine_->add_additional_bug(s, additional_bug_value);
+            if (policy_cost == Policy::UNSOLVED) {
+                engine_->add_additional_bug(s, TestResult(additional_bug_value));
+            } else {
+                assert(policy_cost > additional_bug_value);
+                engine_->add_additional_bug(s, TestResult(additional_bug_value, policy_cost - additional_bug_value));
+            }
 #ifndef NDEBUG
             if (debug_) {
                 assert(confirm_bug(s, additional_bug_value));

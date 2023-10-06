@@ -903,7 +903,6 @@ fast_downward_plugin(
     SOURCES
         policy_testing/out_of_resource_exception
         policy_testing/pool
-        policy_testing/bug_store
         policy_testing/utils
         policy_testing/state_regions
         policy_testing/novelty_store

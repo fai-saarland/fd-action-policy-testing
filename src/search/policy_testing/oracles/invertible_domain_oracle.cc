@@ -28,37 +28,46 @@ InvertibleDomainOracle::test(Policy &, const State &) {
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
-BugValue
+TestResult
 InvertibleDomainOracle::test_driver(Policy &policy, const PoolEntry &pool_entry) {
     // TODO: extend for non unit cost tasks, make explicit that it only works when policy solves initial state
     assert(task_properties::is_unit_cost(get_task_proxy()));
     const PolicyCost lower_policy_cost_bound = policy.compute_lower_policy_cost_bound(pool_entry.state).first;
+    TestResult test_result;
     if (lower_policy_cost_bound == Policy::UNSOLVED) {
-        if (report_parent_bugs) {
-            report_parents_as_bugs(policy, pool_entry.state, UNSOLVED_BUG_VALUE);
+        test_result = TestResult(UNSOLVED_BUG_VALUE);
+        if (pool_entry.ref_state == StateID::no_state) {
+            return test_result;
         }
-        return UNSOLVED_BUG_VALUE;
-    }
-    if (pool_entry.ref_state == StateID::no_state) {
-        return NOT_APPLICABLE_INDICATOR;
-    }
-    const PolicyCost upper_ref_cost_bound =
-        policy.read_upper_policy_cost_bound(get_state_registry().lookup_state(pool_entry.ref_state)).first;
-    if (upper_ref_cost_bound == Policy::UNSOLVED) {
-        return NOT_APPLICABLE_INDICATOR;
-    }
-    const int alt_cost = upper_ref_cost_bound + pool_entry.steps;
-
-    assert(alt_cost != Policy::UNSOLVED);
-    assert(lower_policy_cost_bound != Policy::UNSOLVED);
-    if (alt_cost < lower_policy_cost_bound) {
-        const BugValue bug_value = lower_policy_cost_bound - alt_cost;
-        if (report_parent_bugs) {
-            report_parents_as_bugs(policy, pool_entry.state, bug_value);
+        const PolicyCost upper_ref_cost_bound =
+            policy.read_upper_policy_cost_bound(get_state_registry().lookup_state(pool_entry.ref_state)).first;
+        if (upper_ref_cost_bound == Policy::UNSOLVED) {
+            report_parents_as_bugs(policy, pool_entry.state, test_result);
+            return test_result;
         }
-        return bug_value;
+        const int alt_cost = upper_ref_cost_bound + pool_entry.steps;
+        test_result = TestResult(UNSOLVED_BUG_VALUE, alt_cost);
+    } else {
+        if (pool_entry.ref_state == StateID::no_state) {
+            return TestResult(NOT_APPLICABLE_INDICATOR);
+        }
+        const PolicyCost upper_ref_cost_bound =
+            policy.read_upper_policy_cost_bound(get_state_registry().lookup_state(pool_entry.ref_state)).first;
+        if (upper_ref_cost_bound == Policy::UNSOLVED) {
+            return TestResult(NOT_APPLICABLE_INDICATOR);
+        }
+        const int alt_cost = upper_ref_cost_bound + pool_entry.steps;
+        assert(alt_cost != Policy::UNSOLVED);
+        assert(lower_policy_cost_bound != Policy::UNSOLVED);
+        if (alt_cost < lower_policy_cost_bound) {
+            const BugValue bug_value = lower_policy_cost_bound - alt_cost;
+            test_result = TestResult(bug_value, alt_cost);
+        }
     }
-    return 0;
+    if (report_parent_bugs) {
+        report_parents_as_bugs(policy, pool_entry.state, test_result);
+    }
+    return test_result;
 }
 
 static Plugin<Oracle> _plugin(
