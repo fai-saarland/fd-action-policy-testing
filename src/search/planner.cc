@@ -19,6 +19,7 @@ using utils::ExitCode;
 
 int main(int argc, const char **argv) {
     utils::register_event_handlers();
+    string input_file_override; // if set, read input from this file instead of from stdin
 
 #ifdef DOWNWARD_PLUGIN_POLICY_TESTING
     if (argc >= 3 && static_cast<string>(argv[1]) == "--remote-policy") {
@@ -28,6 +29,12 @@ int main(int argc, const char **argv) {
             err.print();
             utils::exit_with(ExitCode::REMOTE_POLICY_ERROR);
         }
+        for (int i = 3; i < argc; ++i) {
+            argv[i - 2] = argv[i];
+        }
+        argc -= 2;
+    } else if (argc >= 3 && static_cast<string>(argv[1]) == "--input-file") {
+        input_file_override = static_cast<string>(argv[2]);
         for (int i = 3; i < argc; ++i) {
             argv[i - 2] = argv[i];
         }
@@ -45,7 +52,15 @@ int main(int argc, const char **argv) {
         utils::g_log << "reading input..." << endl;
 #ifdef DOWNWARD_PLUGIN_POLICY_TESTING
         if (!policy_testing::RemotePolicy::connection_established()) {
-            tasks::read_root_task(cin);
+            if (input_file_override.empty()) {
+                tasks::read_root_task(cin);
+            } else {
+                std::ifstream file_stream(input_file_override);
+                if (!file_stream.is_open()) {
+                    std::cerr << "Cannot open " << input_file_override << std::endl;
+                }
+                tasks::read_root_task(file_stream);
+            }
         } else {
             try {
                 std::string task = policy_testing::RemotePolicy::input_fdr();
