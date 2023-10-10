@@ -36,14 +36,16 @@ PolicyTestingBaseEngine::PolicyTestingBaseEngine(const options::Options &opts)
                 "Assuming global remote_policy with standard configuration." << std::endl;
             policy_ = RemotePolicy::get_global_default_policy();
         } else {
-            std::cerr << "You need to provide a policy." << std::endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+            if(!opts.get<bool>("run_without_policy")) {
+                std::cerr << "You need to provide a policy." << std::endl;
+                utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+            }
         }
     }
 
     if (read_policy_cache_ && just_write_policy_cache_) {
-        std::cerr << "You cannot read and write to the policy cache in the same run." << std::endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+            std::cerr << "You cannot read and write to the policy cache in the same run." << std::endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 
     if (policy_) {
@@ -65,6 +67,7 @@ PolicyTestingBaseEngine::add_options_to_parser(
     options::OptionParser &parser,
     bool testing_arguments_mandatory) {
     parser.add_option<std::shared_ptr<Policy>>("policy", "", options::OptionParser::NONE);
+    parser.add_option<bool>("run_without_policy", "", "false");
     if (testing_arguments_mandatory) {
         parser.add_option<std::shared_ptr<Oracle>>("testing_method");
     } else {
