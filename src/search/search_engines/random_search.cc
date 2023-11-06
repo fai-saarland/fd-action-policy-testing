@@ -12,10 +12,18 @@ RandomSearch::RandomSearch(const Options &opts)
 }
 
 void RandomSearch::initialize() {
-    // TODO: This function called before first step call.
-    // In the least, the initial state needs to picked up
-    // (see state_registry.get_initial_state())
+    utils::g_log << "Conducting random search." << endl;
+    // Open list is not mandatory as we are looking for nodes randomly.
+
+    State initial_state = state_registry.get_initial_state();
+    // TODO: Check if the initial state is a goal state.
+    // If it is, we can just return the empty plan.
+
+    // TODO: If the initial state is not a goal state, we must prepare to start the random search.
+    // This might involve initializing some data structures to keep track of the states we visit
+    // and the actions we take.
 }
+
 
 void RandomSearch::print_statistics() const {
     statistics.print_detailed_statistics();
