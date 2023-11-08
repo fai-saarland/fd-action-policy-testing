@@ -3,6 +3,7 @@
 
 #include "../open_list.h"
 #include "../search_engine.h"
+#include "../utils/rng.h"
 
 #include <map>
 #include <memory>
@@ -22,7 +23,12 @@ public:
     virtual ~RandomSearch() = default;
 
     virtual void print_statistics() const override;
+
+
+private:
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 };
+
 
 extern void add_options_to_parser(options::OptionParser &parser);
 }
