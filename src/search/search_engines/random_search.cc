@@ -7,23 +7,22 @@
 using namespace std;
 
 namespace random_search {
-RandomSearch::RandomSearch(const Options &opts)
+RandomSearch::RandomSearch(const options::Options &opts)
     : SearchEngine(opts) {
 }
 
 void RandomSearch::initialize() {
     utils::g_log << "Conducting random search." << endl;
-    // Open list is not mandatory as we are looking for nodes randomly.
+    current_state = state_registry.get_initial_state();
 
-    State initial_state = state_registry.get_initial_state();
-    // TODO: Check if the initial state is a goal state.
-    // If it is, we can just return the empty plan.
-
-    // TODO: If the initial state is not a goal state, we must prepare to start the random search.
-    // This might involve initializing some data structures to keep track of the states we visit
-    // and the actions we take.
+    // Check if the initial state is a goal state.
+    if (check_goal_and_set_plan(current_state)) {
+        utils::g_log << "Initial state is a goal state." << endl;
+    } else {
+        utils::g_log << "Initial state is not a goal state. Starting random exploration." << endl;
+        last_action_cost = 0;
+    }
 }
-
 
 void RandomSearch::print_statistics() const {
     statistics.print_detailed_statistics();
@@ -31,6 +30,9 @@ void RandomSearch::print_statistics() const {
 }
 
 SearchStatus RandomSearch::step() {
+    if (check_goal_and_set_plan(state_registry.get_initial_state())) {
+        return SOLVED;
+    }
     // TODO: Performs one step of the search algorithm, i.e., it takes a
     // state and applies action (see successor_generator.generate_applicable_ops()).
     // This function returns FAILED if solution was not found, SOLVED if a

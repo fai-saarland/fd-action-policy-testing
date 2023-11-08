@@ -4,20 +4,16 @@
 #include "../open_list.h"
 #include "../search_engine.h"
 
+#include <map>
 #include <memory>
 #include <vector>
 
-class Evaluator;
-class PruningMethod;
-
-namespace options {
-class OptionParser;
-class Options;
-}
-
 namespace random_search {
 class RandomSearch : public SearchEngine {
-protected:
+    State current_state;
+    int last_action_cost;
+    SearchStatus search_status;
+    std::map<StateID, OperatorID> visited_states; 
     virtual void initialize() override;
     virtual SearchStatus step() override;
 
