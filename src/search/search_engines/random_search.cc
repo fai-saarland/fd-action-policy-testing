@@ -49,7 +49,7 @@ SearchStatus RandomSearch::step() {
     // check if the state was already visited
     if (visited_states.find(succ_state.get_id()) == visited_states.end()) {
         // if true, add to visited states and update
-        visited_states[succ_state.get_id()] = op_id;
+        visited_states.emplace(succ_state.get_id(), op_id);        
         current_state = succ_state;
         last_action_cost = op.get_cost();
         utils::g_log << "Moved to new state with cost " << last_action_cost << "." << endl;
