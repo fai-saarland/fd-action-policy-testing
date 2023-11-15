@@ -21,7 +21,8 @@ public:
      * @param vec Vector of states.
      * @param weights Set of weights. If a state has weight POSITIVE_INFINITY, then only states with weight
      * POSITIVE_INFINITY will be considered. States with weight NEGATIVE_INFINITY are ignored.
-     * @warning finite negative weights are not supported
+     * If there is a state with a finite negative weight, we determine the minimum finite negative weight -B and
+     * increase all finite weights by B.
      * @return a pointer to the selected state if a state has been selected or nullptr otherwise.
      */
     static const State *weighted_choose(utils::RandomNumberGenerator &rng, const std::vector<State> &vec,
@@ -34,17 +35,17 @@ public:
         std::vector<size_t> pos_infinite_weight_indices;
         std::vector<size_t> finite_weight_indices;
         std::vector<int> finite_weights;
+        int minimum_finite_negative_weight = 0; // shall be 0 if there is no negative weight
         for (size_t i = 0; i < vec.size(); ++i) {
             const int weight = weights[i];
             if (weight == POSITIVE_INFINITY) {
                 pos_infinite_weight_indices.emplace_back(i);
             } else if (weight == NEGATIVE_INFINITY) {
                 continue;
-            } else if (weight >= 0) {
+            } else {
                 finite_weight_indices.emplace_back(i);
                 finite_weights.emplace_back(weight);
-            } else {
-                throw std::logic_error("Finite negative weights are not supported\n");
+                minimum_finite_negative_weight = std::min(weight, minimum_finite_negative_weight);
             }
         }
 
@@ -52,6 +53,13 @@ public:
             // in case there are positively infinite weights, only consider these positions
             return &vec[*rng.choose(pos_infinite_weight_indices)];
         } else if (!finite_weight_indices.empty()) {
+            // increase all finite weights if there is a negative finite weight
+            if (minimum_finite_negative_weight < 0) {
+                for (int &finite_weight : finite_weights) {
+                    finite_weight -= minimum_finite_negative_weight;
+                    assert(finite_weight >= 0);
+                }
+            }
             // select index with respect to the given finite weights
             const int sum = std::accumulate(finite_weights.begin(), finite_weights.end(), 0);
             // select a random position if every entry is 0

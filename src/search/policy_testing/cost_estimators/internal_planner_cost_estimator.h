@@ -30,7 +30,7 @@ public:
     int compute_value(const State &state) override;
 
     /// like compute value but return DEAD_END if no plan has been found
-    /// the oracle configuration needs to be complete for this to work!
+    /// the search configuration needs to be complete for this to work!
     int compute_trusted_value(const State &state, const State *goal_state = nullptr);
 
     /// wrapper around compute_trusted_value, caching call results

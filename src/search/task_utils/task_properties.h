@@ -54,6 +54,8 @@ inline bool is_strips_fact(const AbstractTask *task, const FactPair &fact_pair) 
     return is_strips_fact(task->get_fact_name(fact_pair));
 }
 
+extern bool exists_applicable_op(TaskProxy task, const State &s);
+
 extern std::vector<FactPair> get_strips_fact_pairs(const AbstractTask *task);
 
 /*
@@ -62,6 +64,13 @@ extern std::vector<FactPair> get_strips_fact_pairs(const AbstractTask *task);
   Runtime: O(n), where n is the number of operators.
 */
 extern bool is_unit_cost(TaskProxy task);
+
+/**
+ * @returns true if task we can guarantee that the task is invertible
+ * @warning can return false even if task is invertible (if it is invertible but we cannot show it)
+ * @note returns false if task has conditional effects
+ */
+extern bool is_guaranteed_invertible(TaskProxy task);
 
 // Runtime: O(1)
 extern bool has_axioms(TaskProxy task);

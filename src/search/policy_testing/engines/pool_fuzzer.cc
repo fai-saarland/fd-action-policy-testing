@@ -10,6 +10,7 @@
 #include "../out_of_resource_exception.h"
 #include "../pool_filter.h"
 #include "../state_regions.h"
+#include "../task_utils/task_properties.h"
 
 #include <iomanip>
 #include <memory>
@@ -181,20 +182,15 @@ PoolFuzzerEngine::insert(int ref, int steps, const State &state) {
 
 void
 PoolFuzzerEngine::random_walk() {
-    int ref = rng(pool.size());
-    const int applied_actions = rng(max_walk_length) + 1;
-
-    std::vector<OperatorID> applicable_ops;
-    std::vector<State> successors;
-    std::vector<int> successor_biases;
-    State state = pool[ref].state;
-
-    for (int i = 0; i < applied_actions; i++) {
-        successor_generator.generate_applicable_ops(state, applicable_ops);
-
-        // shuffle successors since it could be that not all of them can be considered
-        testing_rng.shuffle(successors);
-
+    const int ref_index = rng(pool.size());
+    const int step_limit = rng(max_walk_length) + 1;
+    State state = pool[ref_index].state;
+    int step_counter = 0;
+    for (; step_counter < step_limit; ++step_counter) {
+        std::vector<OperatorID> applicable_ops = successor_generator.generate_applicable_ops(state);
+        rng.shuffle(applicable_ops); // shuffle ops as it could be that not all successors can be considered
+        std::vector<State> successors;
+        std::vector<int> successor_biases;
         unsigned int used_budget = 0;
 
         for (auto &applicable_op : applicable_ops) {
@@ -223,9 +219,22 @@ PoolFuzzerEngine::random_walk() {
                     }
                 }
             }
-            if (!read_cached_bias) {
-                // bias needs to be computed
+            if (!read_cached_bias) { // bias needs to be computed
+                // check if succ is a goal state (in which case, we ignore it)
+                if (task_properties::is_goal_state(get_task_proxy(), succ)) {
+                    if (cache_bias) {
+                        bias_cache.emplace(succ.get_id(), FuzzingBias::NEGATIVE_INFINITY);
+                    }
+                    continue;
+                }
+                // check dead ends
                 bool succ_is_known_dead_end = false;
+                if (!task_properties::exists_applicable_op(get_task_proxy(), succ)) {
+                    if (cache_bias) {
+                        bias_cache.emplace(succ.get_id(), FuzzingBias::NEGATIVE_INFINITY);
+                    }
+                    continue;
+                }
                 if (eval) {
                     auto insertion = is_dead.emplace(succ.get_id(), false);
                     auto &inserted_pair = insertion.first;
@@ -242,6 +251,7 @@ PoolFuzzerEngine::random_walk() {
                     }
                     continue;
                 }
+                // check policy fail and compute bias
                 succ_bias = (penalize_policy_fails && bias->policy_is_known_to_fail(succ, remaining_budget)) ?
                     FuzzingBias::POSITIVE_INFINITY : bias->bias(succ, remaining_budget);
                 used_budget += bias->determine_used_budget(succ, remaining_budget);
@@ -259,13 +269,10 @@ PoolFuzzerEngine::random_walk() {
             return;
         }
         state = *selected_state;
-        applicable_ops.clear();
-        successors.clear();
-        successor_biases.clear();
     }
 
     if (!states_in_pool.contains(state.get_id())) {
-        insert(ref, applied_actions, state);
+        insert(ref_index, step_counter, state);
     } else {
         ++duplicates;
     }

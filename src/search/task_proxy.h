@@ -18,6 +18,7 @@
 #include <iterator>
 #include <string>
 #include <vector>
+#include <optional>
 
 
 class AxiomsProxy;
@@ -159,17 +160,17 @@ public:
     FactProxy(const AbstractTask &task, const FactPair &fact);
     ~FactProxy() = default;
 
-    VariableProxy get_variable() const;
+    [[nodiscard]] VariableProxy get_variable() const;
 
-    int get_value() const {
+    [[nodiscard]] int get_value() const {
         return fact.value;
     }
 
-    FactPair get_pair() const {
+    [[nodiscard]] FactPair get_pair() const {
         return fact;
     }
 
-    std::string get_name() const {
+    [[nodiscard]] std::string get_name() const {
         return task->get_fact_name(fact);
     }
 
@@ -182,7 +183,7 @@ public:
         return !(*this == other);
     }
 
-    bool is_mutex(const FactProxy &other) const {
+    [[nodiscard]] bool is_mutex(const FactProxy &other) const {
         return task->are_facts_mutex(fact, other.fact);
     }
 };
@@ -240,11 +241,11 @@ public:
         : task(&task) {}
     ~FactsProxy() = default;
 
-    FactsProxyIterator begin() const {
+    [[nodiscard]] FactsProxyIterator begin() const {
         return FactsProxyIterator(*task, 0, 0);
     }
 
-    FactsProxyIterator end() const {
+    [[nodiscard]] FactsProxyIterator end() const {
         return FactsProxyIterator(*task, task->get_num_variables(), 0);
     }
 };
@@ -266,29 +267,29 @@ public:
         return !(*this == other);
     }
 
-    int get_id() const {
+    [[nodiscard]] int get_id() const {
         return id;
     }
 
-    std::string get_name() const {
+    [[nodiscard]] std::string get_name() const {
         return task->get_variable_name(id);
     }
 
-    int get_domain_size() const {
+    [[nodiscard]] int get_domain_size() const {
         return task->get_variable_domain_size(id);
     }
 
-    FactProxy get_fact(int index) const {
+    [[nodiscard]] FactProxy get_fact(int index) const {
         assert(index < get_domain_size());
         return FactProxy(*task, id, index);
     }
 
-    bool is_derived() const {
+    [[nodiscard]] bool is_derived() const {
         int axiom_layer = task->get_variable_axiom_layer(id);
         return axiom_layer != -1;
     }
 
-    int get_axiom_layer() const {
+    [[nodiscard]] int get_axiom_layer() const {
         int axiom_layer = task->get_variable_axiom_layer(id);
         /*
           This should only be called for derived variables.
@@ -299,7 +300,7 @@ public:
         return axiom_layer;
     }
 
-    int get_default_axiom_value() const {
+    [[nodiscard]] int get_default_axiom_value() const {
         assert(is_derived());
         return task->get_variable_default_axiom_value(id);
     }
@@ -314,7 +315,7 @@ public:
         : task(&task) {}
     ~VariablesProxy() = default;
 
-    std::size_t size() const {
+    [[nodiscard]] std::size_t size() const {
         return task->get_num_variables();
     }
 
@@ -323,7 +324,7 @@ public:
         return VariableProxy(*task, index);
     }
 
-    FactsProxy get_facts() const {
+    [[nodiscard]] FactsProxy get_facts() const {
         return FactsProxy(*task);
     }
 };
@@ -342,7 +343,7 @@ public:
     virtual std::size_t size() const = 0;
     virtual FactProxy operator[](std::size_t index) const = 0;
 
-    bool empty() const {
+    [[nodiscard]] bool empty() const {
         return size() == 0;
     }
 
@@ -374,9 +375,9 @@ class PreconditionsProxy : public ConditionsProxy {
 public:
     PreconditionsProxy(const AbstractTask &task, int op_index, bool is_axiom)
         : ConditionsProxy(task), op_index(op_index), is_axiom(is_axiom) {}
-    ~PreconditionsProxy() = default;
+    ~PreconditionsProxy() override = default;
 
-    std::size_t size() const override {
+    [[nodiscard]] std::size_t size() const override {
         return task->get_num_operator_preconditions(op_index, is_axiom);
     }
 
@@ -384,6 +385,31 @@ public:
         assert(fact_index < size());
         return FactProxy(*task, task->get_operator_precondition(
                              op_index, fact_index, is_axiom));
+    }
+
+    /// returns a sorted vector of unique precondition variable ids
+    std::vector<int> get_variables() {
+        std::vector<int> precondition_variables;
+        for (FactProxy fact : *this) {
+            precondition_variables.push_back(fact.get_variable().get_id());
+        }
+        std::sort(precondition_variables.begin(), precondition_variables.end());
+        for (int i = 1; i < precondition_variables.size(); ++i) {
+            if (precondition_variables[i - 1] == precondition_variables[i]) {
+                throw std::logic_error("multiple preconditions on one variable");
+            }
+        }
+        return precondition_variables;
+    }
+
+    /// returns the (first) condition on a variable if present
+    std::optional<FactProxy> get_condition(VariableProxy var) {
+        for (FactProxy fact : *this) {
+            if (var == fact.get_variable()) {
+                return fact;
+            }
+        }
+        return std::nullopt;
     }
 };
 
@@ -396,9 +422,9 @@ public:
     EffectConditionsProxy(
         const AbstractTask &task, int op_index, int eff_index, bool is_axiom)
         : ConditionsProxy(task), op_index(op_index), eff_index(eff_index), is_axiom(is_axiom) {}
-    ~EffectConditionsProxy() = default;
+    ~EffectConditionsProxy() override = default;
 
-    std::size_t size() const override {
+    [[nodiscard]] std::size_t size() const override {
         return task->get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
     }
 
@@ -420,11 +446,11 @@ public:
         : task(&task), op_index(op_index), eff_index(eff_index), is_axiom(is_axiom) {}
     ~EffectProxy() = default;
 
-    EffectConditionsProxy get_conditions() const {
+    [[nodiscard]] EffectConditionsProxy get_conditions() const {
         return EffectConditionsProxy(*task, op_index, eff_index, is_axiom);
     }
 
-    FactProxy get_fact() const {
+    [[nodiscard]] FactProxy get_fact() const {
         return FactProxy(*task, task->get_operator_effect(
                              op_index, eff_index, is_axiom));
     }
@@ -441,13 +467,38 @@ public:
         : task(&task), op_index(op_index), is_axiom(is_axiom) {}
     ~EffectsProxy() = default;
 
-    std::size_t size() const {
+    [[nodiscard]] std::size_t size() const {
         return task->get_num_operator_effects(op_index, is_axiom);
     }
 
     EffectProxy operator[](std::size_t eff_index) const {
         assert(eff_index < size());
         return EffectProxy(*task, op_index, eff_index, is_axiom);
+    }
+
+    /// returns a sorted vector of unique precondition variable ids
+    std::vector<int> get_variables() {
+        std::vector<int> effect_variables;
+        for (EffectProxy effect : *this) {
+            effect_variables.push_back(effect.get_fact().get_variable().get_id());
+        }
+        std::sort(effect_variables.begin(), effect_variables.end());
+        for (int i = 1; i < effect_variables.size(); ++i) {
+            if (effect_variables[i - 1] == effect_variables[i]) {
+                throw std::logic_error("multiple effects on one variable");
+            }
+        }
+        return effect_variables;
+    }
+
+    /// returns the (first) effect on a variable if present
+    std::optional<EffectProxy> get_effect(VariableProxy var) {
+        for (EffectProxy effectProxy : *this) {
+            if (var == effectProxy.get_fact().get_variable()) {
+                return effectProxy;
+            }
+        }
+        return std::nullopt;
     }
 };
 
@@ -470,27 +521,27 @@ public:
         return !(*this == other);
     }
 
-    PreconditionsProxy get_preconditions() const {
+    [[nodiscard]] PreconditionsProxy get_preconditions() const {
         return PreconditionsProxy(*task, index, is_an_axiom);
     }
 
-    EffectsProxy get_effects() const {
+    [[nodiscard]] EffectsProxy get_effects() const {
         return EffectsProxy(*task, index, is_an_axiom);
     }
 
-    int get_cost() const {
+    [[nodiscard]] int get_cost() const {
         return task->get_operator_cost(index, is_an_axiom);
     }
 
-    bool is_axiom() const {
+    [[nodiscard]] bool is_axiom() const {
         return is_an_axiom;
     }
 
-    std::string get_name() const {
+    [[nodiscard]] std::string get_name() const {
         return task->get_operator_name(index, is_an_axiom);
     }
 
-    int get_id() const {
+    [[nodiscard]] int get_id() const {
         return index;
     }
 
@@ -514,11 +565,11 @@ public:
         : task(&task) {}
     ~OperatorsProxy() = default;
 
-    std::size_t size() const {
+    [[nodiscard]] std::size_t size() const {
         return task->get_num_operators();
     }
 
-    bool empty() const {
+    [[nodiscard]] bool empty() const {
         return size() == 0;
     }
 
@@ -541,11 +592,11 @@ public:
         : task(&task) {}
     ~AxiomsProxy() = default;
 
-    std::size_t size() const {
+    [[nodiscard]] std::size_t size() const {
         return task->get_num_axioms();
     }
 
-    bool empty() const {
+    [[nodiscard]] bool empty() const {
         return size() == 0;
     }
 
@@ -560,9 +611,9 @@ class GoalsProxy : public ConditionsProxy {
 public:
     explicit GoalsProxy(const AbstractTask &task)
         : ConditionsProxy(task) {}
-    ~GoalsProxy() = default;
+    ~GoalsProxy() override = default;
 
-    std::size_t size() const override {
+    [[nodiscard]] std::size_t size() const override {
         return task->get_num_goals();
     }
 
@@ -582,7 +633,7 @@ protected:
     const AbstractTask *task;
     //if values[i] == -1 => not assigned value.
     mutable std::shared_ptr<std::vector<int>> values;
-    PartialAssignment(const AbstractTask &task);
+    explicit PartialAssignment(const AbstractTask &task);
 public:
     using ItemType = FactProxy;
     static const int UNASSIGNED;
@@ -749,7 +800,7 @@ public:
         : task(&task) {}
     ~TaskProxy() = default;
 
-    TaskID get_id() const {
+    [[nodiscard]] TaskID get_id() const {
         return TaskID(task);
     }
 
@@ -757,19 +808,19 @@ public:
         task->subscribe(subscriber);
     }
 
-    VariablesProxy get_variables() const {
+    [[nodiscard]] VariablesProxy get_variables() const {
         return VariablesProxy(*task);
     }
 
-    OperatorsProxy get_operators() const {
+    [[nodiscard]] OperatorsProxy get_operators() const {
         return OperatorsProxy(*task);
     }
 
-    AxiomsProxy get_axioms() const {
+    [[nodiscard]] AxiomsProxy get_axioms() const {
         return AxiomsProxy(*task);
     }
 
-    GoalsProxy get_goals() const {
+    [[nodiscard]] GoalsProxy get_goals() const {
         return GoalsProxy(*task);
     }
 
@@ -791,11 +842,11 @@ public:
         return State(*task, registry, id, buffer, std::move(state_values));
     }
 
-    State get_initial_state() const {
+    [[nodiscard]] State get_initial_state() const {
         return create_state(task->get_initial_state_values());
     }
 
-    const AbstractTask *get_task() const {
+    [[nodiscard]] const AbstractTask *get_task() const {
         return task;
     }
 
@@ -810,7 +861,7 @@ public:
       in a class that handles the task transformation and knows about both the
       original and the transformed task.
     */
-    State convert_ancestor_state(const State &ancestor_state) const {
+    [[nodiscard]] State convert_ancestor_state(const State &ancestor_state) const {
         TaskProxy ancestor_task_proxy = ancestor_state.get_task();
         // Create a copy of the state values for the new state.
         ancestor_state.unpack();
@@ -823,7 +874,7 @@ public:
         PartialAssignment &assignment,
         bool check_mutexes, utils::RandomNumberGenerator &rng) const;
 
-    const causal_graph::CausalGraph &get_causal_graph() const;
+    [[nodiscard]] const causal_graph::CausalGraph &get_causal_graph() const;
 };
 
 inline bool PartialAssignment::assigned(std::size_t var_id) const {

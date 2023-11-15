@@ -11,6 +11,15 @@ using utils::ExitCode;
 
 
 namespace task_properties {
+bool exists_applicable_op(TaskProxy task, const State &state) {
+    for (OperatorProxy op : task.get_operators()) {
+        if (is_applicable(op, state)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 vector<FactPair> get_strips_fact_pairs(const AbstractTask *task) {
     std::vector<FactPair> facts;
     for (int var = 0; var < task->get_num_variables(); ++var) {
@@ -27,6 +36,89 @@ bool is_unit_cost(TaskProxy task) {
     for (OperatorProxy op : task.get_operators()) {
         if (op.get_cost() != 1)
             return false;
+    }
+    return true;
+}
+
+bool is_guaranteed_invertible(TaskProxy task) {
+    if (has_conditional_effects(task)) {
+        return false;
+    }
+    OperatorsProxy operators = task.get_operators();
+    const size_t num_operators = operators.size();
+    for (int i = 0; i < num_operators; ++i) {
+        OperatorProxy op_i = operators[i];
+        const int cost_i = op_i.get_cost();
+        PreconditionsProxy pre_i = op_i.get_preconditions();
+        std::vector<int> pre_vars_i = pre_i.get_variables();
+        EffectsProxy eff_i = op_i.get_effects();
+        std::vector<int> eff_vars_i = eff_i.get_variables();
+        std::vector<int> prevail_vars_i;
+        std::set_difference(pre_vars_i.begin(), pre_vars_i.end(), eff_vars_i.begin(), eff_vars_i.end(),
+                            std::inserter(prevail_vars_i, prevail_vars_i.begin()));
+        // check if effect variables are subset of precondition variables
+        if (!std::includes(pre_vars_i.begin(), pre_vars_i.end(), eff_vars_i.begin(), eff_vars_i.end())) {
+            return false;
+        }
+        bool has_inverse_action = false;
+        for (int j = 0; j < num_operators; ++j) {
+            if (i == j) {
+                continue;
+            }
+            OperatorProxy op_j = operators[j];
+            // test if op_j is inverse operator of op_i
+            // check if cost of action and possible inverse action matches
+            if (cost_i != op_j.get_cost()) {
+                continue;
+            }
+            // check if vars(eff(op_i)) = vars(eff(op_j))
+            EffectsProxy eff_j = op_j.get_effects();
+            std::vector<int> eff_vars_j = eff_j.get_variables();
+            if (eff_vars_i != eff_vars_j) {
+                continue;
+            }
+            // check for every effect variable v of op_j if we have eff(op_j)[v] = pre(op_i)[v]
+            bool matching_pre_and_eff = true;
+            for (EffectProxy effect_proxy : eff_j) {
+                VariableProxy v = effect_proxy.get_fact().get_variable();
+                const int effect_value = effect_proxy.get_fact().get_value();
+                const int precondition_value = pre_i.get_condition(v).value().get_value();
+                if (effect_value != precondition_value) {
+                    matching_pre_and_eff = false;
+                    break;
+                }
+            }
+            if (!matching_pre_and_eff) {
+                continue;
+            }
+            // check if op_j is guaranteed to be applicable immediately after op_i has been applied
+            bool inverse_applicable = true;
+            PreconditionsProxy preconditions_j = op_j.get_preconditions();
+            for (FactProxy pre_j : preconditions_j) {
+                VariableProxy var = pre_j.get_variable();
+                int value = pre_j.get_value();
+                if (std::binary_search(eff_vars_i.begin(), eff_vars_i.end(), var.get_id())) {
+                    if (eff_i.get_effect(var).value().get_fact().get_value() == value) {
+                        continue;
+                    }
+                }
+                if (std::binary_search(prevail_vars_i.begin(), prevail_vars_i.end(), var.get_id())) {
+                    if (pre_i.get_condition(var).value().get_value() == value) {
+                        continue;
+                    }
+                }
+                inverse_applicable = false;
+                break;
+            }
+            if (!inverse_applicable) {
+                continue;
+            }
+            has_inverse_action = true;
+            break;
+        }
+        if (!has_inverse_action) {
+            return false;
+        }
     }
     return true;
 }

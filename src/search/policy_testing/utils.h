@@ -54,5 +54,4 @@ using timestamp_t = long long;
 timestamp_t get_timestamp();
 timestamp_t get_end_timestamp(timestamp_t max_time_seconds);
 
-inline static utils::RandomNumberGenerator testing_rng = utils::RandomNumberGenerator(2022);
 } // namespace policy_testing

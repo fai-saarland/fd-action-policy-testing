@@ -36,7 +36,7 @@ PolicyTestingBaseEngine::PolicyTestingBaseEngine(const options::Options &opts)
                 "Assuming global remote_policy with standard configuration." << std::endl;
             policy_ = RemotePolicy::get_global_default_policy();
         } else {
-            if(!opts.get<bool>("run_without_policy")) {
+            if (!opts.get<bool>("run_without_policy")) {
                 std::cerr << "You need to provide a policy." << std::endl;
                 utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
             }
@@ -44,8 +44,8 @@ PolicyTestingBaseEngine::PolicyTestingBaseEngine(const options::Options &opts)
     }
 
     if (read_policy_cache_ && just_write_policy_cache_) {
-            std::cerr << "You cannot read and write to the policy cache in the same run." << std::endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        std::cerr << "You cannot read and write to the policy cache in the same run." << std::endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 
     if (policy_) {

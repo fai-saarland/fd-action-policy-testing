@@ -283,6 +283,12 @@ public:
     std::vector<int> read_path_action_costs(const std::vector<State> &path) const;
 
     /**
+     * @brief returns the accumulated path action cost, equivalent to the sum over cost vector returned by read_path_action_costs
+     * @warning assumes that all action costs can be read, does not execute policy
+     */
+    int read_accumulated_path_action_cost(const std::vector<State> &path) const;
+
+    /**
      * Returns true if given state is a goal state.
      */
     [[nodiscard]] bool is_goal(const State &state) const;

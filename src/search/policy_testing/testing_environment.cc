@@ -9,9 +9,7 @@ namespace policy_testing {
 TestingEnvironment::TestingEnvironment(
     std::shared_ptr<AbstractTask> task,
     StateRegistry *state_registry)
-    : task_(std::move(task))
-      , state_registry_(state_registry)
-      , task_proxy_(*task_) {
+    : task_(std::move(task)), state_registry_(state_registry), task_proxy_(*task_) {
 }
 
 TaskProxy &

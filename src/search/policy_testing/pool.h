@@ -17,7 +17,7 @@ struct PoolEntry {
     StateID ref_state;
     /** Index of the ref state in the pool upon generation of this pool entry **/
     int ref_index;
-    /** Number of fuzzing operations applied to the back-referenced state. **/
+    /** Number of actions applied to the back-referenced state (length of random walk). **/
     int steps;
     /** The actual pool state of this entry */
     State state;

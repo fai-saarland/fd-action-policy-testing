@@ -77,6 +77,16 @@ std::vector<int> Policy::read_path_action_costs(const std::vector<State> &path) 
     return action_costs;
 }
 
+int Policy::read_accumulated_path_action_cost(const std::vector<State> &path) const {
+    int sum = 0;
+    if (path.size() > 1) {
+        for (const State &s: path | std::ranges::views::take(path.size() - 1)) {
+            sum += read_action_cost(s);
+        }
+    }
+    return sum;
+}
+
 Policy::RunResult
 Policy::execute_get_plan(const State &state0, std::vector<OperatorID> &plan,
                          std::optional<unsigned int> step_limit_override) {

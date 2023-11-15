@@ -939,6 +939,7 @@ fast_downward_plugin(
         policy_testing/fuzzing_biases/internalPlannerOracle_bias
         policy_testing/fuzzing_biases/loopiness_bias
         policy_testing/fuzzing_biases/surface_bias
+        policy_testing/fuzzing_biases/detour_bias
         policy_testing/fuzzing_biases/dominance_bias
         policy_testing/fuzzing_biases/policy_heuristic_bias
         policy_testing/fuzzing_biases/slope_bias
