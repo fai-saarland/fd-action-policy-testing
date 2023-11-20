@@ -14,7 +14,7 @@ class RandomSearch : public SearchEngine {
     State current_state;
     int last_action_cost;
     SearchStatus search_status;
-    std::map<StateID, OperatorID> visited_states; 
+    std::map<StateID, OperatorID> visited_states;
     virtual void initialize() override;
     virtual SearchStatus step() override;
 
@@ -26,7 +26,10 @@ public:
 
 
 private:
-    std::shared_ptr<utils::RandomNumberGenerator> rng;
+    utils::RandomNumberGenerator rng;
+    int max_steps;
+    int num_steps;
+    Plan plan;
 };
 
 
