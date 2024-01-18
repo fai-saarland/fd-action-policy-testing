@@ -17,7 +17,7 @@ class LabelledTransitionSystem;
  * occur in a set of LTS
  */
 class AlternativeLabelRelation {
-    [[maybe_unused]] Labels *labels; // TODO: currently unused private field
+    Labels *labels; // TODO: currently unused private field
     int num_labels;
     int num_ltss;
 

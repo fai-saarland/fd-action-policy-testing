@@ -17,7 +17,7 @@ class DominanceRelation;
  * occur in a set of LTS
  */
 class LabelRelationIdentity {
-    [[maybe_unused]] Labels *labels; // TODO: currently unused private field
+    Labels *labels; // TODO: currently unused private field
     int num_labels;
 
 public:

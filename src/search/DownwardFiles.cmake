@@ -914,8 +914,8 @@ fast_downward_plugin(
         policy_testing/oracle
         policy_testing/pool_filter
         policy_testing/fuzzing_bias
-        policy_testing/policies/asnets
-        policy_testing/policies/asnet_policy
+        #policy_testing/policies/asnets
+        #policy_testing/policies/asnet_policy
         policy_testing/policies/heuristic_descend_policy
         policy_testing/policies/hill_climbing_policy
         policy_testing/policies/remote_policy
@@ -944,7 +944,7 @@ fast_downward_plugin(
         policy_testing/fuzzing_biases/policy_heuristic_bias
         policy_testing/fuzzing_biases/slope_bias
         policy_testing/pool_filters/novelty_filter
-        policy_testing/engines/asnet_benchmarking
+        #policy_testing/engines/asnet_benchmarking
         policy_testing/engines/testing_base_engine
         policy_testing/engines/pool_policy_tester
         policy_testing/engines/pool_fuzzer

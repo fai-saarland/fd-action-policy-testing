@@ -9,7 +9,7 @@ class SatisficingDominanceRelation;
  * occur in a set of LTS
  */
 class LabelRelationNoop {
-    [[maybe_unused]] Labels *labels; // TODO: currently unused private field
+    Labels *labels; // TODO: currently unused private field
     int num_labels;
     //Indicates whether labels are dominated by noop or other irrelevant
     //variables in theta
