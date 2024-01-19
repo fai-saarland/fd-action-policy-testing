@@ -22,7 +22,7 @@ DEFAULT_MAKE_PARAMETERS = []
 if os.name == "posix":
     MAKE = "make"
     try:
-        num_cpus = multiprocessing.cpu_count()
+        num_cpus = min(8,multiprocessing.cpu_count())
         if num_cpus > 1:
             num_cpus -= 1
     except NotImplementedError:
