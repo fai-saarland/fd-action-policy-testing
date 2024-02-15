@@ -11,6 +11,7 @@
 #include "task_proxy.h"
 
 #include "utils/logging.h"
+#include "utils/countdown_timer.h"
 
 #include <vector>
 
@@ -28,7 +29,7 @@ namespace successor_generator {
 class SuccessorGenerator;
 }
 
-enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
+enum SearchStatus {IN_PROGRESS, TIMEOUT, OOM, FAILED, SOLVED};
 
 class SearchAlgorithm {
     std::string description;
@@ -52,6 +53,7 @@ protected:
     OperatorCost cost_type;
     bool is_unit_cost;
     double max_time;
+    std::unique_ptr<utils::CountdownTimer> timer;
 
     virtual void initialize() {}
     virtual SearchStatus step() = 0;

@@ -44,7 +44,7 @@ static vector<string> replace_old_style_predefinitions(const vector<string> &arg
         string arg = args[i];
         bool is_last = (i == args.size() - 1);
 
-        if (arg == "--evaluator" || arg == "--heuristic" || arg == "--landmarks") {
+        if (arg == "--evaluator" || arg == "--heuristic" || arg == "--landmarks" || arg == "--policy") {
             if (has_search_argument)
                 input_error("predefinitions are forbidden after the '--search' argument");
             if (is_last)
@@ -194,6 +194,11 @@ string usage(const string &progname) {
            "--help [NAME]\n"
            "    Prints help for all heuristics, open lists, etc. called NAME.\n"
            "    Without parameter: prints help for everything available\n"
+           "--remote-policy URL\n"
+           "    Connects to a remote policy at the specified url and uses\n"
+           "    the planning task provided by the policy instead of reading\n"
+           "    it from stdin. If used, it must be the first option on the\n"
+           "    command line.\n"
            "--internal-plan-file FILENAME\n"
            "    Plan will be output to a file called FILENAME\n\n"
            "--internal-previous-portfolio-plans COUNTER\n"

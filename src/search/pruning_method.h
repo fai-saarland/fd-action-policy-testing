@@ -36,7 +36,7 @@ public:
     explicit PruningMethod(const plugins::Options &opts);
     virtual ~PruningMethod() = default;
     virtual void initialize(const std::shared_ptr<AbstractTask> &task);
-    void prune_operators(const State &state, std::vector<OperatorID> &op_ids);
+    virtual void prune_operators(const State &state, std::vector<OperatorID> &op_ids);
     virtual void print_statistics() const;
 };
 

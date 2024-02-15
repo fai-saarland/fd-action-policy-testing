@@ -110,6 +110,22 @@ public:
     const std::vector<int> &get_predecessors(int var) const {
         return predecessors[var];
     }
+
+    [[nodiscard]] const IntRelation &get_pre_to_eff() const {
+        return pre_to_eff;
+    }
+
+    [[nodiscard]] const IntRelation &get_eff_to_pre() const {
+        return eff_to_pre;
+    }
+
+    [[nodiscard]] const IntRelation &get_successors() const {
+        return successors;
+    }
+
+    [[nodiscard]] const IntRelation &get_predecessors() const {
+        return predecessors;
+    }
 };
 
 /* Create or retrieve a causal graph from cache. If causal graphs are created

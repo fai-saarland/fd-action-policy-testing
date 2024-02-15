@@ -3,6 +3,11 @@
 
 #include <iostream>
 
+namespace utils {
+class HashState;
+}
+
+
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
 
@@ -35,7 +40,22 @@ public:
     bool operator!=(const StateID &other) const {
         return !(*this == other);
     }
+
+    std::strong_ordering operator<=>(const StateID &other) const {
+        return value <=> other.value;
+    }
+
+    explicit operator std::string() const {
+        return std::to_string(value);
+    }
+
+    void feed_to_hash_state(utils::HashState &hash_state) const;
 };
 
+namespace utils {
+inline void feed(HashState &hash_state, StateID id) {
+    id.feed_to_hash_state(hash_state);
+}
+}
 
 #endif

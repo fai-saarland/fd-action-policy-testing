@@ -27,6 +27,12 @@ public:
 
     void generate_applicable_ops(
         const State &state, std::vector<OperatorID> &applicable_ops) const;
+
+    [[nodiscard]] std::vector<OperatorID> generate_applicable_ops(const State &state) const {
+        std::vector<OperatorID> result;
+        generate_applicable_ops(state, result);
+        return result;
+    }
 };
 
 extern PerTaskInformation<SuccessorGenerator> g_successor_generators;

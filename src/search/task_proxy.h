@@ -16,6 +16,7 @@
 #include <iterator>
 #include <string>
 #include <vector>
+#include <optional>
 
 
 class AxiomsProxy;
@@ -362,6 +363,31 @@ public:
         return FactProxy(*task, task->get_operator_precondition(
                              op_index, fact_index, is_axiom));
     }
+
+    /// returns a sorted vector of unique precondition variable ids
+    std::vector<int> get_variables() {
+        std::vector<int> precondition_variables;
+        for (FactProxy fact : *this) {
+            precondition_variables.push_back(fact.get_variable().get_id());
+        }
+        std::sort(precondition_variables.begin(), precondition_variables.end());
+        for (int i = 1; i < precondition_variables.size(); ++i) {
+            if (precondition_variables[i - 1] == precondition_variables[i]) {
+                throw std::logic_error("multiple preconditions on one variable");
+            }
+        }
+        return precondition_variables;
+    }
+
+    /// returns the (first) condition on a variable if present
+    std::optional<FactProxy> get_condition(VariableProxy var) {
+        for (FactProxy fact : *this) {
+            if (var == fact.get_variable()) {
+                return fact;
+            }
+        }
+        return std::nullopt;
+    }
 };
 
 
@@ -425,6 +451,31 @@ public:
     EffectProxy operator[](std::size_t eff_index) const {
         assert(eff_index < size());
         return EffectProxy(*task, op_index, eff_index, is_axiom);
+    }
+
+    /// returns a sorted vector of unique precondition variable ids
+    std::vector<int> get_variables() {
+        std::vector<int> effect_variables;
+        for (EffectProxy effect : *this) {
+            effect_variables.push_back(effect.get_fact().get_variable().get_id());
+        }
+        std::sort(effect_variables.begin(), effect_variables.end());
+        for (int i = 1; i < effect_variables.size(); ++i) {
+            if (effect_variables[i - 1] == effect_variables[i]) {
+                throw std::logic_error("multiple effects on one variable");
+            }
+        }
+        return effect_variables;
+    }
+
+    /// returns the (first) effect on a variable if present
+    std::optional<EffectProxy> get_effect(VariableProxy var) {
+        for (EffectProxy effectProxy : *this) {
+            if (var == effectProxy.get_fact().get_variable()) {
+                return effectProxy;
+            }
+        }
+        return std::nullopt;
     }
 };
 
@@ -592,6 +643,8 @@ public:
           const PackedStateBin *buffer, std::vector<int> &&values);
     // Construct a state with only unpacked data.
     State(const AbstractTask &task, std::vector<int> &&values);
+    // Construct a dummy state
+    State();
 
     bool operator==(const State &other) const;
     bool operator!=(const State &other) const;
@@ -618,6 +671,10 @@ public:
        exists. */
     const std::vector<int> &get_unpacked_values() const;
 
+    /* Unpacks and ignores the state values. */
+    const std::vector<int> &get_values() const;
+
+
     /* Access the packed values. Accessing packed values on states that do
        not have them (unregistered states) is an error. */
     const PackedStateBin *get_buffer() const;
@@ -631,6 +688,22 @@ public:
       unpack() to ensure the data exists.
     */
     State get_unregistered_successor(const OperatorProxy &op) const;
+
+
+    friend std::ostream &operator<<(std::ostream &os, const State &s) {
+        os << "[";
+        bool first = true;
+        for (auto fact: s) {
+            if (first) {
+                first = false;
+            } else {
+                os << ", ";
+            }
+            os << fact.get_name();
+        }
+        os << "]";
+        return os;
+    }
 };
 
 
@@ -852,5 +925,10 @@ inline const std::vector<int> &State::get_unpacked_values() const {
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     return *values;
+}
+
+inline const std::vector<int> &State::get_values() const {
+    unpack();
+    return get_unpacked_values();
 }
 #endif

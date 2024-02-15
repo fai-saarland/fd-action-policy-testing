@@ -1,8 +1,7 @@
-release = ["-DCMAKE_BUILD_TYPE=Release"]
-debug = ["-DCMAKE_BUILD_TYPE=Debug"]
-release_no_lp = ["-DCMAKE_BUILD_TYPE=Release", "-DUSE_LP=NO"]
-# USE_GLIBCXX_DEBUG is not compatible with USE_LP (see issue983).
-glibcxx_debug = ["-DCMAKE_BUILD_TYPE=Debug", "-DUSE_LP=NO", "-DUSE_GLIBCXX_DEBUG=YES"]
+testing_options = [ "-DDISABLE_LIBRARIES_BY_DEFAULT=YES", "-DLIBRARY_POLICY_TESTING_ENABLED=YES"]
+
+release = ["-DCMAKE_BUILD_TYPE=Release"] + testing_options
+debug = ["-DCMAKE_BUILD_TYPE=Debug"] + testing_options
 minimal = ["-DCMAKE_BUILD_TYPE=Release", "-DDISABLE_LIBRARIES_BY_DEFAULT=YES"]
 
 DEFAULT = "release"

@@ -23,7 +23,7 @@
 #   -DCMAKE_BUILD_TYPE=type
 # to the cmake call.
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 
 project(fast-downward
     DESCRIPTION "Fast Downward is a domain-independent classical planning system."
@@ -43,3 +43,14 @@ add_custom_command(TARGET translate POST_BUILD
 
 # Add search component as a subproject.
 add_subdirectory(search)
+
+
+# Format code
+#find_program(UNCRUSTIFY "uncrustify")
+#IF(UNCRUSTIFY)
+#    add_custom_target(format COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../misc/style/run-uncrustify.py -m -f)
+#    add_dependencies(downward format)
+#    MESSAGE("-- uncrustify found, code will be auto-formatted")
+#ELSEIF()
+#    MESSAGE("uncrustify not found, code will not be auto-formatted")
+#ENDIF()

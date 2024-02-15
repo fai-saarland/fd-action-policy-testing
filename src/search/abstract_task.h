@@ -101,6 +101,8 @@ public:
     virtual void convert_ancestor_state_values(
         std::vector<int> &values,
         const AbstractTask *ancestor_task) const = 0;
+
+    std::string get_sas() const;
 };
 
 #endif

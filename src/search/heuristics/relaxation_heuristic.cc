@@ -44,7 +44,7 @@ RelaxationHeuristic::RelaxationHeuristic(const plugins::Options &opts)
     VariablesProxy variables = task_proxy.get_variables();
     proposition_offsets.reserve(variables.size());
     PropID offset = 0;
-    for (VariableProxy var : variables) {
+    for (VariableProxy var: variables) {
         proposition_offsets.push_back(offset);
         offset += var.get_domain_size();
     }
@@ -53,7 +53,7 @@ RelaxationHeuristic::RelaxationHeuristic(const plugins::Options &opts)
     // Build goal propositions.
     GoalsProxy goals = task_proxy.get_goals();
     goal_propositions.reserve(goals.size());
-    for (FactProxy goal : goals) {
+    for (FactProxy goal: goals) {
         PropID prop_id = get_prop_id(goal);
         propositions[prop_id].is_goal = true;
         goal_propositions.push_back(prop_id);
@@ -62,9 +62,9 @@ RelaxationHeuristic::RelaxationHeuristic(const plugins::Options &opts)
     // Build unary operators for operators and axioms.
     unary_operators.reserve(
         task_properties::get_num_total_effects(task_proxy));
-    for (OperatorProxy op : task_proxy.get_operators())
+    for (OperatorProxy op: task_proxy.get_operators())
         build_unary_operators(op);
-    for (OperatorProxy axiom : task_proxy.get_axioms())
+    for (OperatorProxy axiom: task_proxy.get_axioms())
         build_unary_operators(axiom);
 
     // Simplify unary operators.
@@ -79,7 +79,7 @@ RelaxationHeuristic::RelaxationHeuristic(const plugins::Options &opts)
 
     int num_unary_ops = unary_operators.size();
     for (OpID op_id = 0; op_id < num_unary_ops; ++op_id) {
-        for (PropID precond : get_preconditions(op_id))
+        for (PropID precond: get_preconditions(op_id))
             precondition_of_vectors[precond].push_back(op_id);
     }
 
@@ -123,14 +123,14 @@ void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op) {
     vector<PropID> precondition_props;
     PreconditionsProxy preconditions = op.get_preconditions();
     precondition_props.reserve(preconditions.size());
-    for (FactProxy precondition : preconditions) {
+    for (FactProxy precondition: preconditions) {
         precondition_props.push_back(get_prop_id(precondition));
     }
-    for (EffectProxy effect : op.get_effects()) {
+    for (EffectProxy effect: op.get_effects()) {
         PropID effect_prop = get_prop_id(effect.get_fact());
         EffectConditionsProxy eff_conds = effect.get_conditions();
         precondition_props.reserve(preconditions.size() + eff_conds.size());
-        for (FactProxy eff_cond : eff_conds) {
+        for (FactProxy eff_cond: eff_conds) {
             precondition_props.push_back(get_prop_id(eff_cond));
         }
 
@@ -300,5 +300,39 @@ void RelaxationHeuristic::simplify() {
     if (log.is_at_least_normal()) {
         log << " done! [" << unary_operators.size() << " unary operators]" << endl;
     }
+}
+
+int RelaxationHeuristic::compute_path_heuristic(const State &start, const State &target) {
+    //build goal propositions for target
+    for (PropID prop_id: goal_propositions) {
+        propositions[prop_id].is_goal = false;
+    }
+    goal_propositions.resize(0);
+    goal_propositions.reserve(target.size());
+    for (FactProxy factProxy: target) {
+        PropID prop_id = get_prop_id(factProxy);
+        propositions[prop_id].is_goal = true;
+        goal_propositions.push_back(prop_id);
+    }
+
+    int h = compute_heuristic(start);
+
+    // reset goal_propositions to make sure that heuristic can be used in expected way after this method has been called
+    // TODO check if this is really necessary
+
+    for (FactProxy factProxy: target) {
+        PropID prop_id = get_prop_id(factProxy);
+        propositions[prop_id].is_goal = false;
+    }
+    GoalsProxy goals = task_proxy.get_goals();
+    goal_propositions.resize(0);
+    goal_propositions.reserve(goals.size());
+    for (FactProxy goal: goals) {
+        PropID prop_id = get_prop_id(goal);
+        propositions[prop_id].is_goal = true;
+        goal_propositions.push_back(prop_id);
+    }
+
+    return h;
 }
 }

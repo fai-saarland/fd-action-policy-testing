@@ -27,7 +27,7 @@ class OperatorID {
     int index;
 
 public:
-    explicit OperatorID(int index)
+    explicit constexpr OperatorID(int index)
         : index(index) {
     }
 

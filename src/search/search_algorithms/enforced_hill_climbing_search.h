@@ -21,6 +21,10 @@ enum class PreferredUsage {
     RANK_PREFERRED_FIRST
 };
 
+class InitException : public std::exception {
+    // exception to be thrown when engine initialization would otherwise be terminated with utils::exit_with
+};
+
 /*
   Enforced hill-climbing with deferred evaluation.
 
@@ -44,6 +48,8 @@ class EnforcedHillClimbingSearch : public SearchAlgorithm {
     std::map<int, std::pair<int, int>> d_counts;
     int num_ehc_phases;
     int last_num_expanded;
+
+    const bool prevent_exit;
 
     void insert_successor_into_open_list(
         const EvaluationContext &eval_context,

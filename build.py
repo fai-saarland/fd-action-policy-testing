@@ -13,16 +13,17 @@ DEFAULT_CONFIG_NAME = CONFIGS.pop("DEFAULT")
 DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
 CMAKE = "cmake"
 CMAKE_GENERATOR = None
+MAX_CPUS = 10
 if os.name == "posix":
     CMAKE_GENERATOR = "Unix Makefiles"
 elif os.name == "nt":
     CMAKE_GENERATOR = "NMake Makefiles"
 try:
     # Number of usable CPUs (Unix only)
-    NUM_CPUS = len(os.sched_getaffinity(0))
+    NUM_CPUS = min(MAX_CPUS, len(os.sched_getaffinity(0)))
 except AttributeError:
     # Number of available CPUs as a fall-back (may be None)
-    NUM_CPUS = os.cpu_count()
+    NUM_CPUS = min(MAX_CPUS, os.cpu_count())
 
 def print_usage():
     script_name = os.path.basename(__file__)

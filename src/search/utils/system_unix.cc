@@ -34,6 +34,7 @@
 #include <new>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/resource.h>
 
 #if OPERATING_SYSTEM == OSX
 #include <mach/mach.h>
@@ -267,6 +268,31 @@ void report_exit_code_reentrant(ExitCode exitcode) {
 
 int get_process_id() {
     return getpid();
+}
+
+unsigned long get_current_memory_in_kb() {
+    unsigned long vsize;
+    std::string ignore;
+    std::ifstream ifs("/proc/self/stat", std::ios_base::in);
+    ifs >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
+    >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
+    >> ignore >> ignore >> vsize;
+    return vsize / 1024;
+}
+
+unsigned long get_mem_limit_in_kb() {
+    rlimit current_limit{};
+    getrlimit(RLIMIT_AS, &current_limit);
+    return current_limit.rlim_cur / 1024;
+}
+
+unsigned long get_available_mem_in_kb() {
+    unsigned long mem_limit = get_mem_limit_in_kb();
+    unsigned long current_mem = get_current_memory_in_kb();
+    if (current_mem >= mem_limit) {
+        return 0;
+    }
+    return mem_limit - current_mem;
 }
 }
 

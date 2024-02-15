@@ -59,8 +59,6 @@ protected:
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
 
-    enum {DEAD_END = -1, NO_VALUE = -2};
-
     virtual int compute_heuristic(const State &ancestor_state) = 0;
 
     /*
@@ -73,6 +71,7 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
+    enum {DEAD_END = -1, NO_VALUE = -2};
     explicit Heuristic(const plugins::Options &opts);
     virtual ~Heuristic() override;
 

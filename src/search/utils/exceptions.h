@@ -2,17 +2,18 @@
 #define UTILS_EXCEPTIONS_H
 
 #include <string>
+#include <exception>
 
 namespace utils {
 // Base class for custom exception types.
-class Exception {
+class Exception : public std::exception {
 protected:
     const std::string msg;
 public:
     explicit Exception(const std::string &msg);
-    virtual ~Exception() = default;
+    ~Exception() override = default;
 
-    std::string get_message() const;
+    [[nodiscard]] std::string get_message() const;
     virtual void print() const;
 };
 }

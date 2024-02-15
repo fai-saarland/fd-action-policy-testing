@@ -30,8 +30,7 @@
 #    hides the option to enable the library in cmake GUIs like ccmake.
 # CORE_LIBRARY always enables the library (even if DISABLE_LIBRARIES_BY_DEFAULT
 #    is used) and hides the option to disable it in CMake GUIs like ccmake.
-
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 
 # Path containing custom CMake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -940,4 +939,118 @@ create_fast_downward_library(
     SOURCES
         algorithms/sccs
     DEPENDENCY_ONLY
+)
+
+if(LIBRARY_POLICY_TESTING_ENABLED)
+    find_package(Boost 1.74 COMPONENTS serialization iostreams REQUIRED)
+    include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+    target_link_libraries(downward PUBLIC ${Boost_LIBRARIES})
+
+    add_compile_definitions(POLICY_TESTING_ENABLED)
+    if (DEFINED ENV{PHRM_ROOT})
+        set(PHRM_ROOT $ENV{PHRM_ROOT})
+    elseif (DEFINED ENV{PHEROMONE_ROOT})
+        set(PHRM_ROOT $ENV{PHEROMONE_ROOT})
+    else()
+        message(SEND_ERROR "Missing pheromone library."
+                "Set PRHM_ROOT or PHEROMONE_ROOT environment variable.")
+    endif()
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(PHRM REQUIRED grpc++ protobuf)
+    include_directories(${PHRM_ROOT}/include)
+    target_link_libraries(downward PUBLIC ${PHRM_ROOT}/libpheromone.a ${PHRM_LIBRARIES})
+endif()
+
+create_fast_downward_library(
+    NAME POLICY_TESTING
+    HELP "Framework for action policy testing."
+    SOURCES
+        policy_testing/pool
+        policy_testing/utils
+        policy_testing/state_regions
+        policy_testing/novelty_store
+        policy_testing/plan_file_parser
+        policy_testing/testing_environment
+        policy_testing/component
+        policy_testing/policy
+        policy_testing/cost_estimator
+        policy_testing/oracle
+        policy_testing/pool_filter
+        policy_testing/fuzzing_bias
+        policy_testing/policies/heuristic_descend_policy
+        policy_testing/policies/hill_climbing_policy
+        policy_testing/policies/remote_policy
+        policy_testing/oracles/aras_wrapper
+        policy_testing/oracles/aras_oracle
+        policy_testing/oracles/invertible_domain_oracle
+        policy_testing/oracles/bounded_lookahead_oracle
+        policy_testing/oracles/cost_estimator_based_oracle
+        policy_testing/metamorphic_oracles/numeric_dominance_oracle
+        policy_testing/metamorphic_oracles/atomic_unrelaxation_oracle
+        policy_testing/metamorphic_oracles/unrelaxation_oracle
+        policy_testing/metamorphic_oracles/iterative_improvement_oracle
+        policy_testing/metamorphic_oracles/composite_oracle
+        policy_testing/metamorphic_oracles/sequence_oracle
+        policy_testing/cost_estimators/internal_planner_cost_estimator
+        policy_testing/cost_estimators/external_planner_cost_estimator
+        policy_testing/fuzzing_biases/plan_length_bias
+        policy_testing/fuzzing_biases/heuristic_bias
+        policy_testing/fuzzing_biases/internalPlannerOracle_bias
+        policy_testing/fuzzing_biases/loopiness_bias
+        policy_testing/fuzzing_biases/surface_bias
+        policy_testing/fuzzing_biases/detour_bias
+        policy_testing/pool_filters/novelty_filter
+        policy_testing/engines/testing_base_engine
+        policy_testing/engines/pool_policy_tester
+        policy_testing/engines/pool_fuzzer
+        policy_testing/engines/simplified_pool_fuzzer
+        policy_testing/engines/dummy_engine
+        policy_testing/additions/tasks/modified_init_goals_task
+        policy_testing/simulations/simulations_manager
+        policy_testing/simulations/merge_and_shrink/abstraction_builder
+        policy_testing/simulations/merge_and_shrink/abstraction
+        policy_testing/simulations/merge_and_shrink/dominance_relation
+        policy_testing/simulations/merge_and_shrink/label
+        policy_testing/simulations/merge_and_shrink/labelled_transition_system
+        policy_testing/simulations/merge_and_shrink/label_reducer
+        policy_testing/simulations/merge_and_shrink/label_relation
+        policy_testing/simulations/merge_and_shrink/label_relation_identity
+        policy_testing/simulations/merge_and_shrink/label_relation_noop
+        policy_testing/simulations/merge_and_shrink/labels
+        policy_testing/simulations/merge_and_shrink/ld_simulation
+        policy_testing/simulations/merge_and_shrink/merge_strategy
+        policy_testing/simulations/merge_and_shrink/opt_order
+        policy_testing/simulations/merge_and_shrink/shrink_bisimulation
+        policy_testing/simulations/merge_and_shrink/shrink_bucket_based
+        policy_testing/simulations/merge_and_shrink/shrink_composite
+        policy_testing/simulations/merge_and_shrink/shrink_fh
+        policy_testing/simulations/merge_and_shrink/shrink_own_labels
+        policy_testing/simulations/merge_and_shrink/shrink_strategy
+        policy_testing/simulations/merge_and_shrink/simulation_relation
+        policy_testing/simulations/merge_and_shrink/simulation_simple
+        policy_testing/simulations/merge_and_shrink/variable_order_finder
+        policy_testing/simulations/merge_and_shrink/variable_partition_finder
+        policy_testing/simulations/merge_and_shrink/alternative_label_relation
+        policy_testing/simulations/merge_and_shrink/merge_linear
+        policy_testing/simulations/merge_and_shrink/merge_criterion
+        policy_testing/simulations/merge_and_shrink/merge_linear_criteria
+        policy_testing/simulations/merge_and_shrink/merge_dfp
+        policy_testing/simulations/numeric_dominance/int_epsilon
+        policy_testing/simulations/numeric_dominance/numeric_dominance_relation
+        policy_testing/simulations/numeric_dominance/numeric_label_relation
+        policy_testing/simulations/numeric_dominance/numeric_simulation_relation
+        policy_testing/simulations/numeric_dominance/tau_labels
+        policy_testing/simulations/utils/equivalence_relation
+        policy_testing/simulations/utils/scc
+    DEPENDS
+        task_properties
+        search_common
+        extra_tasks
+        max_heuristic
+        ff_heuristic
+        landmark_cut_heuristic
+        plugin_astar
+        enforced_hill_climbing_search
+        blind_search_heuristic
 )

@@ -111,7 +111,7 @@ protected:
     Proposition *get_proposition(const FactProxy &fact);
 public:
     explicit RelaxationHeuristic(const plugins::Options &options);
-
+    int compute_path_heuristic(const State &start, const State &target);
     virtual bool dead_ends_are_reliable() const override;
 };
 }

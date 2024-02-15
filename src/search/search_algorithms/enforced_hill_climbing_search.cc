@@ -74,7 +74,8 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       current_eval_context(state_registry.get_initial_state(), &statistics),
       current_phase_start_g(-1),
       num_ehc_phases(0),
-      last_num_expanded(-1) {
+      last_num_expanded(-1),
+      prevent_exit(opts.get<bool>("prevent_exit")) {
     for (const shared_ptr<Evaluator> &eval : preferred_operator_evaluators) {
         eval->get_path_dependent_evaluators(path_dependent_evaluators);
     }
@@ -118,10 +119,15 @@ void EnforcedHillClimbingSearch::initialize() {
 
     if (dead_end) {
         log << "Initial state is a dead end, no solution" << endl;
-        if (evaluator->dead_ends_are_reliable())
-            utils::exit_with(ExitCode::SEARCH_UNSOLVABLE);
-        else
-            utils::exit_with(ExitCode::SEARCH_UNSOLVED_INCOMPLETE);
+        if (prevent_exit) {
+            throw InitException();
+        } else {
+            if (evaluator->dead_ends_are_reliable()) {
+                utils::exit_with(ExitCode::SEARCH_UNSOLVABLE);
+            } else {
+                utils::exit_with(ExitCode::SEARCH_UNSOLVED_INCOMPLETE);
+            }
+        }
     }
 
     SearchNode node = search_space.get_node(current_eval_context.get_state());
@@ -286,6 +292,7 @@ public:
             "preferred",
             "use preferred operators of these evaluators",
             "[]");
+        add_option<bool>("prevent_exit", "false");
         SearchAlgorithm::add_options_to_feature(*this);
     }
 };

@@ -8,7 +8,6 @@
 #include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
-#include "utils/countdown_timer.h"
 #include "utils/rng_options.h"
 #include "utils/system.h"
 #include "utils/timer.h"
@@ -44,7 +43,7 @@ SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts)
     : description(opts.get_unparsed_config()),
       status(IN_PROGRESS),
       solution_found(false),
-      task(tasks::g_root_task),
+      task(opts.contains("transform") ? opts.get<shared_ptr<AbstractTask>>("transform") : tasks::g_root_task),
       task_proxy(*task),
       log(utils::get_log_from_options(opts)),
       state_registry(task_proxy),
@@ -85,17 +84,23 @@ void SearchAlgorithm::set_plan(const Plan &p) {
 
 void SearchAlgorithm::search() {
     initialize();
-    utils::CountdownTimer timer(max_time);
+    assert(!timer);
+    timer = make_unique<utils::CountdownTimer>(max_time);
     while (status == IN_PROGRESS) {
         status = step();
-        if (timer.is_expired()) {
+        if (timer->is_expired()) {
             log << "Time limit reached. Abort search." << endl;
             status = TIMEOUT;
             break;
         }
+        if (utils::is_out_of_memory()) {
+            utils::g_log << "Memory limit reached. Abort search." << endl;
+            status = OOM;
+            break;
+        }
     }
     // TODO: Revise when and which search times are logged.
-    log << "Actual search time: " << timer.get_elapsed_time() << endl;
+    log << "Actual search time: " << timer->get_elapsed_time() << endl;
 }
 
 bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
@@ -148,6 +153,10 @@ void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature) {
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
+    feature.add_option<shared_ptr<AbstractTask>>(
+        "transform",
+        "Optional task transformation for the search algorithm.",
+        plugins::ArgumentInfo::NO_DEFAULT);
     utils::add_log_options_to_feature(feature);
 }
 

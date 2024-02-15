@@ -149,6 +149,21 @@ public:
         return (*entries)[state_id];
     }
 
+    const Entry &read(const StateRegistry &registry, StateID state) const {
+        const segmented_vector::SegmentedVector<Entry> *entries = get_entries(&registry);
+        if (!entries) {
+            return default_value;
+        }
+        int state_id = state.value;
+        assert(state != StateID::no_state);
+        assert(utils::in_bounds(state_id, registry));
+        int num_entries = entries->size();
+        if (state_id >= num_entries) {
+            return default_value;
+        }
+        return (*entries)[state_id];
+    }
+
     virtual void notify_service_destroyed(const StateRegistry *registry) override {
         delete entries_by_registry[registry];
         entries_by_registry.erase(registry);

@@ -186,7 +186,7 @@ public:
 
     /*
       Returns the state that was registered at the given ID. The ID must refer
-      to a state in this registry. Do not mix IDs from from different registries.
+      to a state in this registry. Do not mix IDs from different registries.
     */
     State lookup_state(StateID id) const;
 
@@ -209,6 +209,12 @@ public:
       as it includes duplicate checking.
     */
     State get_successor_state(const State &predecessor, const OperatorProxy &op);
+
+    /*
+      Adds states represented as vector<int> to the registry and returns
+      resulting state.
+     */
+    State insert_state(const std::vector<int> &state);
 
     /*
       Returns the number of states registered so far.
