@@ -71,8 +71,8 @@ DecoratedASTNodePtr ASTNode::decorate() const {
 
 LetNode::LetNode(const string &variable_name, ASTNodePtr variable_definition,
                  ASTNodePtr nested_value)
-    : variable_name(variable_name), variable_definition(move(variable_definition)),
-      nested_value(move(nested_value)) {
+    : variable_name(variable_name), variable_definition(std::move(variable_definition)),
+      nested_value(std::move(nested_value)) {
 }
 
 DecoratedASTNodePtr LetNode::decorate(DecorateContext &context) const {
@@ -96,7 +96,7 @@ DecoratedASTNodePtr LetNode::decorate(DecorateContext &context) const {
         context.remove_variable(variable_name);
     }
     return utils::make_unique_ptr<DecoratedLetNode>(
-        variable_name, move(decorated_definition), move(decorated_nested_value));
+        variable_name, std::move(decorated_definition), std::move(decorated_nested_value));
 }
 
 void LetNode::dump(string indent) const {
@@ -119,8 +119,8 @@ FunctionCallNode::FunctionCallNode(const string &name,
                                    vector<ASTNodePtr> &&positional_arguments,
                                    unordered_map<string, ASTNodePtr> &&keyword_arguments,
                                    const string &unparsed_config)
-    : name(name), positional_arguments(move(positional_arguments)),
-      keyword_arguments(move(keyword_arguments)), unparsed_config(unparsed_config) {
+    : name(name), positional_arguments(std::move(positional_arguments)),
+      keyword_arguments(std::move(keyword_arguments)), unparsed_config(unparsed_config) {
 }
 
 static DecoratedASTNodePtr decorate_and_convert(
@@ -132,7 +132,7 @@ static DecoratedASTNodePtr decorate_and_convert(
         utils::TraceBlock block(context, "Adding casting node");
         if (node_type.can_convert_into(target_type)) {
             return utils::make_unique_ptr<ConvertNode>(
-                move(decorated_node), node_type, target_type);
+                std::move(decorated_node), node_type, target_type);
         } else {
             ostringstream message;
             message << "Cannot convert from type '"
@@ -171,10 +171,10 @@ bool FunctionCallNode::collect_argument(
                 *max_node, arg_info.type, context);
         }
         decorated_arg = utils::make_unique_ptr<CheckBoundsNode>(
-            move(decorated_arg), move(decorated_min_node), move(decorated_max_node));
+                std::move(decorated_arg), std::move(decorated_min_node), std::move(decorated_max_node));
     }
-    FunctionArgument function_arg(key, move(decorated_arg), arg_info.lazy_construction);
-    arguments.insert({key, move(function_arg)});
+    FunctionArgument function_arg(key, std::move(decorated_arg), arg_info.lazy_construction);
+    arguments.insert({key, std::move(function_arg)});
     return true;
 }
 
@@ -305,9 +305,9 @@ DecoratedASTNodePtr FunctionCallNode::decorate(DecorateContext &context) const {
 
     vector<FunctionArgument> arguments;
     for (auto &key_and_arg : arguments_by_key) {
-        arguments.push_back(move(key_and_arg.second));
+        arguments.push_back(std::move(key_and_arg.second));
     }
-    return utils::make_unique_ptr<DecoratedFunctionCallNode>(feature, move(arguments),
+    return utils::make_unique_ptr<DecoratedFunctionCallNode>(feature, std::move(arguments),
                                                              unparsed_config);
 }
 
@@ -335,7 +335,7 @@ const plugins::Type &FunctionCallNode::get_type(DecorateContext &context) const 
 }
 
 ListNode::ListNode(vector<ASTNodePtr> &&elements)
-    : elements(move(elements)) {
+    : elements(std::move(elements)) {
 }
 
 DecoratedASTNodePtr ListNode::decorate(DecorateContext &context) const {
@@ -360,12 +360,12 @@ DecoratedASTNodePtr ListNode::decorate(DecorateContext &context) const {
             if (element_type != *common_element_type) {
                 assert(element_type.can_convert_into(*common_element_type));
                 decorated_element_node = utils::make_unique_ptr<ConvertNode>(
-                    move(decorated_element_node), element_type, *common_element_type);
+                        std::move(decorated_element_node), element_type, *common_element_type);
             }
-            decorated_elements.push_back(move(decorated_element_node));
+            decorated_elements.push_back(std::move(decorated_element_node));
         }
     }
-    return utils::make_unique_ptr<DecoratedListNode>(move(decorated_elements));
+    return utils::make_unique_ptr<DecoratedListNode>(std::move(decorated_elements));
 }
 
 void ListNode::dump(string indent) const {

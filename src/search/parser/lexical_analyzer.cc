@@ -98,6 +98,6 @@ TokenStream split_tokens(const string &text) {
                           highlight_position(text, start));
         }
     }
-    return TokenStream(move(tokens));
+    return TokenStream(std::move(tokens));
 }
 }

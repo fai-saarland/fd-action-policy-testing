@@ -4,8 +4,6 @@
 
 #include "../simulations/merge_and_shrink/abstraction_builder.h"
 
-#include "../../plugins/plugin.h"
-
 namespace policy_testing {
 AtomicUnrelaxationOracle::AtomicUnrelaxationOracle(const plugins::Options &opts)
     : UnrelaxationOracle(opts) {

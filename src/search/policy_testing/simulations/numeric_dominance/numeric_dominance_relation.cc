@@ -37,6 +37,7 @@ NumericDominanceRelation<T>::init_simulation(Abstraction *_abs) {
     return res;
 }
 
+/*
 template<typename T>
 bool NumericDominanceRelation<T>::pruned_state(const State &state) const {
     for (auto &sim: simulations) {
@@ -46,6 +47,7 @@ bool NumericDominanceRelation<T>::pruned_state(const State &state) const {
     }
     return false;
 }
+ */
 
 template<typename T>
 T NumericDominanceRelation<T>::q_dominates_value(const State &t, const State &s) const {
@@ -90,12 +92,14 @@ bool NumericDominanceRelation<T>::dominates(const State &t, const State &s, int 
     return total_value - g_diff >= 0;
 }
 
+/*
 template<typename T>
 bool NumericDominanceRelation<T>::strictly_dominates(const State &t, const State &s) const {
     return dominates(t, s, 0) && !dominates(s, t, 0);
 }
+ */
 
-
+/*
 template<typename T>
 bool NumericDominanceRelation<T>::strictly_dominates_initial_state(const State &t) const {
     const unsigned int num_variables = global_simulation_task()->get_num_variables();
@@ -105,6 +109,7 @@ bool NumericDominanceRelation<T>::strictly_dominates_initial_state(const State &
     }
     return dominates_parent(copy_t, initial_state, 0) && !dominates_parent(initial_state, copy_t, 0);
 }
+ */
 
 
 template<typename T>
@@ -123,10 +128,11 @@ bool NumericDominanceRelation<T>::dominates_parent(const std::vector<int> &state
     return total_value - action_cost >= 0;
 }
 
+/*
 template<typename T>
 bool NumericDominanceRelation<T>::action_selection_pruning(const State &state,
                                                            std::vector<OperatorID> &applicable_operators,
-                                                           /*SearchProgress & search_progress,*/ OperatorCost cost_type)
+                                                           OperatorCost cost_type)
 const {
     for (int i = 0; i < global_simulation_task()->get_num_variables(); ++i) {
         parent[i] = state[i].get_value();
@@ -173,11 +179,13 @@ const {
 
     return false;
 }
+ */
 
+/*
 template<typename T>
 void NumericDominanceRelation<T>::prune_dominated_by_parent_or_initial_state(const State &state,
                                                                              std::vector<OperatorID> &applicable_operators,
-                                                                             /*SearchProgress & search_progress,*/ bool parent_ids_stored,
+                                                                             bool parent_ids_stored,
                                                                              bool compare_against_parent,
                                                                              bool compare_against_initial_state,
                                                                              OperatorCost cost_type) const {
@@ -302,6 +310,7 @@ void NumericDominanceRelation<T>::prune_dominated_by_parent_or_initial_state(con
                        }),
         applicable_operators.end());
 }
+ */
 
 
 template<typename T>

@@ -8,7 +8,6 @@
 #include "../../task_utils/successor_generator.h"
 
 
-#include "../../plugins/plugin.h"
 #include "../../heuristic.h"
 #include "../../evaluation_context.h"
 
@@ -569,8 +568,8 @@ PolicyCost IterativeImprovementOracle::lookahead_search(Policy &policy, const St
 
         int curr_h = stored_h;
         if (lookahead_heuristic && deferred_evaluation) {
-            EvaluationContext ctxt(current_state);
-            EvaluationResult res = lookahead_heuristic->compute_result(ctxt);
+            EvaluationContext context(current_state);
+            EvaluationResult res = lookahead_heuristic->compute_result(context);
             if (res.is_infinite()) {
                 continue;
             }
@@ -583,13 +582,13 @@ PolicyCost IterativeImprovementOracle::lookahead_search(Policy &policy, const St
         for (const auto &applicable_op : applicable_ops) {
             State succ = registry.get_successor_state(current_state, proxy.get_operators()[applicable_op]);
             const PolicyCost succ_g = policy.get_operator_cost(applicable_op) + current_g;
-            EvaluationContext ctxt(succ);
+            EvaluationContext context(succ);
             int h_value = 0;
             if (lookahead_heuristic) {
                 if (deferred_evaluation) {
                     h_value = curr_h;
                 } else {
-                    EvaluationResult succ_h = lookahead_heuristic->compute_result(ctxt);
+                    EvaluationResult succ_h = lookahead_heuristic->compute_result(context);
                     if (succ_h.is_infinite()) {
                         continue;
                     }

@@ -26,7 +26,7 @@ Token::Token(const string &content, TokenType type)
 }
 
 TokenStream::TokenStream(vector<Token> &&tokens)
-    : tokens(move(tokens)), pos(0) {
+    : tokens(std::move(tokens)), pos(0) {
 }
 
 bool TokenStream::has_tokens(int n) const {

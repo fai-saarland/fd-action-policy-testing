@@ -117,8 +117,6 @@ void LDSimulation::compute_numeric_dominance_relation(int truncate_value,
 
     std::vector<LabelledTransitionSystem *> ltss_simple;
     // Generate LTSs and initialize simulation relations
-    DEBUG_MSG(std::cout << "Building LTSs and Simulation Relations:";
-              );
     for (auto a: abstractions) {
         if (!a) {
             continue;
@@ -128,17 +126,8 @@ void LDSimulation::compute_numeric_dominance_relation(int truncate_value,
         if (!a->is_solvable()) {
             utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
         }
-        int lts_size, lts_trs;
         ltss_simple.push_back(a->get_lts(labelMap));
-        lts_size = ltss_simple.back()->size();
-        lts_trs = ltss_simple.back()->num_transitions();
-        DEBUG_MSG(std::cout << " " << lts_size << " (" << lts_trs << ")";
-                  );
     }
-    DEBUG_MSG(std::cout << std::endl;
-              );
-
-
     result->init(abstractions_not_null);
     result->compute_ld_simulation(ltss_simple, labelMap, dump);
 }
@@ -227,14 +216,14 @@ int LDSimulation::remove_useless_abstractions(std::vector<Abstraction *> &_abstr
     if (dominance_relation)
         dominance_relation->remove_useless();
     int removed_abstractions = 0;
-    for (int i = 0; i < _abstractions.size(); ++i) {
-        if (_abstractions[i] && _abstractions[i]->is_useless()) {
-            useless_vars.insert(std::end(useless_vars), std::begin(_abstractions[i]->get_varset()),
-                                std::end(_abstractions[i]->get_varset()));
-            _abstractions[i]->release_memory();
+    for (auto & _abstraction : _abstractions) {
+        if (_abstraction && _abstraction->is_useless()) {
+            useless_vars.insert(std::end(useless_vars), std::begin(_abstraction->get_varset()),
+                                std::end(_abstraction->get_varset()));
+            _abstraction->release_memory();
             //TODO: check if I should do labels->set_irrelevant_for_all_labels(abstractions[i]);
-            delete _abstractions[i];
-            _abstractions[i] = nullptr;
+            delete _abstraction;
+            _abstraction = nullptr;
 
             removed_abstractions++;
         }
@@ -242,7 +231,7 @@ int LDSimulation::remove_useless_abstractions(std::vector<Abstraction *> &_abstr
     return removed_abstractions;
 }
 
-
+/*
 double LDSimulation::estimated_memory_MB(const std::vector<Abstraction *> &all_abstractions) {
     double total_mem = 0;
     for (auto abs: all_abstractions) {
@@ -252,6 +241,7 @@ double LDSimulation::estimated_memory_MB(const std::vector<Abstraction *> &all_a
     std::cout << "Total mem: " << total_mem << std::endl;
     return total_mem;
 }
+ */
 
 // Just main loop copied from merge_and_shrink heuristic
 void LDSimulation::complete_heuristic(MergeStrategy *merge_strategy, ShrinkStrategy *shrink_strategy,
@@ -780,46 +770,22 @@ void LDSimulation::compute_ld_simulation(SimulationType simulation_type,
     LabelMap labelMap(labels.get());
 
     std::vector<LabelledTransitionSystem *> ltss_simple;
-    //vector<LTSComplex *> ltss_complex;
     // Generate LTSs and initialize simulation relations
-    DEBUG_MSG(std::cout << "Building LTSs and Simulation Relations:";
-              );
     for (auto a: abstractions) {
         a->compute_distances();
         if (!a->is_solvable()) {
             utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
         }
-        int lts_size, lts_trs;
-        //if (complex_lts) {
-        //     ltss_complex.push_back(a->get_lts_complex(labelMap));
-        //     lts_size= ltss_complex.back()->size();
-        //     lts_trs= ltss_complex.back()->num_transitions();
-        //} else {
         ltss_simple.push_back(a->get_lts(labelMap));
-        lts_size = ltss_simple.back()->size();
-        lts_trs = ltss_simple.back()->num_transitions();
-        //}
-        DEBUG_MSG(std::cout << " " << lts_size << " (" << lts_trs << ")";
-                  );
     }
-    DEBUG_MSG(std::cout << std::endl;
-              );
 
     if (!incremental_step) {
         dominance_relation->init(abstractions);
     }
 
-    // Algorithm to compute LD simulation
-    //if (complex_lts) {
-    // dominance_relation->compute_ld_simulation(ltss_complex, labelMap,
-    //                                        incremental_step, dump);
-    //} else {
     dominance_relation->compute_ld_simulation(ltss_simple, labelMap, incremental_step, dump);
-    //}
-
 
     if (apply_subsumed_transitions_pruning) {
-        utils::Timer t;
         int lts_id = incremental_step ? dominance_relation->size() - 1 : -1;
 
         DEBUG_MAS(std::cout << "number of transitions before pruning:" << std::endl;
@@ -830,26 +796,18 @@ void LDSimulation::compute_ld_simulation(SimulationType simulation_type,
         int num_pruned_trs = dominance_relation->prune_subsumed_transitions(abstractions, labelMap, ltss_simple,
                                                                             lts_id /*TODO: Hack lts_complex will not work ever */,
                                                                             preserve_all_optimal_plans);
-
         remove_dead_labels(abstractions);
-
-
         if (num_pruned_trs) {
             std::cout << num_pruned_trs << " transitions pruned from LTS " << lts_id << ". ";
         }
-
-        //_labels->prune_irrelevant_labels();
     }
 
     if (apply_label_dominance_reduction) {
         std::set<int> dangerous_LTSs;
-        //labels->reduce(make_pair(0, 1), abstractions);
 
         labels->reduce(labelMap, *dominance_relation, dangerous_LTSs);
         DEBUG_MAS(std::cout << "Labels reduced. Dangerous for: " << dangerous_LTSs.size() << std::endl;
                   );
-        //for (auto v : dangerous_LTSs) cout << v << " ";
-        //cout << endl;
 
         for (auto abs: abstractions) {
             // normalize here is necessary, as otherwise
@@ -862,7 +820,7 @@ void LDSimulation::compute_ld_simulation(SimulationType simulation_type,
             if (incremental_step) {
                 // Should be enough to just shrink the new abstraction (using the new simulation relation).
                 if (!dangerous_LTSs.count(dominance_relation->size() - 1)) {
-                    //TODO: HACK HACK we should refractor a bit this.
+                    //TODO: HACK HACK we should refactor a bit this.
                     dominance_relation->get_simulations().back()->shrink();
                 }
             } else {
@@ -1025,7 +983,7 @@ int LDSimulation::get_cost(const State &state) const {
 }
 
 
-//Returns a optimized variable ordering that reorders the variables
+//Returns an optimized variable ordering that reorders the variables
 //according to the standard causal graph criterion
 void LDSimulation::getVariableOrdering(std::vector<int> &var_order) const {
     if (abstractions.empty())
@@ -1103,14 +1061,14 @@ void LDSimulation::release_memory() {
     }
 }
 
-static plugins::TypedEnumPlugin<LabelDominanceType> _enum_plugin1({
+[[maybe_unused]] static plugins::TypedEnumPlugin<LabelDominanceType> _enum_plugin1({
         {"NONE", ""},
         {"NOOP", ""},
         {"NORMAL", ""},
         {"ALTERNATIVE", ""}
     });
 
-static plugins::TypedEnumPlugin<SimulationType> _enum_plugin2({
+[[maybe_unused]] static plugins::TypedEnumPlugin<SimulationType> _enum_plugin2({
         {"NONE", ""},
         {"SIMPLE", ""}
     });

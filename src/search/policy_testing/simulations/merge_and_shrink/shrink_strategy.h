@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include <ext/slist>
+#include <list>
 
 namespace plugins {
 class Options;
@@ -15,7 +15,7 @@ class Abstraction;
 class ShrinkStrategy {
     int max_states;
     int max_states_before_merge;
-protected:
+public:
     /* An equivalence class is a set of abstract states that shall be
        mapped (shrunk) to the same abstract state.
 
@@ -24,11 +24,10 @@ protected:
        will be dropped completely and receive an h value of infinity.
        This is used to remove unreachable and irrelevant states.
     */
-
     typedef int AbstractStateRef;
-    typedef __gnu_cxx::slist<AbstractStateRef> EquivalenceClass;
+    typedef std::list<AbstractStateRef> EquivalenceClass;
     typedef std::vector<EquivalenceClass> EquivalenceRelation;
-public:
+
     // HACK/TODO: The following method would usually be protected, but
     // the option parser requires it to be public for the
     // DefaultValueNamer. We need to reconsider the use of the
@@ -40,10 +39,10 @@ protected:
     virtual void dump_strategy_specific_options() const;
 
     [[nodiscard]] std::pair<int, int> compute_shrink_sizes(int size1, int size2) const;
-    [[nodiscard]] bool must_shrink(const Abstraction &abs, int threshold, bool force) const;
-    void apply(Abstraction &abs,
+    [[nodiscard]] static bool must_shrink(const Abstraction &abs, int threshold, bool force) ;
+    static void apply(Abstraction &abs,
                EquivalenceRelation &equivalence_relation,
-               int threshold) const;
+               int threshold) ;
 public:
     explicit ShrinkStrategy(const plugins::Options &opts);
     virtual ~ShrinkStrategy() = default;

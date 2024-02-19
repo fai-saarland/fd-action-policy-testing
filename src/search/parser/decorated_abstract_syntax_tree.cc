@@ -73,7 +73,7 @@ plugins::Any DecoratedASTNode::construct() const {
 
 FunctionArgument::FunctionArgument(const string &key, DecoratedASTNodePtr value,
                                    bool lazy_construction)
-    : key(key), value(move(value)), lazy_construction(lazy_construction) {
+    : key(key), value(std::move(value)), lazy_construction(lazy_construction) {
 }
 
 string FunctionArgument::get_key() const {
@@ -98,8 +98,8 @@ DecoratedLetNode::DecoratedLetNode(
     DecoratedASTNodePtr variable_definition,
     DecoratedASTNodePtr nested_value)
     : variable_name(variable_name),
-      variable_definition(move(variable_definition)),
-      nested_value(move(nested_value)) {
+      variable_definition(std::move(variable_definition)),
+      nested_value(std::move(nested_value)) {
 }
 
 plugins::Any DecoratedLetNode::construct(ConstructContext &context) const {
@@ -130,7 +130,7 @@ void DecoratedLetNode::dump(string indent) const {
 DecoratedFunctionCallNode::DecoratedFunctionCallNode(
     const shared_ptr<const plugins::Feature> &feature, vector<FunctionArgument> &&arguments,
     const string &unparsed_config)
-    : feature(feature), arguments(move(arguments)), unparsed_config(unparsed_config) {
+    : feature(feature), arguments(std::move(arguments)), unparsed_config(unparsed_config) {
 }
 
 plugins::Any DecoratedFunctionCallNode::construct(ConstructContext &context) const {
@@ -160,7 +160,7 @@ void DecoratedFunctionCallNode::dump(string indent) const {
 }
 
 DecoratedListNode::DecoratedListNode(vector<DecoratedASTNodePtr> &&elements)
-    : elements(move(elements)) {
+    : elements(std::move(elements)) {
 }
 
 plugins::Any DecoratedListNode::construct(ConstructContext &context) const {
@@ -350,7 +350,7 @@ void SymbolNode::dump(string indent) const {
 ConvertNode::ConvertNode(
     DecoratedASTNodePtr value, const plugins::Type &from_type,
     const plugins::Type &to_type)
-    : value(move(value)), from_type(from_type), to_type(to_type) {
+    : value(std::move(value)), from_type(from_type), to_type(to_type) {
 }
 
 plugins::Any ConvertNode::construct(ConstructContext &context) const {
@@ -379,7 +379,7 @@ void ConvertNode::dump(string indent) const {
 
 CheckBoundsNode::CheckBoundsNode(
     DecoratedASTNodePtr value, DecoratedASTNodePtr min_value, DecoratedASTNodePtr max_value)
-    : value(move(value)), min_value(move(min_value)), max_value(move(max_value)) {
+    : value(std::move(value)), min_value(std::move(min_value)), max_value(std::move(max_value)) {
 }
 
 template<typename T>

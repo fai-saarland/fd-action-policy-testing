@@ -129,13 +129,7 @@ protected:
         int num_iterations = 0;
         int num_inner_iterations = 0;
 
-
         std::cout << "Compute numLDSim on " << _ltss.size() << " LTSs." << std::endl;
-        //for (auto lts: _ltss) {
-        //    std::cout << lts->size() << " states and " <<
-        //        lts->num_transitions() << " transitions" << std::endl;
-        //}
-
         std::cout << "Compute tau labels" << std::endl;
         tau_labels->initialize(_ltss, labelMap);
 
@@ -152,7 +146,9 @@ protected:
 
 
         std::vector<int> order_by_size;
-        for (int i = 0; i < simulations.size(); i++) {
+        const unsigned int simulations_size = simulations.size();
+        order_by_size.reserve(simulations_size);
+        for (int i = 0; i < simulations_size; i++) {
             order_by_size.push_back(i);
         }
 
@@ -231,22 +227,26 @@ public:
     }
 
 
+    /*
     bool action_selection_pruning(const State &state,
                                   std::vector<OperatorID> &applicable_operators,
-                                  /*SearchProgress & search_progress,*/ OperatorCost cost_type) const;
+                                  OperatorCost cost_type) const;
+    */
 
+    /*
     void prune_dominated_by_parent_or_initial_state(const State &state,
                                                     std::vector<OperatorID> &applicable_operators,
-                                                    /*SearchProgress & search_progress,*/ bool parent_ids_stored,
+                                                    bool parent_ids_stored,
                                                     bool compare_against_parent, bool compare_against_initial_state,
                                                     OperatorCost cost_type) const;
+    */
 
 
     //Methods to use the dominance relation
-    bool pruned_state(const State &state) const;
-    //int get_cost(const State &state) const;
+    // bool pruned_state(const State &state) const;
+    // int get_cost(const State &state) const;
+    // bool parent_dominates_successor(const State & parent, const Operator *op) const;
 
-    //bool parent_dominates_successor(const State & parent, const Operator *op) const;
     bool dominates(const State &t, const State &s, int g_diff) const;
 
     T q_dominates_value(const State &t, const State &s) const;
@@ -282,10 +282,8 @@ public:
         return operator[](simulation_of_variable[var]);
     }
 
-    bool strictly_dominates(const State &dominating_state,
-                            const State &dominated_state) const;
-
-    bool strictly_dominates_initial_state(const State &) const;
+    // bool strictly_dominates(const State &dominating_state, const State &dominated_state) const;
+    // bool strictly_dominates_initial_state(const State &) const;
 
     void set_initial_state(std::vector<int> state);
 
@@ -305,6 +303,7 @@ public:
 template<>
 inline std::unique_ptr<StrippedNumericDominanceRelation> NumericDominanceRelation<int>::strip(double computation_time) const {
     std::vector<std::unique_ptr<StrippedNumericSimulationRelation>> stripped_simulations;
+    stripped_simulations.reserve(simulations.size());
     for (const auto &sim : simulations) {
         stripped_simulations.push_back(sim->strip());
     }

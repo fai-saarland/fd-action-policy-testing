@@ -97,6 +97,7 @@ const std::set<Abstraction *> &Labels::get_relevant_for(int label_no) const {
     return labels[label_no]->get_relevant_for();
 }
 
+/*
 void Labels::prune_irrelevant_labels() {
     std::set<int> ops;
     for (auto label: labels) {
@@ -109,9 +110,8 @@ void Labels::prune_irrelevant_labels() {
         std::cout << "Irrelevant operator: " << global_simulation_task()->get_operator_name(op, false) << std::endl;
     }
 }
-
-
 bool Labels::applies_perfect_label_reduction() const {
     return label_reducer->applies_perfect_label_reduction();
 }
+ */
 }

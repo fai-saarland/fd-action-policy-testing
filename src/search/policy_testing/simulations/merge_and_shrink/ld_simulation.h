@@ -77,7 +77,7 @@ protected:
 
     int remove_useless_atomic_abstractions(std::vector<Abstraction *> &abstractions) const;
 
-    [[nodiscard]] static double estimated_memory_MB(const std::vector<Abstraction *> &all_abstractions);
+    // [[nodiscard]] static double estimated_memory_MB(const std::vector<Abstraction *> &all_abstractions);
 
 
 public:
@@ -164,16 +164,6 @@ public:
                                            tau_label_mgr, result);
         return result;
     }
-
-    template<typename T>
-    void compute_satisficing_dominance_relation(int truncate_value,
-                                                int max_simulation_time,
-                                                int min_simulation_time, int max_total_time,
-                                                int max_lts_size_to_compute_simulation,
-                                                int num_labels_to_use_dominates_in,
-                                                bool dump,
-                                                std::shared_ptr<TauLabelManager<int>> tau_label_mgr,
-                                                std::unique_ptr<T> &result) const;
 
 
     void getVariableOrdering(std::vector<int> &var_order) const;

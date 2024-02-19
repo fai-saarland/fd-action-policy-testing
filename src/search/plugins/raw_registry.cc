@@ -123,7 +123,7 @@ Features RawRegistry::collect_features(
         shared_ptr<Feature> feature = plugin->create_feature();
         string feature_key = feature->get_key();
         feature_key_occurrences[feature_key]++;
-        features[feature_key] = move(feature);
+        features[feature_key] = std::move(feature);
     }
 
     // Check that feature_keys are unique
@@ -203,8 +203,8 @@ Registry RawRegistry::construct_registry() const {
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     return Registry(
-        move(feature_types),
-        move(subcategory_plugins),
-        move(features));
+        std::move(feature_types),
+        std::move(subcategory_plugins),
+        std::move(features));
 }
 }

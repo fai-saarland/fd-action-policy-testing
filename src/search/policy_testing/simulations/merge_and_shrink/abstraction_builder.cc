@@ -308,7 +308,7 @@ void AbsBuilderDefault::build_abstraction(bool unit_cost, OperatorCost cost_type
     Abstraction::store_original_operators = true;
 
     bool preserve_all_optimal_plans = (ldSim_ != nullptr);
-    LDSimulation *ldSim = nullptr;
+    LDSimulation *ldSim;
     std::unique_ptr<LDSimulation> tmpldSim;
 
     if (!ldSim_) {
@@ -466,7 +466,7 @@ public:
                         "200");
     }
 };
-static plugins::FeaturePlugin<AbsBuilderDefaultFeature> _default_plugin;
+    [[maybe_unused]] static plugins::FeaturePlugin<AbsBuilderDefaultFeature> _default_plugin;
 
 
 class AbsBuilderPDBFeature : public plugins::TypedFeature<AbstractionBuilder, AbsBuilderPDB> {
@@ -476,7 +476,7 @@ public:
         add_option<int>("limit_absstates_merge", "maximum number of states", "10000");
     }
 };
-static plugins::FeaturePlugin<AbsBuilderPDBFeature> _pdb_plugin;
+    [[maybe_unused]] static plugins::FeaturePlugin<AbsBuilderPDBFeature> _pdb_plugin;
 
 
 class AbsBuilderMASFeature : public plugins::TypedFeature<AbstractionBuilder, AbsBuilderMAS> {
@@ -517,7 +517,7 @@ public:
                          "true");
     }
 };
-static plugins::FeaturePlugin<AbsBuilderMASFeature> _mas_plugin;
+    [[maybe_unused]] static plugins::FeaturePlugin<AbsBuilderMASFeature> _mas_plugin;
 
 
 class AbsBuilderMasSimulationFeature : public plugins::TypedFeature<AbstractionBuilder, AbsBuilderMasSimulation> {
@@ -619,7 +619,7 @@ public:
                         "200");
     }
 };
-static plugins::FeaturePlugin<AbsBuilderMasSimulationFeature> _massim_plugin;
+    [[maybe_unused]] static plugins::FeaturePlugin<AbsBuilderMasSimulationFeature> _massim_plugin;
 
 class AbsBuilderAtomicFeature : public plugins::TypedFeature<AbstractionBuilder, AbsBuilderAtomic> {
 public:
@@ -627,7 +627,7 @@ public:
         AbstractionBuilder::add_options_to_feature(*this);
     }
 };
-static plugins::FeaturePlugin<AbsBuilderAtomicFeature> _atomic_plugin;
+    [[maybe_unused]] static plugins::FeaturePlugin<AbsBuilderAtomicFeature> _atomic_plugin;
 
 class AbsBuilderCompositeFeature : public plugins::TypedFeature<AbstractionBuilder, AbsBuilderComposite> {
 public:
@@ -636,5 +636,5 @@ public:
         add_list_option<std::shared_ptr<AbstractionBuilder>>("strategies");
     }
 };
-static plugins::FeaturePlugin<AbsBuilderCompositeFeature> _composite_plugin;
+    [[maybe_unused]] static plugins::FeaturePlugin<AbsBuilderCompositeFeature> _composite_plugin;
 }

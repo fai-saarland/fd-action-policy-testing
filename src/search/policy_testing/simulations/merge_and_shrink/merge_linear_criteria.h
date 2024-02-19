@@ -22,7 +22,7 @@ class MergeLinearCriteria : public MergeStrategy {
 
     void select_next(int var_no);
 
-    //Selects an abstraction based on the criterions
+    //Selects an abstraction based on the criteria
     virtual int next(const std::vector<Abstraction *> &all_abstractions,
                      Abstraction *abstraction = nullptr, int limit_abstract_states_merge = 0,
                      int min_limit_abstract_states_merge = 0,

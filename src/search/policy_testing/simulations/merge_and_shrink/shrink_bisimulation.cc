@@ -240,7 +240,7 @@ void ShrinkBisimulation::compute_signatures(
             }
             if (!skip_transition) {
                 int target_group = state_to_group[trans.target];
-                signatures[trans.src + 1].succ_signature.push_back(std::make_pair(label_no, target_group));
+                signatures[trans.src + 1].succ_signature.emplace_back(label_no, target_group);
             }
         }
     }

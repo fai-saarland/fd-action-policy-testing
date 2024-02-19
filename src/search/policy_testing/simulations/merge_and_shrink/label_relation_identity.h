@@ -17,7 +17,7 @@ class DominanceRelation;
  * occur in a set of LTS
  */
 class LabelRelationIdentity {
-    Labels *labels; // TODO: currently unused private field
+    [[maybe_unused]] Labels *labels; // TODO: currently unused private field
     int num_labels;
 
 public:
@@ -29,35 +29,33 @@ public:
 
     void reset() {}
 
-    bool update(const std::vector<LabelledTransitionSystem *> & /*lts*/,
+    static bool update(const std::vector<LabelledTransitionSystem *> & /*lts*/,
                 const DominanceRelation & /*sim*/) {return false;}
 
     void dump() const {}
 
     void dump(int /*label*/) const {}
 
-    void dump_equivalent() const {}
-
-    void dump_dominance() const {}
-
+    // void dump_equivalent() const {}
+    // void dump_dominance() const {}
 
     [[nodiscard]] inline int get_num_labels() const {
         return num_labels;
     }
 
-    [[nodiscard]] inline int get_dominated_by_noop_in(int /*l*/) const {
+    [[nodiscard]] static inline int get_dominated_by_noop_in(int /*l*/) {
         return DOMINATES_IN_NONE;
     }
 
-    [[nodiscard]] inline bool dominated_by_noop(int /*l*/, int /*lts*/) const {
+    [[nodiscard]] static inline bool dominated_by_noop(int /*l*/, int /*lts*/) {
         return false;
     }
 
-    [[nodiscard]] inline bool dominates(int l1, int l2, int /*lts*/) const {
+    [[nodiscard]] static inline bool dominates(int l1, int l2, int /*lts*/) {
         return l1 == l2;
     }
 
-    [[nodiscard]] std::vector<int> get_labels_dominated_in_all() const {
+    [[nodiscard]] static std::vector<int> get_labels_dominated_in_all() {
         return {};
     }
 
@@ -70,9 +68,9 @@ public:
     EquivalenceRelation *
     get_equivalent_labels_relation(const LabelMap &labelMap, std::set<int> &dangerous_LTSs) const;
 
-    [[nodiscard]] bool propagate_transition_pruning(int lts_id,
+    [[nodiscard]] static bool propagate_transition_pruning(int lts_id,
                                                     const std::vector<LabelledTransitionSystem *> &ltss,
                                                     const DominanceRelation &simulations,
-                                                    int src, int l1, int target) const;
+                                                    int src, int l1, int target) ;
 };
 }

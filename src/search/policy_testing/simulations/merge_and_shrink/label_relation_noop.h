@@ -8,7 +8,7 @@ namespace simulations {
  * occur in a set of LTS
  */
 class LabelRelationNoop {
-    Labels *labels; // TODO: currently unused private field
+    [[maybe_unused]] Labels *labels; // TODO: currently unused private field
     int num_labels;
     //Indicates whether labels are dominated by noop or other irrelevant
     //variables in theta
@@ -61,7 +61,7 @@ public:
     /* void init_identity(int num_lts, const LabelMap & labelMap); */
 
 
-    void reset();
+    static void reset();
 
     bool update(const std::vector<LabelledTransitionSystem *> &lts,
                 const DominanceRelation &sim);

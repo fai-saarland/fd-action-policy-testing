@@ -17,7 +17,7 @@ public:
 private:
     /*
       threshold: Shrink the abstraction iff it is larger than this
-      size. Note that this is set independently from max_states, which
+      size. Note that this is set independently of max_states, which
       is the number of states to which the abstraction is shrunk.
     */
 

@@ -7,7 +7,6 @@
 #include "../utils/debug.h"
 
 #include <cassert>
-#include <cstdlib>
 #include <iostream>
 
 namespace simulations {
@@ -79,13 +78,13 @@ std::pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abs
     std::vector < Abstraction * > sorted_abstractions;
     std::vector<int> indices_mapping;
     std::vector <std::vector<int>> abstraction_label_ranks;
-    // Precompute a vector sorted_abstrations which contains all exisiting
+    // Precompute a vector sorted_abstrations which contains all existing
     // abstractions from all_abstractions in the desired order.
     for (int i = all_abstractions.size() - 1; i >= 0; --i) {
         // We iterate from back to front, considering the composite
         // abstractions in the order from "most recently added" (= at the back
         // of the vector) to "first added" (= at border_atomics_composites).
-        // Afterwards, we consider the atomic abstrations in the "regular"
+        // Afterwards, we consider the atomic abstractions in the "regular"
         // order from the first one until the last one. See also explanation
         // at get_corrected_index().
         size_t abs_index = get_corrected_index(i);
@@ -93,7 +92,7 @@ std::pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abs
         if (abstraction) {
             sorted_abstractions.push_back(abstraction);
             indices_mapping.push_back(abs_index);
-            abstraction_label_ranks.push_back(std::vector<int>());
+            abstraction_label_ranks.emplace_back();
             std::vector<int> &label_ranks = abstraction_label_ranks[abstraction_label_ranks.size() - 1];
             abstraction->compute_label_ranks(label_ranks);
         }

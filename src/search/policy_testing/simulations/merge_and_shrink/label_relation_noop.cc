@@ -55,7 +55,7 @@ std::vector<int> LabelRelationNoop::get_labels_dominated_in_all() const {
 
 void LabelRelationNoop::reset() {
     std::cout << "Error: reset of label relation has been disabled" << std::endl;
-    exit(0);
+    utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
 void LabelRelationNoop::init(const std::vector<LabelledTransitionSystem *> &lts,

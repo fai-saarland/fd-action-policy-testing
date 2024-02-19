@@ -51,23 +51,25 @@ public:
     IntEpsilon operator-() const;
 
     template<typename T>
-    const IntEpsilon operator-(const T &other) const {
+    IntEpsilon operator-(const T &other) const {
         return IntEpsilon(*this) -= other;
     }
 
     template<typename T>
-    const IntEpsilon operator+(const T &other) const {
+    IntEpsilon operator+(const T &other) const {
         return IntEpsilon(*this) += other;
     }
 
-    int get_value() const {
+    [[nodiscard]] int get_value() const {
         return value;
     }
 
-    int get_epsilon() const {
+    /*
+    [[nodiscard]] int get_epsilon() const {
         assert(epsilon >= -1 && epsilon <= 1);
         return epsilon;
     }
+     */
 
     friend std::ostream &operator<<(std::ostream &os, const IntEpsilon &other);
 };
@@ -111,16 +113,16 @@ public:
 
 
     template<typename T>
-    const IntEpsilonSum operator+(const T &other) const {
+    IntEpsilonSum operator+(const T &other) const {
         return IntEpsilonSum(*this) += other;
     }
 
     template<typename T>
-    const IntEpsilonSum operator-(const T &other) const {
+    IntEpsilonSum operator-(const T &other) const {
         return IntEpsilonSum(*this) -= other;
     }
 
-    IntEpsilon get_epsilon_negative() const;
+    [[nodiscard]] IntEpsilon get_epsilon_negative() const;
 
     friend std::ostream &operator<<(std::ostream &os, const IntEpsilonSum &other);
 };
@@ -133,12 +135,12 @@ inline T get_epsilon() {
 
 template<>
 inline IntEpsilon get_epsilon() {
-    return IntEpsilon(0, 1);
+    return {0, 1};
 }
 
 template<>
 inline IntEpsilonSum get_epsilon() {
-    return IntEpsilonSum(0, 1);
+    return {0, 1};
 }
 
 template<typename T>

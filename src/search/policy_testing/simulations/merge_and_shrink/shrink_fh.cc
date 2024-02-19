@@ -160,7 +160,7 @@ public:
 
 static plugins::FeaturePlugin<ShrinkFHFeature> _plugin;
 
-static plugins::TypedEnumPlugin<ShrinkFH::HighLow> _enum_plugin({
+[[maybe_unused]] static plugins::TypedEnumPlugin<ShrinkFH::HighLow> _enum_plugin({
         {"HIGH",
          "prefer shrinking states with high value"},
         {"LOW",

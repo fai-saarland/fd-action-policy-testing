@@ -196,8 +196,8 @@ SimplifiedPoolFuzzerEngine::insert(PoolEntry &&entry) {
         if (eval_) {
             auto &inserted_pair = is_dead_insertion.first;
             if (is_dead_insertion.second) {
-                EvaluationContext ctxt(succ);
-                EvaluationResult res = eval_->compute_result(ctxt);
+                EvaluationContext context(succ);
+                EvaluationResult res = eval_->compute_result(context);
                 if (res.is_infinite()) {
                     // mark successor as dead end
                     inserted_pair->second = true;

@@ -145,7 +145,7 @@ class Abstraction {
     // construction (composite abstraction) and shrinking (apply_abstraction).
     bool are_transitions_sorted_unique() const;
 
-    void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef>> &collapsed_groups);
+    void apply_abstraction(ShrinkStrategy::EquivalenceRelation &collapsed_groups);
 
     int unique_unlabeled_transitions() const;
 

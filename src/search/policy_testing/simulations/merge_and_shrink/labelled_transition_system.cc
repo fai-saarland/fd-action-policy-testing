@@ -27,6 +27,7 @@ LabelledTransitionSystem::LabelledTransitionSystem(Abstraction *_abs, const Labe
             if (!abs_transitions.empty()) {
                 std::vector <TSTransition> transitions_label;
                 relevant_labels.push_back(label_no);
+                transitions_label.reserve(abs_transitions.size());
                 for (const auto &abs_transition : abs_transitions) {
                     transitions_label.emplace_back(abs_transition.src, abs_transition.target);
                 }
@@ -44,7 +45,7 @@ LabelledTransitionSystem::LabelledTransitionSystem(Abstraction *_abs, const Labe
                     LabelGroup new_group(transitions_label_group.size());
                     for (const TSTransition &tr: transitions_label) {
                         transitions.emplace_back(tr.src, tr.target, new_group);
-                        transitions_src[tr.src].push_back(LTSTransition(tr.src, tr.target, new_group));
+                        transitions_src[tr.src].emplace_back(tr.src, tr.target, new_group);
                     }
                     transitions_label_group.push_back(std::move(transitions_label));
                     label_groups.emplace_back();
@@ -74,7 +75,7 @@ void LabelledTransitionSystem::kill_transition(int src, int label, int target) {
         kill_from_vector(TSTransition(src, target), transitions_label_group[new_group.group]);
         for (const auto &t: transitions_label_group[new_group.group]) {
             transitions.emplace_back(t.src, t.target, new_group);
-            transitions_src[t.src].push_back(LTSTransition(t.src, t.target, new_group));
+            transitions_src[t.src].emplace_back(t.src, t.target, new_group);
         }
         label_groups[group.group].erase(remove(std::begin(label_groups[group.group]),
                                                std::end(label_groups[group.group]), label),

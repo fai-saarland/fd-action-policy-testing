@@ -314,7 +314,7 @@ const FeatureType &TypeRegistry::create_feature_type(const CategoryPlugin &plugi
         plugin.get_pointer_type(), plugin.get_category_name(),
         plugin.get_synopsis(), plugin.supports_variable_binding());
     const FeatureType &type_ref = *type_ptr;
-    registered_types[type] = move(type_ptr);
+    registered_types[type] = std::move(type_ptr);
     return type_ref;
 }
 
@@ -328,7 +328,7 @@ const EnumType &TypeRegistry::create_enum_type(const EnumPlugin &plugin) {
     }
     unique_ptr<EnumType> type_ptr = utils::make_unique_ptr<EnumType>(type, values);
     const EnumType &type_ref = *type_ptr;
-    registered_types[type] = move(type_ptr);
+    registered_types[type] = std::move(type_ptr);
     return type_ref;
 }
 

@@ -55,11 +55,11 @@ public:
 
     [[nodiscard]] const std::set<Abstraction *> &get_relevant_for(int label_no) const;
 
-    void prune_irrelevant_labels();
+    // void prune_irrelevant_labels();
 
     void reset_relevant_for(const std::vector<Abstraction *> &abstractions);
 
-    [[nodiscard]] bool applies_perfect_label_reduction() const;
+    // [[nodiscard]] bool applies_perfect_label_reduction() const;
     [[nodiscard]] int  get_label_cost(int label_no) const;
 };
 

@@ -82,14 +82,10 @@ bool AlternativeLabelRelation::update(const std::vector<LabelledTransitionSystem
 bool AlternativeLabelRelation::update(int lts_i, const LabelledTransitionSystem *lts,
                                       const SimulationRelation &sim) {
     bool changes = false;
-    //cout << "UPDATE " << lts_i << " " << lts->get_relevant_labels().size() << endl;
 
     for (LabelGroup lg2(0); lg2.group < lts->get_num_label_groups(); ++lg2) {
         for (LabelGroup lg1(0); lg1.group < lts->get_num_label_groups(); ++lg1) {
             if (lg1 != lg2 && simulates(lg1, lg2, lts_i)) {
-                //std::cout << "Check " << l1 << " " << l2 << std::endl;
-                //std::cout << "Num transitions: " << lts->get_transitions_label(l1).size()
-                //		    << " " << lts->get_transitions_label(l2).size() << std::endl;
                 //Check if it really simulates
                 //For each transition s--l2-->t, and every label l1 that dominates
                 //l2, exist s--l1-->t', t <= t'?
@@ -99,11 +95,10 @@ bool AlternativeLabelRelation::update(int lts_i, const LabelledTransitionSystem 
                     for (const auto &tr2: lts->get_transitions_label_group(lg1)) {
                         if (tr2.src == tr.src && sim.simulates(tr2.target, tr.target)) {
                             found = true;
-                            break;     //Stop checking this tr
+                            break;     //Stop checking this transition
                         }
                     }
                     if (!found) {
-                        //std::cout << "Not sim " << l1 << " " << l2 << " " << i << std::endl;
                         set_not_simulates(lg1, lg2, lts_i);
                         changes = true;
                         break;     //Stop checking trs of l1

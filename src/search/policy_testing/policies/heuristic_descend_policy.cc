@@ -27,8 +27,8 @@ OperatorID
 HeuristicDescendPolicy::apply(const State &state) {
     int h0 = std::numeric_limits<int>::max();
     if (strictly_descend_ || stop_at_dead_ends_) {
-        EvaluationContext ctxt(state);
-        EvaluationResult r = heuristic_->compute_result(ctxt);
+        EvaluationContext context(state);
+        EvaluationResult r = heuristic_->compute_result(context);
         if (!r.is_infinite()) {
             h0 = r.get_evaluator_value();
         } else if (stop_at_dead_ends_) {
@@ -39,16 +39,20 @@ HeuristicDescendPolicy::apply(const State &state) {
     generate_applicable_ops(state, aops);
     int best = -1;
     int h_best = strictly_descend_ ? h0 : std::numeric_limits<int>::max();
-    for (unsigned i = 0; i < aops.size(); ++i) {
+    for (int i = 0; i < aops.size(); ++i) {
         State succ = get_successor_state(state, aops[i]);
-        EvaluationContext ctxt(succ);
-        EvaluationResult r = heuristic_->compute_result(ctxt);
+        EvaluationContext context(succ);
+        EvaluationResult r = heuristic_->compute_result(context);
         if (r.get_evaluator_value() < h_best) {
             best = i;
             h_best = r.get_evaluator_value();
         }
     }
-    return best < 0 ? NO_OPERATOR : aops[best];
+    if (best < 0) {
+        return NO_OPERATOR;
+    } else {
+        return aops[best];
+    }
 }
 
 class HeuristicDescendPolicyFeature : public plugins::TypedFeature<Policy, HeuristicDescendPolicy> {

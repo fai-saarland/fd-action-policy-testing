@@ -68,8 +68,7 @@ void ShrinkOwnLabels::shrink(Abstraction &abs, int target, bool /*force*/) {
             continue;
         const std::vector<AbstractTransition> &transitions =
             abs.get_transitions_for_label(label_no);
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            const AbstractTransition &trans = transitions[i];
+        for (auto trans : transitions) {
             adjacency_matrix[trans.src].push_back(trans.target);
         }
     }

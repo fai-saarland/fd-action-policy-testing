@@ -42,15 +42,11 @@ ArasWrapper::prepare_aras_input(
 void
 ArasWrapper::call_aras(int time_limit) {
     std::cout.flush();
-#ifdef LINUX
+#if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
     std::string command =
         aras_directory + "/src/preprocess/preprocess < aras_output.sas  >>/dev/null 2>>/dev/null";
     [[maybe_unused]] const int preprocess_ret_code = system(command.c_str());
-    unsigned long aras_mem_limit = std::min<unsigned long>(1000000, utils::get_available_mem_in_kb());
-    // reserve some margin for current process
-    if (aras_mem_limit > 50000) {
-        aras_mem_limit -= 50000;
-    }
+    unsigned long aras_mem_limit = 1000000;
     std::string command_downward = aras_directory
         + "/src/search/downward"
         " --postprocessor \"aras(reg_graph=false, "

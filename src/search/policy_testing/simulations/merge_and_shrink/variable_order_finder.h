@@ -26,7 +26,7 @@ class VariableOrderFinder {
     void select_next(int position, int var_no);
 
 public:
-    VariableOrderFinder(VariableOrderType variable_order_type_, bool is_first = true);
+    explicit VariableOrderFinder(VariableOrderType variable_order_type_, bool is_first = true);
 
     /*
     VariableOrderFinder(VariableOrderType variable_order_type_, bool is_first,

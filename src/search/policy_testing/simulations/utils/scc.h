@@ -1,7 +1,5 @@
 #pragma once
 
-#include <ext/slist>
-
 /*
   This implements Tarjan's linear-time algorithm for finding the maximal
   strongly connected components. It takes time proportional to the sum
@@ -25,7 +23,7 @@
 #include <algorithm>
 class EquivalenceRelation;
 
-//TODO: It could be convinient to use template functions here to allow
+//TODO: It could be convenient to use template functions here to allow
 //returning the SCC result in different ways (vector<vector<int> >,
 //EquivalenceRelation, or even vector <int> state_to_group. However,
 //it is not so easy to do so since we need to change the whole
@@ -78,7 +76,7 @@ class SCC {
     // Input graph. TODO: Change type?
     // Should we have a LabelledTransitionClass for those cases?
     // TODO: Using a const reference is not completely safe.
-    // A shared_ptr could be more appropiate.
+    // A shared_ptr could be more appropriate.
     const std::vector<std::vector<int>> &graph;
 
     // Output relative at the SCCs and their connection
@@ -92,7 +90,7 @@ class SCC {
     std::vector <int> vertex_layer; // LayerSCC of each vertex
     std::vector <std::set<int>> scc_graph;
 
-    //Auxiliar functions to compute additional output on demand
+    // Auxiliary functions to compute additional output on demand
     void compute_scc_graph();
 
 
@@ -102,7 +100,7 @@ public:
     template<class T>
     static void compute_scc_equivalence(const std::vector<std::vector<int>> &graph,
                                         std::vector<T> &result,
-                                        std::vector<bool> *is_goal = NULL) {
+                                        std::vector<bool> *is_goal = nullptr) {
         int node_count = graph.size();
 
         // The following three are indexed by vertex number.

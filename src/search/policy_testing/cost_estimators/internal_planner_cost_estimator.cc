@@ -35,8 +35,7 @@ InternalPlannerPlanCostEstimator::InternalPlannerPlanCostEstimator(TestingEnviro
 
 void
 InternalPlannerPlanCostEstimator::add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<Configuration>("conf", "search algorithm, possible choices: "
-                                      "astar_lmcut, lama_first, lama_complete, ehc_ff, gbfs_ff, lazy_gbfs_ff");
+    feature.add_option<Configuration>("conf", "search algorithm, possible choices: astar_lmcut, ehc_ff");
     feature.add_option<bool>("print_output", "", "false");
     feature.add_option<bool>("print_plan", "", "false");
     feature.add_option<int>("max_planner_time", "Maximal time to run internal planner.", "14400");

@@ -313,7 +313,7 @@ void Abstraction::compute_init_distances_general_cost() {
         int label_cost = get_label_cost_by_index(label_no);
         const std::vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (const auto &trans: transitions) {
-            forward_graph[trans.src].push_back(std::make_pair(trans.target, label_cost));
+            forward_graph[trans.src].emplace_back(trans.target, label_cost);
         }
     }
 
@@ -335,7 +335,7 @@ void Abstraction::compute_goal_distances_general_cost() {
         int label_cost = get_label_cost_by_index(label_no);
         const std::vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (const auto &trans: transitions) {
-            backward_graph[trans.target].push_back(std::make_pair(trans.src, label_cost));
+            backward_graph[trans.target].emplace_back(trans.src, label_cost);
         }
     }
 
@@ -360,7 +360,7 @@ std::vector<IntEpsilonSum> Abstraction::recompute_goal_distances_with_epsilon() 
 
         const std::vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (const auto &trans: transitions) {
-            backward_graph[trans.target].push_back(std::make_pair(trans.src, label_cost));
+            backward_graph[trans.target].emplace_back(trans.src, label_cost);
         }
     }
 
@@ -423,7 +423,7 @@ bool Abstraction::is_normalized() const {
 
 void Abstraction::normalize() {
     /* This method sorts all transitions and removes duplicate transitions.
-       It also maps the labels so that they are up to date with the labels
+       It also maps the labels so that they are up-to-date with the labels
        object. */
 
     if (is_normalized()) {
@@ -434,7 +434,6 @@ void Abstraction::normalize() {
         return;
     }
     lts.reset();     //In future versions, normalize the LTS instead
-    //cout << tag() << "normalizing" << std::endl;
 
     typedef std::vector<std::pair<AbstractStateRef, int>> StateBucket;
 
@@ -459,7 +458,7 @@ void Abstraction::normalize() {
         }
         std::vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (const auto &t: transitions) {
-            target_buckets[t.target].push_back(std::make_pair(t.src, label_no));
+            target_buckets[t.target].emplace_back(t.src, label_no);
         }
         std::vector<AbstractTransition>().swap(transitions);
     }
@@ -501,7 +500,7 @@ void Abstraction::normalize() {
 
             if (relevant_labels[parent_id]) {
                 for (const auto &t: transitions) {
-                    target_buckets[t.target].push_back(std::make_pair(t.src, reduced_label_no));
+                    target_buckets[t.target].emplace_back(t.src, reduced_label_no);
                     if (t.target != t.src) {
                         all_transitions_are_self_loops = false;
                     }
@@ -529,7 +528,7 @@ void Abstraction::normalize() {
                 labels->set_relevant_for(reduced_label_no, this);
                 // make self loops explicit
                 for (int i = 0; i < num_states; ++i) {
-                    target_buckets[i].push_back(std::make_pair(i, reduced_label_no));
+                    target_buckets[i].emplace_back(i, reduced_label_no);
                 }
             }
         } else {
@@ -550,7 +549,7 @@ void Abstraction::normalize() {
             if (labels_made_irrelevant.count(label_no)) {
                 assert(transitions_by_label[label_no].empty());
             } else {
-                src_buckets[src].push_back(std::make_pair(target, label_no));
+                src_buckets[src].emplace_back(target, label_no);
             }
         }
     }
@@ -579,11 +578,10 @@ void Abstraction::normalize() {
 
 void Abstraction::normalize2() {
     /* This method sorts all transitions and removes duplicate transitions.
-       It also maps the labels so that they are up to date with the labels
+       It also maps the labels so that they are up-to-date with the labels
        object. */
 
     lts.reset();     //In future versions, normalize the LTS instead
-    //cout << tag() << "normalizing" << std::endl;
 
     typedef std::vector<std::pair<AbstractStateRef, std::pair<int, boost::dynamic_bitset<>>>> StateBucket;
 
@@ -609,9 +607,8 @@ void Abstraction::normalize2() {
         std::vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (int i = 0; i < transitions.size(); i++) {
             const AbstractTransition &t = transitions[i];
-            target_buckets[t.target].push_back(
-                make_pair(t.src, make_pair(label_no,
-                                           transitions_by_label_based_on_operators[label_no][i])));
+            target_buckets[t.target].emplace_back(t.src, make_pair(label_no,
+                                           transitions_by_label_based_on_operators[label_no][i]));
         }
         std::vector<AbstractTransition>().swap(transitions);
         std::vector<boost::dynamic_bitset<>>().swap(transitions_by_label_based_on_operators[label_no]);
@@ -656,9 +653,8 @@ void Abstraction::normalize2() {
             if (relevant_labels[parent_id]) {
                 for (int j = 0; j < transitions.size(); j++) {
                     const AbstractTransition &t = transitions[j];
-                    target_buckets[t.target].push_back(
-                        make_pair(t.src, make_pair(reduced_label_no,
-                                                   transitions_by_label_based_on_operators[parent_id][j])));
+                    target_buckets[t.target].emplace_back(t.src, make_pair(reduced_label_no,
+                                                   transitions_by_label_based_on_operators[parent_id][j]));
                     if (t.target != t.src) {
                         all_transitions_are_self_loops = false;
                     }
@@ -695,8 +691,7 @@ void Abstraction::normalize2() {
                     for (auto id: op_ids) {
                         original_operators[id] = true;
                     }
-                    target_buckets[i].push_back(
-                        make_pair(i, make_pair(reduced_label_no, original_operators)));
+                    target_buckets[i].emplace_back(i, make_pair(reduced_label_no, original_operators));
                 }
             }
         } else {
@@ -717,7 +712,7 @@ void Abstraction::normalize2() {
             if (labels_made_irrelevant.count(label_no)) {
                 assert(transitions_by_label[label_no].empty());
             } else {
-                src_buckets[src].push_back(make_pair(target, make_pair(label_no, item.second.second)));
+                src_buckets[src].emplace_back(target, make_pair(label_no, item.second.second));
             }
         }
     }
@@ -994,7 +989,7 @@ CompositeAbstraction::CompositeAbstraction(Labels *labels, Abstraction *abs1, Ab
        result in the desired ordering. Even in the case that the second
        abstractions has only self loops, this is not trivial, as we would like
        to sort transitions to (a,c,b). Only in the case that the first
-       abstraction has only self-lopos, by looking at each transition of the
+       abstraction has only self-loops, by looking at each transition of the
        first abstraction and multiplying in out with the transitions of the
        second transition, we obtain the desired order (a,c,d).
     */
@@ -1151,13 +1146,12 @@ AbstractStateRef CompositeAbstraction::get_abstract_state(const std::vector<int>
     return lookup_table[state1][state2];
 }
 
-void Abstraction::apply_abstraction(
-    std::vector<__gnu_cxx::slist<AbstractStateRef>> &collapsed_groups) {
+void Abstraction::apply_abstraction(ShrinkStrategy::EquivalenceRelation &collapsed_groups) {
     /* Note on how this method interacts with the distance information
        (init_distances and goal_distances): if no two states with
        different g or h values are combined by the abstraction (i.e.,
        if the abstraction is "f-preserving", then this method makes
-       sure that distance information is preserved.
+       sure that distance information is preserved).
 
        This is important because one of the (indirect) callers of this
        method is the distance computation code, which uses it in a
@@ -1183,7 +1177,6 @@ void Abstraction::apply_abstraction(
     // not asserting is_normalized()), because shrink can indirectly be called
     // from the distance computation, which is done for the final abstraction
     // which on its turn may not be normalized at that time.
-    //cout << "abs->num_labels: " << num_labels << " / labels->get_size: " << labels->get_size() << std::endl;
     assert(num_labels == labels->get_size());
     // distances must have been computed before
     //assert(are_distances_computed());
@@ -1198,7 +1191,7 @@ void Abstraction::apply_abstraction(
                         << " to " << collapsed_groups.size() << " states)" << std::endl;
               );
 
-    typedef __gnu_cxx::slist<AbstractStateRef> Group;
+    typedef std::list<AbstractStateRef> Group;
 
     std::vector<int> abstraction_mapping(num_states, PRUNED_STATE);
 
@@ -1221,7 +1214,7 @@ void Abstraction::apply_abstraction(
             Group &group = collapsed_groups[new_state];
             assert(!group.empty());
 
-            Group::iterator pos = group.begin();
+            auto pos = group.begin();
             int &new_init_dist = new_init_distances[new_state];
             int &new_goal_dist = new_goal_distances[new_state];
 
@@ -1252,7 +1245,7 @@ void Abstraction::apply_abstraction(
             Group &group = collapsed_groups[new_state];
             assert(!group.empty());
 
-            Group::iterator pos = group.begin();
+            auto pos = group.begin();
             new_goal_states[new_state] = goal_states[*pos];
 
             ++pos;
@@ -1635,7 +1628,7 @@ int Abstraction::prune_transitions_dominated_label_equiv(int lts_id,
 
     if (label_no == label_no2) {
         //Added special case when the labels are the same. This one
-        //uses remove_copy_if instead of remove_if because its
+        //uses remove_copy_if instead of remove_if because it's
         //safer. remove_if still works but may depend on the compiler
         //or the class definition of the transitions.
 
@@ -1799,7 +1792,6 @@ int Abstraction::prune_transitions_dominated_label_noop(int lts_id,
     }
     if (transitions_by_label[label_no].size() != num)
         clear_distances();
-    //cout << "Calling prune transitions dominated by noop with " << label_no  << " in LTS " << lts_id << " has " << num << " transitions" << " and took " << t() << std::endl;
     return num - transitions_by_label[label_no].size();
 }
 
@@ -1996,7 +1988,6 @@ void Abstraction::get_dead_labels(std::vector<bool> &dead_labels,
 
 bool Abstraction::check_dead_operators(std::vector<bool> &dead_labels, std::vector<bool> &dead_operators) const {
     bool ret = false;
-    //cout << dead_labels.size() << " / " << labels->get_size() << std::endl;
     for (int i = 0; i < labels->get_size(); i++) {
         if (dead_labels[i])
             continue;     // corresponding operators must already have been extracted somewhere else

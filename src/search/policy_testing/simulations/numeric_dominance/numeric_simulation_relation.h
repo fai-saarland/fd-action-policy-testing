@@ -166,55 +166,43 @@ public:
     }
 
     inline T q_simulates(unsigned int s, unsigned int t) const {
-        /* if(s >= relation.size()) { */
-        /*     std::cout << s << std::endl; */
-        /*     std::cout << relation.size() << std::endl; */
-        /* } */
-
         assert(s < relation.size());
         assert(t < relation[s].size());
         assert(s != t || relation[s][t] == 0);
         return relation[s][t];
     }
 
-
+    /*
     [[nodiscard]] inline bool strictly_simulates(unsigned int s, unsigned int t) const {
-        /* if(s >= relation.size()) { */
-        /*     std::cout << s << std::endl; */
-        /*     std::cout << relation.size() << std::endl; */
-        /* } */
-
         return relation[s][t] >= 0 && relation[t][s] < 0;
     }
+     */
 
 
+    /*
     [[nodiscard]] inline bool positively_simulates(unsigned int s, unsigned int t) const {
-        /* if(s >= relation.size()) { */
-        /*     std::cout << s << std::endl; */
-        /*     std::cout << relation.size() << std::endl; */
-        /* } */
-
         assert(s < relation.size());
         assert(t < relation[s].size());
         assert(s != t || relation[s][t] == 0);
         return relation[s][t] >= 0;
     }
+     */
 
+    /*
     [[nodiscard]] inline bool similar(int s, int t) const {
         return simulates(s, t) && simulates(t, s);
     }
+     */
 
     inline void update_value(int s, int t, T value) {
-        /*if (value < -truncate_value) {
-            //std::cout << value << " rounded to -infty: " << truncate_value << std::endl;
-            value = MINUS_INFINITY;
-        }*/
         relation[s][t] = value;
     }
 
+    /*
     inline const std::vector<std::vector<T>> &get_relation() {
         return relation;
     }
+     */
 
     T compute_max_value() {
         max_relation_value = 0;
@@ -226,11 +214,13 @@ public:
         return max_relation_value;
     }
 
+    /*
     T get_max_value() const {
         return max_relation_value;
     }
+     */
 
-    std::vector<int> get_dangerous_labels(const LabelledTransitionSystem *lts) const;
+    // std::vector<int> get_dangerous_labels(const LabelledTransitionSystem *lts) const;
 
     void dump(const std::vector<std::string> &names) const;
 
