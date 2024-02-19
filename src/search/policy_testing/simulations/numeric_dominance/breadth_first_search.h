@@ -9,8 +9,7 @@ void breadth_first_search_reachability_distances_one(const std::vector<std::vect
                                                      int initial_state,
                                                      std::vector<T> &distances,
                                                      std::vector<int> &reachable_states) {
-    int num_states = graph.size();
-    distances.resize(num_states);
+    distances.resize(graph.size());
     std::fill(distances.begin(), distances.end(), std::numeric_limits<int>::max());
 
     std::size_t increase_distance_in = 0;

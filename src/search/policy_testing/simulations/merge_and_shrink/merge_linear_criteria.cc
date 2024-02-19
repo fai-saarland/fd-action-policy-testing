@@ -7,7 +7,6 @@
 #include <cassert>
 #include <cstdlib>
 #include <vector>
-#include <map>
 
 namespace simulations {
 MergeLinearCriteria::MergeLinearCriteria(const plugins::Options &opts) :
@@ -211,7 +210,7 @@ public:
 
 static plugins::FeaturePlugin<MergeLinearCriteriaFeature> _plugin;
 
-static plugins::TypedEnumPlugin<MergeOrder> _enum_plugin({
+[[maybe_unused]] static plugins::TypedEnumPlugin<MergeOrder> _enum_plugin({
         {"level", ""},
         {"reverse_level", ""},
         {"random", ""}

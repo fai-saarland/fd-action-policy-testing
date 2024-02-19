@@ -97,7 +97,7 @@ static ASTNodePtr parse_let(TokenStream &tokens, SyntaxAnalyzerContext &context)
     }
     tokens.pop(context, TokenType::CLOSING_PARENTHESIS);
     return utils::make_unique_ptr<LetNode>(
-        variable_name, move(variable_definition), move(nested_value));
+        variable_name, std::move(variable_definition), std::move(nested_value));
 }
 
 static void parse_sequence(
@@ -155,7 +155,7 @@ static ASTNodePtr parse_function(TokenStream &tokens,
     tokens.pop(context, TokenType::CLOSING_PARENTHESIS);
     string unparsed_config = tokens.str(initial_token_stream_index, tokens.get_position());
     return utils::make_unique_ptr<FunctionCallNode>(
-        plugin_name, move(positional_arguments), move(keyword_arguments), unparsed_config);
+        plugin_name, std::move(positional_arguments), std::move(keyword_arguments), unparsed_config);
 }
 
 static unordered_set<TokenType> literal_tokens {
@@ -189,7 +189,7 @@ static ASTNodePtr parse_list(TokenStream &tokens, SyntaxAnalyzerContext &context
         parse_sequence(tokens, context, TokenType::CLOSING_BRACKET, callback);
     }
     tokens.pop(context, TokenType::CLOSING_BRACKET);
-    return utils::make_unique_ptr<ListNode>(move(elements));
+    return utils::make_unique_ptr<ListNode>(std::move(elements));
 }
 
 static vector<TokenType> parse_node_token_types = {

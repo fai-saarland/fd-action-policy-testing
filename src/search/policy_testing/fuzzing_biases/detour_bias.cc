@@ -32,7 +32,7 @@ DetourBias::add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<std::shared_ptr<Evaluator>>("h", "", plugins::ArgumentInfo::NO_DEFAULT);
     feature.add_option<std::shared_ptr<PlanCostEstimator>>("ipo", "", plugins::ArgumentInfo::NO_DEFAULT);
     feature.add_option<bool>("omit_maximization",
-                             "do not maximize over all subpaths, only consider first and last state", "false");
+                             "do not maximize over all sub-paths, only consider first and last state", "false");
     PolicyBasedBias::add_options_to_feature(feature);
 }
 

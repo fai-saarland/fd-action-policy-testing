@@ -125,7 +125,7 @@ void VariableOrderFinder::dump() const {
     std::cout << std::endl;
 }
 
-static plugins::TypedEnumPlugin<VariableOrderType> _enum_plugin({
+[[maybe_unused]] static plugins::TypedEnumPlugin<VariableOrderType> _enum_plugin({
         {"CG_GOAL_LEVEL", ""},
         {"CG_GOAL_RANDOM", ""},
         {"GOAL_CG_LEVEL", ""},

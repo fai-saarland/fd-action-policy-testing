@@ -12,7 +12,7 @@ class LabelledTransitionSystem;
 
 /*
  * Class that represents the collection of simulation relations for a
- * factored LTS. Uses unique_ptr so that it owns the simulations and
+ * factored LTS. Uses unique_ptr so that it owns the simulations, and
  * it cannot be copied away.
  */
 class DominanceRelation {
@@ -30,7 +30,7 @@ public:
     virtual ~DominanceRelation() = default;
 
     //Methods to use the simulation
-    [[nodiscard]] bool pruned_state(const State &state) const;
+    // [[nodiscard]] bool pruned_state(const State &state) const;
 
     [[nodiscard]] int get_cost(const State &state) const;
 
@@ -46,10 +46,6 @@ public:
     virtual void compute_ld_simulation(std::vector<LabelledTransitionSystem *> &_ltss,
                                        const LabelMap &labelMap,
                                        bool incremental_step, bool dump) = 0;
-
-    /* virtual void compute_ld_simulation (std::vector<LTSComplex *> & _ltss, */
-    /*                                 const LabelMap & labelMap,  */
-    /*                                 bool incremental_step, bool dump) = 0;    */
 
 
     [[nodiscard]] virtual bool propagate_transition_pruning(int lts_id,
@@ -81,9 +77,8 @@ public:
 
     //Computes the probability of selecting a random pair s, s' such that
     //s is equivalent to s'.
-    [[nodiscard]] double get_percentage_equivalences() const;
-
-    [[nodiscard]] double get_percentage_equal() const;
+    //[[nodiscard]] double get_percentage_equivalences() const;
+    //[[nodiscard]] double get_percentage_equal() const;
 
     //Methods to access the underlying simulation relations
     [[nodiscard]] const std::vector<std::unique_ptr<SimulationRelation>> &get_simulations() const {
@@ -109,7 +104,7 @@ public:
 
 /*
  * Class that represents the collection of simulation relations for a
- * factored LTS. Uses unique_ptr so that it owns the simulations and
+ * factored LTS. Uses unique_ptr so that it owns the simulations, and
  * it cannot be copied away.
  */
 template<typename LR>
@@ -121,9 +116,11 @@ class DominanceRelationLR : public DominanceRelation {
                         const LR &label_dominance,
                         SimulationRelation &simrel) = 0;
 
+    /*
     bool propagate_label_domination(int lts_id,
                                     const LabelledTransitionSystem *lts,
                                     int l, int l2, SimulationRelation &simrel) const;
+    */
 
     template<typename LTS>
     void compute_ld_simulation_template(std::vector<LTS *> &_ltss,
@@ -192,7 +189,7 @@ public:
 
 
 // If lts_id = -1 (default), then prunes in all ltss. If lts_id > 0,
-// prunes transitions dominated in all in all LTS, but other
+// prunes transitions dominated in all LTS, but other
 // transitions are only checked for lts_id
     int prune_subsumed_transitions(std::vector<Abstraction *> &abstractions,
                                    const LabelMap &labelMap,
@@ -218,7 +215,6 @@ public:
             if (lts >= 0 && (lts == lts_id || lts_id == -1)) {
                 // the index of the LTS and its corresponding abstraction should always be the same -- be careful about
                 // this in the other code!
-                //std::cout << "Abs pointer: " << l << " dominated by noop in " << lts << "   " << std::endl;
 
                 num_pruned_transitions += abstractions[lts]->
                     prune_transitions_dominated_label_noop(lts, ltss,
@@ -249,11 +245,6 @@ public:
                          * if we first run simulation-shrinking. So, if we make sure that it is run before irrelevance pruning, we
                          * should have no problems here.
                          */
-//                if (l != l2 && label_dominance.dominates(label_l, label_l2, lts) && label_dominance.dominates(label_l2, label_l, lts)) {
-//                    cerr << "Error: two labels dominating each other in all but one LTS; this CANNOT happen!" << endl;
-//                    cerr << l << "; " << l2 << "; " << label_l << "; " << label_l2 << endl;
-//                    exit(1);
-//                }
                         if (label_dominance.dominates(label_l2, label_l, lts)
                             && label_dominance.dominates(label_l, label_l2, lts)) {
                             num_pruned_transitions +=

@@ -237,8 +237,8 @@ PoolFuzzerEngine::random_walk() {
                     auto insertion = is_dead.emplace(succ.get_id(), false);
                     auto &inserted_pair = insertion.first;
                     if (insertion.second) {
-                        EvaluationContext ctxt(succ);
-                        EvaluationResult res = eval->compute_result(ctxt);
+                        EvaluationContext context(succ);
+                        EvaluationResult res = eval->compute_result(context);
                         inserted_pair->second = res.is_infinite();
                     }
                     succ_is_known_dead_end = inserted_pair->second;

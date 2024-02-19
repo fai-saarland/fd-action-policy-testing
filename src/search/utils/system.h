@@ -63,9 +63,6 @@ bool is_exit_code_error_reentrant(ExitCode exitcode);
 void register_event_handlers();
 void report_exit_code_reentrant(ExitCode exitcode);
 int get_process_id();
-unsigned long get_current_memory_in_kb();
-unsigned long get_mem_limit_in_kb();
-unsigned long get_available_mem_in_kb();
 }
 
 #endif

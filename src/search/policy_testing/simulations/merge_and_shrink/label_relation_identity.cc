@@ -28,7 +28,7 @@ LabelRelationIdentity::get_equivalent_labels_relation(const LabelMap &labelMap,
 bool LabelRelationIdentity::propagate_transition_pruning(int lts_id,
                                                          const std::vector<LabelledTransitionSystem *> &ltss,
                                                          const DominanceRelation & /*simulations*/,
-                                                         int src, int l1, int target) const {
+                                                         int src, int l1, int target) {
     ltss[lts_id]->kill_transition(src, l1, target);
     return true;
 }

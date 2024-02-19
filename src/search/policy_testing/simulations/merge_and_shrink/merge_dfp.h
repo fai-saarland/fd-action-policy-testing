@@ -22,7 +22,7 @@ public:
 
     void init_strategy(const std::vector <Abstraction * > &abstractions) override;
 
-    // Note: all_abstractions should be a vector of const Abstaction*, but
+    // Note: all_abstractions should be a vector of const Abstraction*, but
     // for the moment, compute_label_ranks is a non-const method because it
     // possibly needs to normalize and/or compute distances of some
     // abstractions. This should change when abstractions are always valid.

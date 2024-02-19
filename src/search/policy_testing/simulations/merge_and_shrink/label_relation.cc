@@ -13,6 +13,7 @@ LabelRelation::LabelRelation(Labels *_labels) : labels(_labels),
                                                 num_labels(_labels->get_size()) {
 }
 
+/*
 void LabelRelation::dump_equivalent() const {
     std::vector<bool> redundant(dominates_in.size(), false);
     int num_redundant = 0;
@@ -28,8 +29,6 @@ void LabelRelation::dump_equivalent() const {
     }
     std::cout << "Redundant labels: " << num_redundant << std::endl;
 }
-
-
 void LabelRelation::dump_dominance() const {
     for (int l1 = 0; l1 < dominates_in.size(); ++l1) {
         for (int l2 = 0; l2 < dominates_in.size(); ++l2) {
@@ -42,10 +41,10 @@ void LabelRelation::dump_dominance() const {
         }
     }
 }
+ */
 
 void LabelRelation::dump() const {
     for (int l = 0; l < dominates_in.size(); ++l) {
-        //if (labels->is_label_reduced(l)) cout << "reduced";
         if (l < 10) {
             std::cout << "l" << l << ": ";
             dump(l);
@@ -72,10 +71,9 @@ void LabelRelation::dump(int label) const {
     std::cout << std::endl;
 }
 
+/*
 void LabelRelation::prune_operators() {
-    //cout << "We have " << num_labels << " labels "<< dominates_in.size() << " " << dominates_in[0].size()  << endl;
     for (int l = 0; l < dominates_in.size(); ++l) {
-        //labels->get_label_by_index(l)->dump();
         if (dominated_by_noop_in[l] == DOMINATES_IN_ALL) {
             std::cout << global_simulation_task()->get_operator_name(l, false) << " is dominated by noop "
                       << std::endl;
@@ -89,12 +87,11 @@ void LabelRelation::prune_operators() {
         }
     }
 }
+ */
 
 std::vector<int> LabelRelation::get_labels_dominated_in_all() const {
     std::vector<int> labels_dominated_in_all;
-    //cout << "We have " << num_labels << " labels "<< dominates_in.size() << " " << dominates_in[0].size()  << endl;
     for (int l = 0; l < dominates_in.size(); ++l) {
-        //cout << "Check: " << l << endl;
         //labels->get_label_by_index(l)->dump();
         if (dominated_by_noop_in[l] == DOMINATES_IN_ALL) {
             labels_dominated_in_all.push_back(l);
@@ -117,7 +114,7 @@ std::vector<int> LabelRelation::get_labels_dominated_in_all() const {
 
 void LabelRelation::reset() {
     std::cout << "Error: reset of label relation has been disabled" << std::endl;
-    exit(0);
+    utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
 void LabelRelation::init(const std::vector<LabelledTransitionSystem *> &lts,
@@ -182,9 +179,6 @@ bool LabelRelation::update(int i, const LabelledTransitionSystem *lts,
     for (int l2: lts->get_relevant_labels()) {
         for (int l1: lts->get_relevant_labels()) {
             if (l1 != l2 && simulates(l1, l2, i)) {
-                //std::cout << "Check " << l1 << " " << l2 << std::endl;
-                //std::cout << "Num transitions: " << lts->get_transitions_label(l1).size()
-                //		    << " " << lts->get_transitions_label(l2).size() << std::endl;
                 //Check if it really simulates
                 //For each transition s--l2-->t, and every label l1 that dominates
                 //l2, exist s--l1-->t', t <= t'?
@@ -195,11 +189,10 @@ bool LabelRelation::update(int i, const LabelledTransitionSystem *lts,
                         if (tr2.src == tr.src &&
                             sim.simulates(tr2.target, tr.target)) {
                             found = true;
-                            break;     //Stop checking this tr
+                            break;     //Stop checking this transition
                         }
                     }
                     if (!found) {
-                        //std::cout << "Not sim " << l1 << " " << l2 << " " << i << std::endl;
                         set_not_simulates(l1, l2, i);
                         changes = true;
                         break;     //Stop checking trs of l1
@@ -284,8 +277,6 @@ const {
 
                     if (captured_labels[l2] == -1) {
                         eq.insert(labelMap.get_old_id(l2));
-                        //cout << labelMap.get_old_id(l2) << " eq " << labelMap.get_old_id(l1) << endl;
-                        //cout << dominates_in[l1][l2] << " --- " <<  dominates_in[l2][l1] << " --- " << endl;
                         captured_labels[l2] = l1;
                     } else if (captured_labels[l2] != captured_labels[l1]) {
                         std::cout
@@ -294,9 +285,6 @@ const {
                         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
                     }
                 } else if (new_Theta != DOMINATES_IN_ALL) {
-                    //cout << "eq skipped because is dangerous: " <<
-                    //labelMap.get_old_id(l2) << " eq " << labelMap.get_old_id(l1) << endl
-                    // << dominates_in[l1][l2] << " --- " <<  dominates_in[l2][l1] << " --- " << endl;
                     dangerous_LTSs.insert(new_Theta);
                 } else {
                     std::cout << "Assertion Error: two labels dominate in all but cannot be aggregated?" << std::endl;

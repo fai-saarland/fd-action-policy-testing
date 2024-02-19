@@ -122,7 +122,7 @@ void NumericSimulationRelation<T>::cancel_simulation_computation(int lts_id, con
     }
 }
 
-
+/*
 template<typename T>
 std::vector<int> NumericSimulationRelation<T>::get_dangerous_labels(const LabelledTransitionSystem *lts) const {
     std::vector<int> dangerous_labels;
@@ -160,7 +160,7 @@ std::vector<int> NumericSimulationRelation<T>::get_dangerous_labels(const Labell
     }
     return dangerous_labels;
 }
-
+*/
 
 template<typename T>
 int NumericSimulationRelation<T>::update_pair(int lts_id, const LabelledTransitionSystem *lts,

@@ -4,6 +4,7 @@
 #include "labelled_transition_system.h"
 
 #include <iostream>
+#include <list>
 #include "abstraction.h"
 
 
@@ -244,7 +245,7 @@ double SimulationRelation::get_percentage_equivalences() const {
 }
 
 void SimulationRelation::shrink() {
-    std::vector<__gnu_cxx::slist<int>> equivRel;
+    std::vector<std::list<int>> equivRel;
     equivRel.reserve(relation.size());
     std::vector<bool> already_in(relation.size(), false);
     for (int i = 0; i < already_in.size(); i++) {
@@ -252,7 +253,7 @@ void SimulationRelation::shrink() {
         if (already_in[i])
             continue;
         already_in[i] = true;
-        __gnu_cxx::slist<int> newEquiv;
+        std::list<int> newEquiv;
         newEquiv.push_front(i);
         for (int j = i + 1; j < relation.size(); j++) {
             if (similar(i, j)) {

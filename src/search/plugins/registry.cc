@@ -13,9 +13,9 @@ Registry::Registry(
     FeatureTypes &&feature_types,
     SubcategoryPlugins &&subcategory_plugins,
     Features &&features)
-    : feature_types(move(feature_types)),
-      subcategory_plugins(move(subcategory_plugins)),
-      features(move(features)) {
+    : feature_types(std::move(feature_types)),
+      subcategory_plugins(std::move(subcategory_plugins)),
+      features(std::move(features)) {
 }
 
 shared_ptr<const Feature> Registry::get_feature(const string &name) const {

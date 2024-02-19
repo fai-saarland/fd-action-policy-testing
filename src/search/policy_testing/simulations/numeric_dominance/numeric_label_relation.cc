@@ -1,6 +1,5 @@
 #include "numeric_label_relation.h"
 #include "numeric_simulation_relation.h"
-#include "numeric_dominance_relation.h"
 
 namespace simulations {
 template<typename T>
@@ -60,10 +59,6 @@ bool NumericLabelRelation<T>::update(int lts_i, const LabelledTransitionSystem *
 
             if (min_value < old_value) {
                 changes |= set_simulated_by_irrelevant(lg2, lts_i, lts, min_value);
-                // for (int l : lts->get_irrelevant_labels()){
-                //     changes |= set_lqrel(l, l2, lts_i, min_value);
-                // }
-                old_value = min_value;
             }
         }
 
@@ -85,19 +80,10 @@ bool NumericLabelRelation<T>::update(int lts_i, const LabelledTransitionSystem *
             }
             assert(min_value != std::numeric_limits<int>::max());
             if (min_value < old_value) {
-                old_value = min_value;
                 changes |= set_simulates_irrelevant(lg2, lts_i, lts, min_value);
-                // for (int l : lts->get_irrelevant_labels()){
-                //     changes |= set_lqrel(l2, l, lts_i, min_value);
-                // }
             }
         }
     }
-
-    // for (int l : lts->get_irrelevant_labels()) {
-    //  set_simulates_irrelevant(l, lts_i, 0);
-    //  set_simulated_by_irrelevant(l, lts_i, 0);
-    // }
     return changes;
 }
 

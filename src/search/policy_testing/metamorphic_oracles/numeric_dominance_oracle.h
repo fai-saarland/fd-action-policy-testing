@@ -19,7 +19,6 @@ class NumericDominanceRelation;
 namespace policy_testing {
 class NumericDominanceOracle : public Oracle {
     friend class CompositeOracle;
-    friend class DominanceBias;
     std::shared_ptr<simulations::AbstractionBuilder> abstraction_builder;
     std::vector<std::unique_ptr<simulations::Abstraction>> abstractions;
     std::shared_ptr<simulations::TauLabelManager<int>> tau_labels;

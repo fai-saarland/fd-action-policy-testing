@@ -2,12 +2,12 @@
 
 #include <iostream>
 
-#include "../simulations_manager.h"
 #include "../../../task_utils/causal_graph.h"
 
 namespace simulations {
 //Returns an optimized variable ordering that reorders the variables
 //according to the standard causal graph criterion
+/*
 void InfluenceGraph::compute_gamer_ordering(std::vector<int> &var_order) {
     const int num_variables = global_simulation_task()->get_num_variables();
     if (var_order.empty()) {
@@ -29,6 +29,7 @@ void InfluenceGraph::compute_gamer_ordering(std::vector<int> &var_order) {
 
     ig_partitions.get_ordering(var_order);
 }
+ */
 
 
 void InfluenceGraph::get_ordering(std::vector<int> &ordering) const {

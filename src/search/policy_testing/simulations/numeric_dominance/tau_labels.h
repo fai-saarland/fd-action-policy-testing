@@ -9,7 +9,6 @@
 namespace simulations {
 class LabelledTransitionSystem;
 class LabelMap;
-class LabelDominance;
 
 template<typename T>
 class TauDistances;
@@ -18,7 +17,8 @@ class TauDistances;
 
 template<typename T>
 class TauLabels {
-    int num_tau_labels_for_some, num_tau_labels_for_all;
+    int num_tau_labels_for_some;
+    int num_tau_labels_for_all;
     std::vector<T> original_cost;
 
     //The cost of applying a tau label may be higher than the cost of the label since it

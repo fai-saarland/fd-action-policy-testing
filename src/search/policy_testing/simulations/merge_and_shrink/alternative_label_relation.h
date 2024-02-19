@@ -16,7 +16,7 @@ class LabelledTransitionSystem;
  * occur in a set of LTS
  */
 class AlternativeLabelRelation {
-    Labels *labels; // TODO: currently unused private field
+    [[maybe_unused]] Labels *labels; // TODO: currently unused private field
     int num_labels;
     int num_ltss;
 
@@ -40,7 +40,6 @@ class AlternativeLabelRelation {
 
 
     inline bool set_not_simulates(LabelGroup lg1, LabelGroup lg2, int lts) {
-        //std::cout << "Not simulates: " << l1 << " to " << l2 << " in " << lts << std::endl;
         if (lrel[lts][lg1.group][lg2.group]) {
             lrel[lts][lg1.group][lg2.group] = false;
             return true;
@@ -51,8 +50,6 @@ class AlternativeLabelRelation {
 
     inline bool set_not_simulated_by_irrelevant(LabelGroup lg, int lts_id,
                                                 const LabelledTransitionSystem *lts) {
-        //std::cout << "Not simulated by irrelevant: " << l << " in " << lts << std::endl;
-
         //Returns if there were changes in dominated_by_noop_in
         int pos = lg.group;
 
@@ -73,8 +70,6 @@ class AlternativeLabelRelation {
     }
 
     inline bool set_not_simulates_irrelevant(LabelGroup lg, int lts) {
-        //std::cout << "Not simulates irrelevant: " << l << " in " << lts << std::endl;
-
         int pos = lg.group;
         //Returns if there were changes in dominates_noop_in
         if (simulates_irrelevant[lts][pos]) {
@@ -154,31 +149,30 @@ public:
     }
 
 
-    [[nodiscard]] int get_label_cost(int label) const {
+    /*[[nodiscard]] int get_label_cost(int label) const {
         return cost_of_label[label];
-    }
+    }*/
 
     void dump(const LabelledTransitionSystem *lts, int lts_id) const;
 
 
-    [[nodiscard]] bool propagate_transition_pruning(int,
+    [[nodiscard]] static bool propagate_transition_pruning(int,
                                                     const std::vector<LabelledTransitionSystem *> &,
                                                     const DominanceRelation &,
-                                                    int, int, int) const {
+                                                    int, int, int) {
         std::cout << "propagate_transition_pruning not implemented." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        return false;
     }
 
 
-    void kill_label(int) {
+    static void kill_label(int) {
         std::cout << "kill_label not implemented." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 
     [[nodiscard]] std::vector<int> get_labels_dominated_in_all() const;
 
-    EquivalenceRelation *get_equivalent_labels_relation(const LabelMap &, std::set<int> &) const {
+    static EquivalenceRelation *get_equivalent_labels_relation(const LabelMap &, std::set<int> &) {
         std::cout << "get_equivalent_labels_relation." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }

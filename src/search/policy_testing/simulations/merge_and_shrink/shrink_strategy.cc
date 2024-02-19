@@ -66,7 +66,7 @@ void ShrinkStrategy::dump_strategy_specific_options() const {
 }
 
 bool ShrinkStrategy::must_shrink(
-    const Abstraction &abs, int threshold, bool force) const {
+    const Abstraction &abs, int threshold, bool force) {
     assert(threshold >= 1);
     assert(abs.is_solvable());
     if (abs.size() > threshold) {
@@ -121,7 +121,7 @@ std::pair<int, int> ShrinkStrategy::compute_shrink_sizes(
 }
 
 void ShrinkStrategy::shrink_atomic(Abstraction & /*abs*/) {
-    // Default implemention does nothing.
+    // Default implementation does nothing.
 }
 
 void ShrinkStrategy::shrink_before_merge(Abstraction &abs1, Abstraction &abs2) {
@@ -148,7 +148,7 @@ void ShrinkStrategy::shrink_before_merge(Abstraction &abs1, Abstraction &abs2) {
 void ShrinkStrategy::apply(
     Abstraction &abs,
     EquivalenceRelation &equivalence_relation,
-    int target) const {
+    int target) {
     // TODO: We currently violate this; see issue250
     //assert(equivalence_relation.size() <= target);
     abs.apply_abstraction(equivalence_relation);

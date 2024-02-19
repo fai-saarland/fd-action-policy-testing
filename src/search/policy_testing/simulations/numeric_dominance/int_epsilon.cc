@@ -68,7 +68,7 @@ IntEpsilon &IntEpsilon::operator-=(const int &other_value) {
 }
 
 IntEpsilon IntEpsilon::operator-() const {
-    return IntEpsilon(-value, -epsilon);
+    return {-value, -epsilon};
 }
 
 std::ostream &operator<<(std::ostream &os, const IntEpsilon &other) {
@@ -138,7 +138,7 @@ IntEpsilon IntEpsilonSum::get_epsilon_negative() const {
     if (value == 0 && epsilon < 0) {
         new_epsilon = -1;
     }
-    return IntEpsilon(value, new_epsilon);
+    return {value, new_epsilon};
 }
 
 std::ostream &operator<<(std::ostream &os, const IntEpsilonSum &other) {

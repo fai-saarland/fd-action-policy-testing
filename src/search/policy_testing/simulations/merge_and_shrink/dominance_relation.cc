@@ -36,7 +36,7 @@ void DominanceRelation::remove_useless() {
                                      }), std::end(simulations));
 }
 
-
+/*
 double DominanceRelation::get_percentage_equal() const {
     double percentage = 1;
     for (auto &sim: simulations) {
@@ -44,8 +44,6 @@ double DominanceRelation::get_percentage_equal() const {
     }
     return percentage;
 }
-
-
 double DominanceRelation::get_percentage_equivalences() const {
     double percentage = 1;
     for (auto &sim: simulations) {
@@ -53,6 +51,7 @@ double DominanceRelation::get_percentage_equivalences() const {
     }
     return percentage;
 }
+ */
 
 int DominanceRelation::num_equivalences() const {
     int res = 0;
@@ -94,8 +93,8 @@ void DominanceRelation::dump_statistics(bool expensive) const {
 
     int num_vars = 0;
     int num_vars_with_simulations = 0;
-    for (int i = 0; i < simulations.size(); i++) {
-        if (simulations[i]->num_simulations(true) > 0) {
+    for (const auto & simulation : simulations) {
+        if (simulation->num_simulations(true) > 0) {
             num_vars_with_simulations++;
         }
         num_vars++;
@@ -114,13 +113,9 @@ void DominanceRelation::dump_statistics(bool expensive) const {
         std::cout << "Total st pairs: " << num_pairs << std::endl;
         std::cout << "Percentage st pairs: " << num_pairs / (problem_size * problem_size) << std::endl;
     }
-    /*for(int i = 0; i < simulations.size(); i++){
-      cout << "States after simulation: " << simulations[i]->num_states() << " "
-      << simulations[i]->num_different_states() << endl;
-      }*/
 }
 
-
+/*
 bool DominanceRelation::pruned_state(const State &state) const {
     for (auto &sim: simulations) {
         if (sim->pruned(state)) {
@@ -129,6 +124,7 @@ bool DominanceRelation::pruned_state(const State &state) const {
     }
     return false;
 }
+ */
 
 
 int DominanceRelation::get_cost(const State &state) const {
@@ -152,12 +148,12 @@ bool DominanceRelation::dominates(const State &t, const State &s) const {
     return true;
 }
 
-
+/*
 //l does not dominate l2 anymore, check if this changes the simulation relation
 template<typename LR>
 bool DominanceRelationLR<LR>::propagate_label_domination(int lts_id,
                                                          const LabelledTransitionSystem *lts,
-                                                         int /*l*/, int l2,
+                                                         int l, int l2,
                                                          SimulationRelation &simrel) const {
     for (int s = 0; s < lts->size(); s++) {
         for (int t = 0; t < lts->size(); t++) {     //for each pair of states t, s
@@ -233,4 +229,5 @@ bool DominanceRelationLR<LR>::propagate_label_domination(int lts_id,
     }
     return true;
 }
+*/
 }

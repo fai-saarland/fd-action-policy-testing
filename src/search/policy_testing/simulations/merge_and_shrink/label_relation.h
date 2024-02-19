@@ -55,7 +55,6 @@ class LabelRelation {
     }
 
     inline void set_not_simulates(int l1, int l2, int lts) {
-        //std::cout << "Not simulates: " << l1 << " to " << l2 << " in " << lts << std::endl;
         if (dominates_in[l1][l2] == DOMINATES_IN_ALL) {
             dominates_in[l1][l2] = lts;
         } else if (dominates_in[l1][l2] != lts) {
@@ -88,7 +87,7 @@ public:
               const DominanceRelation &sim,
               const LabelMap &labelMap);
 
-    void reset();
+    static void reset();
 
     bool update(const std::vector<LabelledTransitionSystem *> &lts,
                 const DominanceRelation &sim);
@@ -97,16 +96,14 @@ public:
 
     void dump(int label) const;
 
-    void dump_equivalent() const;
-
-    void dump_dominance() const;
-
+    // void dump_equivalent() const;
+    // void dump_dominance() const;
 
     [[nodiscard]] inline int get_num_labels() const {
         return num_labels;
     }
 
-    void prune_operators();
+    // void prune_operators();
 
     [[nodiscard]] std::vector<int> get_labels_dominated_in_all() const;
 

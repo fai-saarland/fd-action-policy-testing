@@ -3,11 +3,8 @@
 #include "../task_proxy.h"
 #include "../task_utils/task_properties.h"
 #include "additions/tasks/modified_init_goals_task.h"
-#include "../plugins/plugin.h"
 
-#include <chrono>
 #include <utility>
-#include <filesystem>
 
 namespace policy_testing {
 std::shared_ptr<AbstractTask>
@@ -15,7 +12,9 @@ get_modified_initial_state_task(
     const std::shared_ptr<AbstractTask> &base_task,
     const std::vector<int> &new_state_values) {
     std::vector<FactPair> goal_facts;
-    for (int i = 0; i < base_task->get_num_goals(); ++i) {
+    int num_goals = base_task->get_num_goals();
+    goal_facts.reserve(num_goals);
+    for (int i = 0; i < num_goals; ++i) {
         goal_facts.push_back(base_task->get_goal_fact(i));
     }
 

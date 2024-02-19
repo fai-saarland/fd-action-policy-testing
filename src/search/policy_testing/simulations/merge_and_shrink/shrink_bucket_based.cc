@@ -56,10 +56,10 @@ void ShrinkBucketBased::compute_abstraction(
             // The whole bucket must form one group.
             size_t remaining_buckets = buckets.size() - bucket_no;
             if (remaining_state_budget >= remaining_buckets) {
-                equiv_relation.push_back(EquivalenceClass());
+                equiv_relation.emplace_back();
             } else {
                 if (bucket_no == 0)
-                    equiv_relation.push_back(EquivalenceClass());
+                    equiv_relation.emplace_back();
                 if (show_combine_buckets_warning) {
                     show_combine_buckets_warning = false;
                     std::cout << "Very small node limit, must combine buckets." << std::endl;
@@ -91,7 +91,7 @@ void ShrinkBucketBased::compute_abstraction(
 
             // Finally, add these groups to the result.
             for (auto &group : groups) {
-                equiv_relation.push_back(EquivalenceClass());
+                equiv_relation.emplace_back();
                 equiv_relation.back().swap(group);
             }
         }
