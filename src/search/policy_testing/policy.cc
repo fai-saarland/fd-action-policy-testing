@@ -411,7 +411,12 @@ Policy::lookup_action(const State &state) const {
 
 
 void Policy::read_running_policy_cache(const std::string &cache_file) {
+    std::cout << "Reading policy cache file " << cache_file << " ..." << std::endl;
     std::ifstream istream(cache_file);
+    if (istream.bad() || istream.fail() || !istream.is_open()) {
+        std::cerr << "Cannot open policy cache file" << std::endl;
+        std::exit(1);
+    }
     const unsigned int state_size = get_task()->get_num_variables();
     for (std::string line; std::getline(istream, line);) {
         std::istringstream entry(line);
@@ -435,6 +440,7 @@ void Policy::read_running_policy_cache(const std::string &cache_file) {
             insert_sorted(policy_parent[succ], state.get_id());
         }
     }
+    std::cout << "Read policy cache file." << std::endl;
 }
 
 void Policy::add_options_to_feature(plugins::Feature &feature) {
