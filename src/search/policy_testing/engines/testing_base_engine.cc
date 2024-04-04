@@ -29,7 +29,7 @@ PolicyTestingBaseEngine::PolicyTestingBaseEngine(const plugins::Options &opts)
         }
     }
 
-    if (!policy_ && !read_policy_cache_) {
+    if (!policy_) {
         if (RemotePolicy::connection_established()) {
             utils::g_log << "No additional policy specification found. "
                 "Assuming global remote_policy with standard configuration." << std::endl;
