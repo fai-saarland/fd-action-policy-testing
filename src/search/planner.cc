@@ -1,3 +1,4 @@
+#include "version.h"
 #include "command_line.h"
 #include "search_algorithm.h"
 
@@ -41,6 +42,8 @@ int main(int argc, const char **argv) {
         argc -= 2;
     }
 #endif /* POLICY_TESTING_ENABLED */
+
+    utils::g_log << "Fast Downward commit " << DOWNWARD_COMMIT << endl;
 
     if (argc < 2) {
         utils::g_log << usage(argv[0]) << endl;

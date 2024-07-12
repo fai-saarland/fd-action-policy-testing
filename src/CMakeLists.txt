@@ -44,6 +44,10 @@ add_custom_command(TARGET translate POST_BUILD
 # Add search component as a subproject.
 add_subdirectory(search)
 
+# makes sure current commit hash is written into version.hpp
+add_custom_target(version COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/../version.py)
+add_dependencies(downward version)
+
 
 # Format code
 #find_program(UNCRUSTIFY "uncrustify")
