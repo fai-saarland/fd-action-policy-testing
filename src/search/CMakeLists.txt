@@ -942,7 +942,7 @@ create_fast_downward_library(
 )
 
 if(LIBRARY_POLICY_TESTING_ENABLED)
-    find_package(Boost 1.74 COMPONENTS serialization iostreams REQUIRED)
+    find_package(Boost 1.74 CONFIG COMPONENTS serialization iostreams REQUIRED)
     include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
     target_link_libraries(downward PUBLIC ${Boost_LIBRARIES})
 
