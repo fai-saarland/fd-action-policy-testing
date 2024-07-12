@@ -12,10 +12,8 @@ def main():
         with open("version.h") as f:
             read_commit_hash = f.read().splitlines()[1].split()[2].replace('"', '')
             if commit_hash == read_commit_hash:
-                print("Commit has not changed.")
                 return
     with open("version.h", "w+") as f:
-        print("Writing version.h")
         f.write(f'#pragma once\n#define DOWNWARD_COMMIT "{commit_hash}"\n')
 
 
