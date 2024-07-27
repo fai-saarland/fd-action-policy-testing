@@ -1,11 +1,11 @@
 #include "policy.h"
 
+#include "../evaluation_context.h"
+#include "../evaluation_result.h"
+#include "../evaluator.h"
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
-#include "out_of_resource_exception.h"
-#include "../evaluation_result.h"
-#include "../evaluation_context.h"
-#include "../evaluator.h"
+#include "custom_exceptions.h"
 
 #include <cassert>
 #include <vector>

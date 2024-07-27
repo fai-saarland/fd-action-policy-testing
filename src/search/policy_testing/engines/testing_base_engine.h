@@ -100,7 +100,7 @@ protected:
     const bool debug_;
 private:
     std::set<TestingBaseComponent *> components_;
-
     const bool verbose_;
+    const bool abstain_if_first_state_not_known_solved;
 };
 } // namespace policy_testing

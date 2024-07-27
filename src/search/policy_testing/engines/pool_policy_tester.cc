@@ -1,7 +1,7 @@
 #include "pool_policy_tester.h"
 
 #include "../../plugins/plugin.h"
-#include "../out_of_resource_exception.h"
+#include "../custom_exceptions.h"
 
 namespace policy_testing {
 PoolPolicyTestingEngine::PoolPolicyTestingEngine(const plugins::Options &opts)
@@ -96,6 +96,11 @@ PoolPolicyTestingEngine::step() {
         std::cout.clear();
         std::cerr.clear();
         return FAILED;
+    } catch (const AbstentionException &) {
+      std::cout.clear();
+      std::cerr.clear();
+      std::cout << "aborting: decided to abstain from task [t=" << utils::g_timer << "]" << std::endl;
+      return FAILED;
     }
 
     utils::release_extra_memory_padding();

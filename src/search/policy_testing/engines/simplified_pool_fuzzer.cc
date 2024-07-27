@@ -5,8 +5,8 @@
 #include "../../plugins/plugin.h"
 #include "../../task_utils/successor_generator.h"
 #include "../../task_utils/task_properties.h"
+#include "../custom_exceptions.h"
 #include "../fuzzing_bias.h"
-#include "../out_of_resource_exception.h"
 #include "../pool_filter.h"
 #include "../state_regions.h"
 
@@ -28,8 +28,8 @@ SimplifiedPoolFuzzerEngine::SimplifiedPoolFuzzerEngine(const plugins::Options &o
       , store_(nullptr)
       , max_steps_(opts.get<int>("max_steps"))
       , max_pool_size_(opts.get<int>("max_pool_size")) {
-    fuzzing_time_.reset();
-    fuzzing_time_.stop();
+  fuzzing_time.reset();
+  fuzzing_time.stop();
     if (opts.contains("pool_file")) {
         store_ = std::make_unique<PoolFile>(task, opts.get<std::string>("pool_file"));
     }
@@ -38,7 +38,7 @@ SimplifiedPoolFuzzerEngine::SimplifiedPoolFuzzerEngine(const plugins::Options &o
         oracle_->print_debug_info();
     }
     report_initialized();
-    fuzzing_time_.resume();
+    fuzzing_time.resume();
 }
 
 void
@@ -64,7 +64,7 @@ SimplifiedPoolFuzzerEngine::add_options_to_feature(plugins::Feature &feature) {
 
 void
 SimplifiedPoolFuzzerEngine::print_statistics() const {
-    std::cout << "Fuzzing time: " << fuzzing_time_ << std::endl;
+    std::cout << "Fuzzing time: " << fuzzing_time << std::endl;
     std::cout << "Fuzzing steps: " << step_ << std::endl;
     std::cout << "Pool size: " << pool_.size() << std::endl;
     std::cout << "Max pool size: " << max_pool_size_ << std::endl;
@@ -146,8 +146,15 @@ SimplifiedPoolFuzzerEngine::step() {
             std::cerr.clear();
             std::cout << "aborting: out of time or memory [t=" << utils::g_timer << "]" << std::endl;
             utils::release_extra_memory_padding();
-            fuzzing_time_.stop();
+            fuzzing_time.stop();
             return FAILED;
+        } catch (const AbstentionException &) {
+          std::cout.clear();
+          std::cerr.clear();
+          std::cout << "aborting: decided to abstain from task [t=" << utils::g_timer << "]" << std::endl;
+          utils::release_extra_memory_padding();
+          fuzzing_time.stop();
+          return FAILED;
         }
     }
 
@@ -155,7 +162,7 @@ SimplifiedPoolFuzzerEngine::step() {
         utils::release_extra_memory_padding();
         return IN_PROGRESS;
     } else {
-        fuzzing_time_.stop();
+      fuzzing_time.stop();
         std::cout << "Computing state regions..." << std::endl;
         const StateRegions regions = compute_state_regions(task, state_registry, states_in_pool_);
         std::cout << "Number of regions: " << regions.size() << std::endl;

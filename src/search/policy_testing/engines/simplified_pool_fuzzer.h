@@ -56,7 +56,7 @@ private:
     const unsigned max_steps_;
     const unsigned max_pool_size_;
 
-    utils::Timer fuzzing_time_;
+    utils::Timer fuzzing_time;
     unsigned step_ = 0;
     unsigned filtered_ = 0;
     unsigned dead_ends_ = 0;

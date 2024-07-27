@@ -5,8 +5,8 @@
 #include "../../plugins/plugin.h"
 #include "../../task_utils/successor_generator.h"
 #include "../../task_utils/task_properties.h"
+#include "../custom_exceptions.h"
 #include "../fuzzing_bias.h"
-#include "../out_of_resource_exception.h"
 #include "../pool_filter.h"
 #include "../state_regions.h"
 
@@ -152,6 +152,13 @@ PoolFuzzerEngine::step() {
         utils::release_extra_memory_padding();
         fuzzing_time.stop();
         return FAILED;
+    } catch (const AbstentionException &) {
+      std::cout.clear();
+      std::cerr.clear();
+      std::cout << "aborting: decided to abstain from task [t=" << utils::g_timer << "]" << std::endl;
+      utils::release_extra_memory_padding();
+      fuzzing_time.stop();
+      return FAILED;
     }
     utils::release_extra_memory_padding();
 

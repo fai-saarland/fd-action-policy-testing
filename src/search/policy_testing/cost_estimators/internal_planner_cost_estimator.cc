@@ -1,13 +1,13 @@
 #include "internal_planner_cost_estimator.h"
 
-#include "../../plugins/plugin.h"
-#include "../out_of_resource_exception.h"
-#include "../../heuristics/lm_cut_heuristic.h"
-#include "../../search_algorithms/eager_search.h"
-#include "../../search_algorithms/search_common.h"
 #include "../../heuristics/ff_heuristic.h"
-#include "../../search_algorithms/enforced_hill_climbing_search.h"
+#include "../../heuristics/lm_cut_heuristic.h"
+#include "../../plugins/plugin.h"
 #include "../../pruning/null_pruning_method.h"
+#include "../../search_algorithms/eager_search.h"
+#include "../../search_algorithms/enforced_hill_climbing_search.h"
+#include "../../search_algorithms/search_common.h"
+#include "../custom_exceptions.h"
 
 #include <memory>
 

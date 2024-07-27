@@ -1,9 +1,9 @@
 #include "testing_base_engine.h"
 
 #include "../../plugins/plugin.h"
-#include "../out_of_resource_exception.h"
-#include "../state_regions.h"
+#include "../custom_exceptions.h"
 #include "../policies/remote_policy.h"
+#include "../state_regions.h"
 
 #include <iomanip>
 #include <iostream>
@@ -18,7 +18,8 @@ PolicyTestingBaseEngine::PolicyTestingBaseEngine(const plugins::Options &opts)
       write_bugs_file_(opts.contains("bugs_file")),
       read_policy_cache_(opts.get<bool>("read_policy_cache")),
       just_write_policy_cache_(opts.get<bool>("just_write_policy_cache")),
-      debug_(opts.get<bool>("debug")), verbose_(opts.get<bool>("verbose")) {
+      debug_(opts.get<bool>("debug")), verbose_(opts.get<bool>("verbose")),
+      abstain_if_first_state_not_known_solved(opts.get<bool>("abstain_if_first_state_not_known_solved")){
     testing_timer_.reset();
     testing_timer_.stop();
 
@@ -78,6 +79,9 @@ PolicyTestingBaseEngine::add_options_to_feature(plugins::Feature &feature, bool 
                              "false");
     feature.add_option<bool>("debug", "", "false");
     feature.add_option<bool>("verbose", "", "false");
+    feature.add_option<bool>("abstain_if_first_state_not_known_solved",
+                             "Abort the testing if the first tested state is not solved (possibly within the provided step limit)", 
+                             "false");
     SearchAlgorithm::add_options_to_feature(feature);
 }
 
@@ -202,6 +206,7 @@ PolicyTestingBaseEngine::run_test(const PoolEntry &entry, timestamp_t max_time) 
     const StateID state_id = state.get_id();
     testing_timer_.resume();
     set_max_time(max_time);
+    const bool is_first_test = num_tests_ == 0;
     ++num_tests_;
     std::cout << "Starting test " << std::setw(5) << num_tests_ << " [t=" << utils::g_timer << "]" << std::endl;
     if (debug_) {
@@ -222,6 +227,13 @@ PolicyTestingBaseEngine::run_test(const PoolEntry &entry, timestamp_t max_time) 
             assert(policy_cost >= 0);
             std::cout << "policy_cost=" << policy_cost << " [t=" << utils::g_timer << "]" << std::endl;
             ++num_solved_;
+        }
+
+        if (is_first_test && abstain_if_first_state_not_known_solved && policy_cost < 0) {
+          // first tested state is not solved, abstain from testing problem
+          std::cout << "First tested state is not (known to be) solved by the policy.\n"
+                       "Abstaining from problem." << std::endl;
+          throw AbstentionException();
         }
 
         if (debug_ && policy_cost >= 0) {

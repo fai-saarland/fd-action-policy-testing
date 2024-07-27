@@ -4,7 +4,7 @@
 #include "../../evaluator.h"
 #include "../../plugins/plugin.h"
 #include "../../task_utils/task_properties.h"
-#include "../out_of_resource_exception.h"
+#include "../custom_exceptions.h"
 
 #include <deque>
 #include <vector>
