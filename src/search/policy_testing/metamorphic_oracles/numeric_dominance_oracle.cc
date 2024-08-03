@@ -94,7 +94,7 @@ NumericDominanceOracle::initialize() {
                 ia >> stripped_numeric_dominance_relation;
             }
         }
-        std::cout << "Read simulation file in " << read_timer() << "s." << std::endl;
+        std::cout << "Read simulation file in " << read_timer() << std::endl;
         num_dom_computation_time = stripped_numeric_dominance_relation->computation_time;
         assert(num_dom_computation_time >= 0);
         std::cout << "Computed numeric dominance function in " << num_dom_computation_time << "s" << std::endl;
