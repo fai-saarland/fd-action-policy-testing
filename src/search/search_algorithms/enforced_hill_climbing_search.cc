@@ -201,6 +201,9 @@ SearchStatus EnforcedHillClimbingSearch::step() {
 
 SearchStatus EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
+        if (timer->is_expired()) {
+            return TIMEOUT;
+        }
         EdgeOpenListEntry entry = open_list->remove_min();
         StateID parent_state_id = entry.first;
         OperatorID last_op_id = entry.second;

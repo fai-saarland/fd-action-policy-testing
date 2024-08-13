@@ -138,6 +138,7 @@ InternalPlannerPlanCostEstimator::run_planner(std::vector<OperatorID> &plan, con
         if (!continue_after_time_out || are_limits_reached()) {
             throw OutOfResourceException();
         } else {
+            engine.reset();
             utils::reestablish_extra_memory_padding(50);
             return false;
         }
