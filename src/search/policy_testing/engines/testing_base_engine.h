@@ -94,13 +94,12 @@ protected:
     std::ofstream bugs_stream_;
     bool read_policy_cache_;
     bool just_write_policy_cache_;
-
     utils::Timer testing_timer_;
-
     const bool debug_;
 private:
     std::set<TestingBaseComponent *> components_;
     const bool verbose_;
     const bool abstain_if_first_state_not_known_solved;
+    bool print_bug_states_;
 };
 } // namespace policy_testing

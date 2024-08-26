@@ -19,7 +19,8 @@ PolicyTestingBaseEngine::PolicyTestingBaseEngine(const plugins::Options &opts)
       read_policy_cache_(opts.get<bool>("read_policy_cache")),
       just_write_policy_cache_(opts.get<bool>("just_write_policy_cache")),
       debug_(opts.get<bool>("debug")), verbose_(opts.get<bool>("verbose")),
-      abstain_if_first_state_not_known_solved(opts.get<bool>("abstain_if_first_state_not_known_solved")){
+      abstain_if_first_state_not_known_solved(opts.get<bool>("abstain_if_first_state_not_known_solved")),
+      print_bug_states_(opts.get<bool>("print_bug_states")){
     testing_timer_.reset();
     testing_timer_.stop();
 
@@ -82,6 +83,9 @@ PolicyTestingBaseEngine::add_options_to_feature(plugins::Feature &feature, bool 
     feature.add_option<bool>("abstain_if_first_state_not_known_solved",
                              "Abort the testing if the first tested state is not solved (possibly within the provided step limit)", 
                              "false");
+    feature.add_option<bool>("print_bug_states",
+                             "Print out all found bug states including state values",
+                             "false");
     SearchAlgorithm::add_options_to_feature(feature);
 }
 
@@ -117,18 +121,20 @@ PolicyTestingBaseEngine::run_test(const PoolEntry &entry) {
 }
 
 void PolicyTestingBaseEngine::print_new_bug_info(const State &state, StateID state_id) {
-    std::cout << "New Bug: StateID=" << state_id << ", Values=[";
-    bool first = true;
     const std::vector<int> &values = state.get_values();
-    for (int val : values) {
+    if(print_bug_states_) {
+      std::cout << "New Bug: StateID=" << state_id << ", Values=[";
+      bool first = true;
+      for (int val : values) {
         if (first) {
-            first = false;
+          first = false;
         } else {
-            std::cout << ", ";
+          std::cout << ", ";
         }
         std::cout << val;
+      }
+      std::cout << "]" << std::endl;
     }
-    std::cout << "]" << std::endl;
     if (write_bugs_file_) {
         // print state
         bugs_stream_ << std::string(state_id) << "\nstate\n";
