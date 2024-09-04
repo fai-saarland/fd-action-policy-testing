@@ -21,7 +21,7 @@ BoundedLookaheadOracle::BoundedLookaheadOracle(const plugins::Options &opts)
 void
 BoundedLookaheadOracle::add_options_to_feature(plugins::Feature &feature) {
     Oracle::add_options_to_feature(feature);
-    feature.add_option<int>("depth", "", "2");
+    feature.add_option<int>("depth", "Depth limit.", "2");
     feature.add_option<int>("max_evaluation_steps",
                             "Maximal number of steps in evaluation of policy in unrelaxed state.", "-1");
     feature.add_option<std::shared_ptr<Evaluator>>("dead_end_eval",

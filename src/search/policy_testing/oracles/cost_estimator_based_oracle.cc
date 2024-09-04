@@ -13,7 +13,7 @@ EstimatorBasedOracle::EstimatorBasedOracle(const plugins::Options &opts)
 void
 EstimatorBasedOracle::add_options_to_feature(plugins::Feature &feature) {
     Oracle::add_options_to_feature(feature);
-    feature.add_option<std::shared_ptr<PlanCostEstimator>>("oracle");
+    feature.add_option<std::shared_ptr<PlanCostEstimator>>("oracle", "Plan cost estimator.");
     feature.add_option<bool>("cache_results", "Cache the results of oracle invocations", "true");
 }
 

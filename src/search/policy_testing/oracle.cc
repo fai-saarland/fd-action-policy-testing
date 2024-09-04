@@ -154,7 +154,7 @@ static class OraclePlugin : public plugins::TypedCategoryPlugin<Oracle> {
 public:
     OraclePlugin() : TypedCategoryPlugin("Oracle") {
         document_synopsis(
-            "This page describes the different Oracles."
+            "This page describes the different oracles."
             );
     }
 }

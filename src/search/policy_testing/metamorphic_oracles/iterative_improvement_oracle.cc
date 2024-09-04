@@ -48,7 +48,7 @@ IterativeImprovementOracle::add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<std::shared_ptr<Evaluator>>("lookahead_heuristic", "Heuristic to be used in lookahead search.",
                                                    plugins::ArgumentInfo::NO_DEFAULT);
     feature.add_option<bool>("deferred_evaluation",
-                             "Defer heuristic evaluation in lookahead_search.\n"
+                             "Defer heuristic evaluation in lookahead_search. "
                              "Not implemented in qual_lookahead_search yet.",
                              "false");
     feature.add_option<bool>("domain_unit_cost_and_invertible",

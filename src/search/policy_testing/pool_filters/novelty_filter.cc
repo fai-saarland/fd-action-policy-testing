@@ -20,7 +20,7 @@ NoveltyPoolFilter::initialize() {
 
 void
 NoveltyPoolFilter::add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<int>("novelty");
+    feature.add_option<int>("novelty", "Max arity.");
 }
 
 bool

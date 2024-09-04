@@ -36,8 +36,8 @@ InternalPlannerPlanCostEstimator::InternalPlannerPlanCostEstimator(TestingEnviro
 void
 InternalPlannerPlanCostEstimator::add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<Configuration>("conf", "search algorithm, possible choices: astar_lmcut, ehc_ff");
-    feature.add_option<bool>("print_output", "", "false");
-    feature.add_option<bool>("print_plan", "", "false");
+    feature.add_option<bool>("print_output", "Print search output.", "false");
+    feature.add_option<bool>("print_plan", "Print plan.", "false");
     feature.add_option<int>("max_planner_time", "Maximal time to run internal planner.", "14400");
     feature.add_option<bool>("continue_after_time_out",
                              "Continue testing if internal planner oracle ran into a timeout (or runs out of memory).",
@@ -210,7 +210,7 @@ public:
 static plugins::FeaturePlugin<InternalPlannerPlanCostEstimatorFeature> _plugin;
 
 static plugins::TypedEnumPlugin<InternalPlannerPlanCostEstimator::Configuration> _enum_plugin({
-        {"astar_lmcut", ""},
-        {"ehc_ff", ""},
+        {"astar_lmcut", "A* with LM-Cut heuristic."},
+        {"ehc_ff", "Enforced hill climbing with FF heuristic."},
     });
 } // namespace policy_testing

@@ -19,8 +19,8 @@ HillClimbingPolicy::HillClimbingPolicy(const plugins::Options &opts)
 void
 HillClimbingPolicy::add_options_to_feature(plugins::Feature &feature) {
     Policy::add_options_to_feature(feature);
-    feature.add_option<std::shared_ptr<Evaluator>>("eval");
-    feature.add_option<bool>("helpful_actions_pruning", "", "false");
+    feature.add_option<std::shared_ptr<Evaluator>>("eval", "The heuristic");
+    feature.add_option<bool>("helpful_actions_pruning", "Apply helpful actions pruning", "false");
 }
 
 OperatorID

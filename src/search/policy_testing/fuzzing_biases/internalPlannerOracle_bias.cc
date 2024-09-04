@@ -15,7 +15,7 @@ InternalPlannerOracleBias::InternalPlannerOracleBias(const plugins::Options &opt
 
 void
 InternalPlannerOracleBias::add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<std::shared_ptr<PlanCostEstimator>>("internal_planner_oracle");
+    feature.add_option<std::shared_ptr<PlanCostEstimator>>("internal_planner_oracle", "plan cost estimator (e.g. to compute h*)");
 }
 
 int

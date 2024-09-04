@@ -68,10 +68,10 @@ PoolPolicyTestingEngine::print_statistics() const {
 void
 PoolPolicyTestingEngine::add_options_to_feature(plugins::Feature &feature) {
     PolicyTestingBaseEngine::add_options_to_feature(feature, true);
-    feature.add_option<std::string>("pool_file");
-    feature.add_option<int>("start_from", "", "0");
-    feature.add_option<int>("max_steps", "", "infinity");
-    feature.add_option<int>("novelty_statistics", "", "2");
+    feature.add_option<std::string>("pool_file", "The pool file to load.");
+    feature.add_option<int>("start_from", "Index of first step to test.", "0");
+    feature.add_option<int>("max_steps", "Number of pool states to test.", "infinity");
+    feature.add_option<int>("novelty_statistics", "Maximal arity for novelty statistics.", "2");
 }
 
 SearchStatus

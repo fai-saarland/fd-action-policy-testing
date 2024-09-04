@@ -43,21 +43,21 @@ SimplifiedPoolFuzzerEngine::SimplifiedPoolFuzzerEngine(const plugins::Options &o
 
 void
 SimplifiedPoolFuzzerEngine::add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<int>("max_walk_length", "", "2");
+    feature.add_option<int>("max_walk_length", "Maximal length of random walks.", "2");
 
-    feature.add_option<std::string>("pool_file", "", plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<std::shared_ptr<FuzzingBias>>("bias", "", plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<std::shared_ptr<PoolFilter>>("filter", "", plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<std::shared_ptr<Evaluator>>("eval", "", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::string>("pool_file", "Path to pool file (optional).", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<FuzzingBias>>("bias", "Fuzzing bias (optional).", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<PoolFilter>>("filter", "Novelty filter (optional).", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<Evaluator>>("eval", "Dead end evaluator (optional).", plugins::ArgumentInfo::NO_DEFAULT);
 
-    feature.add_option<bool>("disable_novelty_store", "", "true");
-    feature.add_option<int>("novelty_statistics", "", "2");
+    feature.add_option<bool>("disable_novelty_store", "Disable novelty statistics.", "true");
+    feature.add_option<int>("novelty_statistics", "Maximal arity in novelty statistics.", "2");
 
-    feature.add_option<bool>("check_policy_unsolved", "", "false");
-    feature.add_option<bool>("descend_unsolved", "", "false");
-    feature.add_option<int>("max_pool_size", "", "infinity");
-    feature.add_option<int>("max_steps", "", "infinity");
-    feature.add_option<int>("seed", "", "1734");
+    feature.add_option<bool>("check_policy_unsolved", "Check if policy is unsolved.", "false");
+    feature.add_option<bool>("descend_unsolved", "Descend if policy is unsolved.", "false");
+    feature.add_option<int>("max_pool_size", "Maximal pool size.", "infinity");
+    feature.add_option<int>("max_steps", "Maximal number of fuzzing steps.", "infinity");
+    feature.add_option<int>("seed", "Random seed.", "1734");
 
     PolicyTestingBaseEngine::add_options_to_feature(feature, false);
 }

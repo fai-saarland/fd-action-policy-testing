@@ -18,9 +18,9 @@ HeuristicDescendPolicy::HeuristicDescendPolicy(const plugins::Options &opts)
 void
 HeuristicDescendPolicy::add_options_to_feature(plugins::Feature &feature) {
     Policy::add_options_to_feature(feature);
-    feature.add_option<std::shared_ptr<Evaluator>>("eval");
-    feature.add_option<bool>("strictly_descend", "", "false");
-    feature.add_option<bool>("stop_at_dead_ends", "", "true");
+    feature.add_option<std::shared_ptr<Evaluator>>("eval", "The heuristic");
+    feature.add_option<bool>("strictly_descend", "Descend strictly", "false");
+    feature.add_option<bool>("stop_at_dead_ends", "Stop at dead ends", "true");
 }
 
 OperatorID

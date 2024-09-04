@@ -65,21 +65,21 @@ PolicyTestingBaseEngine::PolicyTestingBaseEngine(const plugins::Options &opts)
 
 void
 PolicyTestingBaseEngine::add_options_to_feature(plugins::Feature &feature, bool testing_arguments_mandatory) {
-    feature.add_option<std::shared_ptr<Policy>>("policy", "", plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<bool>("run_without_policy", "", "false");
+    feature.add_option<std::shared_ptr<Policy>>("policy", "The policy to test (optional). Also consider using global a global remote policy.", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<bool>("run_without_policy", "Run engine without policy.", "false");
     if (testing_arguments_mandatory) {
-        feature.add_option<std::shared_ptr<Oracle>>("testing_method");
+        feature.add_option<std::shared_ptr<Oracle>>("testing_method", "The oracle to be used.");
     } else {
-        feature.add_option<std::shared_ptr<Oracle>>("testing_method", "", plugins::ArgumentInfo::NO_DEFAULT);
+        feature.add_option<std::shared_ptr<Oracle>>("testing_method", "The oracle to be used.", plugins::ArgumentInfo::NO_DEFAULT);
     }
-    feature.add_option<std::string>("policy_cache_file", "", plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<std::string>("bugs_file", "", plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<bool>("read_policy_cache", "", "false");
+    feature.add_option<std::string>("policy_cache_file", "Policy cache file to write to or read from.", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::string>("bugs_file", "Path to bugs file.", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<bool>("read_policy_cache", "Read policy cache instead of running the policy (requires policy_cache_file)", "false");
     feature.add_option<bool>("just_write_policy_cache",
                              "Skip any calls to oracles (and thus the actual testing), just write the policy cache into the provided cache file.",
                              "false");
-    feature.add_option<bool>("debug", "", "false");
-    feature.add_option<bool>("verbose", "", "false");
+    feature.add_option<bool>("debug", "Run in (very expensive) debug mode.", "false");
+    feature.add_option<bool>("verbose", "More verbose output for debugging.", "false");
     feature.add_option<bool>("abstain_if_first_state_not_known_solved",
                              "Abort the testing if the first tested state is not solved (possibly within the provided step limit)", 
                              "false");

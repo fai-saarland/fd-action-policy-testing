@@ -102,6 +102,6 @@ TestingBaseComponent::get_successor_state(
 
 void
 TestingBaseComponent::add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<bool>("debug", "", "false");
+    feature.add_option<bool>("debug", "Run in (very costly) debug mode.", "false");
 }
 } // namespace policy_testing

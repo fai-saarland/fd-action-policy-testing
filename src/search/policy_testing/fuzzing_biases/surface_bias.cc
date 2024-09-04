@@ -26,8 +26,8 @@ SurfaceBias::SurfaceBias(const plugins::Options &opts)
 
 void
 SurfaceBias::add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<std::shared_ptr<Evaluator>>("h", "", plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<std::shared_ptr<PlanCostEstimator>>("ipo", "", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<Evaluator>>("h", "heuristic (required if no ipo is given)", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<PlanCostEstimator>>("ipo", "plan cost estimator (e.g. to compute h*)", plugins::ArgumentInfo::NO_DEFAULT);
     feature.add_option<bool>("omit_maximization",
                              "do not maximize over all sub-paths, only consider first and last state", "false");
     PolicyBasedBias::add_options_to_feature(feature);

@@ -16,7 +16,7 @@ DetourBias::DetourBias(const plugins::Options &opts) :
         register_sub_component(internalPlanCostEstimator.get());
     }
     if ((!h && !internalPlanCostEstimator) || (opts.contains("h") && opts.contains("ipo"))) {
-        std::cerr << "Surface Bias needs either a heuristic or an internal planner oracle (and not both)\nh must be"
+        std::cerr << "Surface Bias needs either a heuristic or an internal plan cost estimator (and not both)\nh must be"
             " a RelaxationHeuristic and ipo must be an InternalPlannerPlanCostEstimator" << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
@@ -29,8 +29,8 @@ DetourBias::DetourBias(const plugins::Options &opts) :
 
 void
 DetourBias::add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<std::shared_ptr<Evaluator>>("h", "", plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<std::shared_ptr<PlanCostEstimator>>("ipo", "", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<Evaluator>>("h", "heuristic (required if no ipo is given)", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<PlanCostEstimator>>("ipo", "plan cost estimator (e.g. to compute h*)", plugins::ArgumentInfo::NO_DEFAULT);
     feature.add_option<bool>("omit_maximization",
                              "do not maximize over all sub-paths, only consider first and last state", "false");
     PolicyBasedBias::add_options_to_feature(feature);

@@ -9,7 +9,7 @@ heuristicBias::heuristicBias(const plugins::Options &opts)
 void
 heuristicBias::add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<std::shared_ptr<Evaluator>>("h",
-                                                   "Heuristic Bias is only implemented for safe heuristics, i.e., if the heuristic returns infinity a bias of negative infinity will be chosen.");
+                                                   "heuristic; only implemented for safe heuristics (if the heuristic returns infinity a bias of negative infinity will be chosen).");
 }
 
 int

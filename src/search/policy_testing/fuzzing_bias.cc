@@ -22,7 +22,7 @@ PolicyBasedBias::PolicyBasedBias(const plugins::Options &opts) :
 
 void
 PolicyBasedBias::add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<std::shared_ptr<Policy>>("policy", "", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<Policy>>("policy", "policy to test (omit if global remote policy is set)", plugins::ArgumentInfo::NO_DEFAULT);
     feature.add_option<int>("horizon",
                             "number of policy steps to consider in bias computation; choose 0 or negative value to set no limit",
                             "50");
