@@ -114,10 +114,7 @@ metamorphic_oracle=iterative_improvement_oracle(conduct_lookahead_search=true,lo
 A selection of possible oracles is:
 
 * `aras(...)`
-* `atomic_unrelaxation_oracle(...)`
-* `bounded_lookahead_oracle(...)`
 * `composite_oracle(...)`
-* `dummy_oracle(...)`
 * `estimator_based_oracle(...)`
 * `iterative_improvement_oracle(...)`
 * `unrelaxation_oracle(...)`
