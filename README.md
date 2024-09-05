@@ -74,7 +74,7 @@ Our tool supports executing all steps of the testing pipeline in one go, however
 Here is an example for `<search config>` for writing a pool file.
 
 ```
-pool_fuzzer(max_steps=10000000,max_pool_size=100,eval=hmax(),max_walk_length=5,pool_file=<path/to/pool/file/for/result>,penalize_policy_fails=true,bias_budget=200,cache_bias=false[,bias=<bias>])
+pool_fuzzer(max_steps=10000000,max_pool_size=100,eval=hmax(),max_walk_length=5,pool_file="<path/to/pool/file/for/result>",penalize_policy_fails=true,bias_budget=200,cache_bias=false[,bias=<bias>])
 ```
 where bias=<bias> must be omitted if no bias is to be used. 
 
@@ -94,21 +94,21 @@ If you use an oracle that requires computing a dominance function, you might wan
 You can achieve that by selecting `<search config>` to:
 
 ```
-dummy_engine(testing_method=dummy_oracle(abs=builder_massim(merge_strategy=merge_dfp(),limit_transitions_merge=10000),write_sim_and_exit=true,sim_file=<path/to/sim/file/for/result>,max_simulation_time=1800,max_total_time=7200))
+dummy_engine(testing_method=numeric_dominance_oracle(abs=builder_massim(merge_strategy=merge_dfp(),limit_transitions_merge=10000),write_sim_and_exit=true,sim_file="<path/to/sim/file/for/result>",max_simulation_time=1800,max_total_time=7200))
 ```
 
 #### Oracle Step
 
 In order to run the oracle on a precomputed pool, you could select e.g. this `<search config>`:
 ```
-pool_policy_tester(max_time=<time limit in seconds>,pool_file=<path/to/pool/file>,testing_method=<oracle>)
+pool_policy_tester(max_time=<time limit in seconds>,pool_file="<path/to/pool/file>",testing_method=<oracle>)
 ```
 where `<oracle>` could be:
 
 ```
 composite_oracle(qual_oracle=estimator_based_oracle(oracle=internal_planner_plan_cost_estimator(conf=ehc_ff,max_planner_time=300)),\
-quant_oracle=aras(aras_dir=<path/to/aras/tool>,aras_max_time_limit=300),\
-metamorphic_oracle=iterative_improvement_oracle(conduct_lookahead_search=true,lookahead_heuristic=ff(),consider_intermediate_states=true,read_simulation=true,sim_file=<path/to/simulation/file>))
+quant_oracle=aras(aras_dir="<path/to/aras/tool>",aras_max_time_limit=300),\
+metamorphic_oracle=iterative_improvement_oracle(conduct_lookahead_search=true,lookahead_heuristic=ff(),consider_intermediate_states=true,read_simulation=true,sim_file="<path/to/simulation/file>"))
 ```
 
 A selection of possible oracles is:
