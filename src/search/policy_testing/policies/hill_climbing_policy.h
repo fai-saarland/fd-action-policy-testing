@@ -22,7 +22,7 @@ protected:
     OperatorID apply(const State &state) override;
 
 private:
-    std::shared_ptr<Evaluator> heuristic_;
-    const bool helpful_actions_pruning_;
+    std::shared_ptr<Evaluator> heuristic;
+    const bool helpful_actions_pruning;
 };
 } // namespace policy_testing

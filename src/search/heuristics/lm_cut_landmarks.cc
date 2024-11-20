@@ -66,7 +66,7 @@ void LandmarkCutLandmarks::build_relaxed_operator(const OperatorProxy &op) {
         effects.push_back(get_proposition(eff.get_fact()));
     }
     add_relaxed_operator(
-            std::move(precondition), std::move(effects), op.get_id(), op.get_cost());
+        std::move(precondition), std::move(effects), op.get_id(), op.get_cost());
 }
 
 void LandmarkCutLandmarks::add_relaxed_operator(
@@ -74,7 +74,7 @@ void LandmarkCutLandmarks::add_relaxed_operator(
     vector<RelaxedProposition *> &&effects,
     int op_id, int base_cost) {
     RelaxedOperator relaxed_op(
-            std::move(precondition), std::move(effects), op_id, base_cost);
+        std::move(precondition), std::move(effects), op_id, base_cost);
     if (relaxed_op.preconditions.empty())
         relaxed_op.preconditions.push_back(&artificial_precondition);
     relaxed_operators.push_back(relaxed_op);

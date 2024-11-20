@@ -1,6 +1,6 @@
 #include "pool_filter.h"
 
-#include "../plugins/plugin.h"
+#include "../../plugins/plugin.h"
 
 namespace policy_testing {
 static class PoolFilterPlugin : public plugins::TypedCategoryPlugin<PoolFilter> {

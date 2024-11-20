@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../pool.h"
+#include "../utils/novelty_store.h"
 #include "testing_base_engine.h"
-#include "../novelty_store.h"
 
 namespace policy_testing {
 class PoolPolicyTestingEngine : public PolicyTestingBaseEngine {
@@ -16,13 +16,13 @@ protected:
     SearchStatus step() override;
 
 private:
-    Pool pool_;
-    NoveltyStore novelty_store_;
+    Pool pool;
+    NoveltyStore novelty_store;
 
-    const unsigned max_steps_;
-    const unsigned first_step_;
-    const unsigned end_step_;
+    const unsigned max_steps;
+    const unsigned first_step;
+    const unsigned end_step;
 
-    unsigned step_;
+    unsigned int pool_step;
 };
 } // namespace policy_testing

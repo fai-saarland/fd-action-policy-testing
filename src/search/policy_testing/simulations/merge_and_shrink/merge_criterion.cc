@@ -215,7 +215,7 @@ public:
         add_option<int>("opt_diff", "allows for a constant factor of suboptimality in the number of TRs", "0");
     }
 };
-    [[maybe_unused]] static plugins::FeaturePlugin<MergeCriterionTRsFeature> _trs_plugin;
+[[maybe_unused]] static plugins::FeaturePlugin<MergeCriterionTRsFeature> _trs_plugin;
 
 class MergeCriterionCGFeature : public plugins::TypedFeature<MergeCriterion, MergeCriterionCG> {
 public:
@@ -225,7 +225,7 @@ public:
         return std::make_shared<MergeCriterionCG>();
     }
 };
-    [[maybe_unused]] static plugins::FeaturePlugin<MergeCriterionCGFeature> _cg_plugin;
+[[maybe_unused]] static plugins::FeaturePlugin<MergeCriterionCGFeature> _cg_plugin;
 
 class MergeCriterionGoalFeature : public plugins::TypedFeature<MergeCriterion, MergeCriterionGoal> {
 public:
@@ -235,7 +235,7 @@ public:
         return std::make_shared<MergeCriterionGoal>();
     }
 };
-    [[maybe_unused]] static plugins::FeaturePlugin<MergeCriterionGoalFeature> _goals_plugin;
+[[maybe_unused]] static plugins::FeaturePlugin<MergeCriterionGoalFeature> _goals_plugin;
 
 class MergeCriterionRelevantFeature : public plugins::TypedFeature<MergeCriterion, MergeCriterionRelevant> {
 public:
@@ -245,5 +245,5 @@ public:
         return std::make_shared<MergeCriterionRelevant>();
     }
 };
-    [[maybe_unused]] static plugins::FeaturePlugin<MergeCriterionRelevantFeature> _relevant_plugin;
+[[maybe_unused]] static plugins::FeaturePlugin<MergeCriterionRelevantFeature> _relevant_plugin;
 }

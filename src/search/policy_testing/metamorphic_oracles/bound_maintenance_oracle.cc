@@ -1,4 +1,4 @@
-#include "iterative_improvement_oracle.h"
+#include "bound_maintenance_oracle.h"
 
 #include <memory>
 #include <queue>
@@ -12,8 +12,8 @@
 #include "../../evaluation_context.h"
 
 namespace policy_testing {
-IterativeImprovementOracle::IterativeImprovementOracle(const plugins::Options &opts)
-    : NumericDominanceOracle(opts),
+BoundMaintenanceOracle::BoundMaintenanceOracle(const plugins::Options &opts)
+    : MetamorphicOracle(opts),
       upper_cost_bounds(Policy::UNSOLVED),
       max_state_comparisons(static_cast<unsigned int>(std::max(opts.get<int>("max_state_comparisons"), 0))),
       conduct_lookahead_search(opts.get<bool>("conduct_lookahead_search")),
@@ -30,14 +30,12 @@ IterativeImprovementOracle::IterativeImprovementOracle(const plugins::Options &o
     }
 }
 
-void
-IterativeImprovementOracle::initialize() {
-    NumericDominanceOracle::initialize();
+void BoundMaintenanceOracle::initialize() {
+    MetamorphicOracle::initialize();
 }
 
-void
-IterativeImprovementOracle::add_options_to_feature(plugins::Feature &feature) {
-    NumericDominanceOracle::add_options_to_feature(feature);
+void BoundMaintenanceOracle::add_options_to_feature(plugins::Feature &feature) {
+    MetamorphicOracle::add_options_to_feature(feature);
     feature.add_option<int>("max_state_comparisons", "Maximal number of states to compare bug candidates to",
                             "1000000");
     feature.add_option<int>("max_lookahead_state_comparisons",
@@ -62,10 +60,11 @@ IterativeImprovementOracle::add_options_to_feature(plugins::Feature &feature) {
                                       "h");
 }
 
-BugValue IterativeImprovementOracle::test_impl(Policy &policy, const State &state, bool local_test, bool lookahead) {
+BugValue BoundMaintenanceOracle::test_impl(Policy &policy, const State &state, bool local_test, bool lookahead) {
     // skip if state is already known to be a bug
     if (!tested_states.insert(state.get_id()).second) {
-        const BugValue stored_bug_value = engine_->get_stored_bug_result(state).bug_value;
+        const BugValue stored_bug_value =
+            engine->get_stored_bug_result(state).bug_value;
         if (stored_bug_value > 0) {
             return stored_bug_value;
         }
@@ -103,7 +102,7 @@ BugValue IterativeImprovementOracle::test_impl(Policy &policy, const State &stat
                 // dominating state is in first position in get_dominance_value
                 const int dominance_old_new = D(old_state, state);
 #ifndef NDEBUG
-                if (debug_) {
+                if (debug) {
                     assert(confirm_dominance_value(old_state, state, dominance_old_new));
                 }
 #endif
@@ -121,7 +120,7 @@ BugValue IterativeImprovementOracle::test_impl(Policy &policy, const State &stat
                 // dominating state is in 1st position in get_dominance_value
                 const int dominance_new_old = D(state, old_state);
 #ifndef NDEBUG
-                if (debug_) {
+                if (debug) {
                     assert(confirm_dominance_value(state, old_state, dominance_new_old));
                 }
 #endif
@@ -143,12 +142,12 @@ BugValue IterativeImprovementOracle::test_impl(Policy &policy, const State &stat
                         const BugValue old_state_bug_value =
                             (lower_policy_cost_bound_old_state == Policy::UNSOLVED) ? UNSOLVED_BUG_VALUE :
                             (lower_policy_cost_bound_old_state - improved_cost_old_state);
-                        assert(engine_);
+                        assert(engine);
                         assert(old_state_bug_value > 0);
-                        engine_->add_additional_bug(old_state,
-                                                    TestResult(old_state_bug_value, improved_cost_old_state));
+                        engine->add_additional_bug(old_state,
+                                                   TestResult(old_state_bug_value, improved_cost_old_state));
 #ifndef NDEBUG
-                        if (debug_) {
+                        if (debug) {
                             assert(confirm_bug(old_state, old_state_bug_value));
                         }
 #endif
@@ -187,7 +186,7 @@ BugValue IterativeImprovementOracle::test_impl(Policy &policy, const State &stat
                              (lower_policy_cost_bound_new_state == Policy::UNSOLVED) ? UNSOLVED_BUG_VALUE :
                              (lower_policy_cost_bound_new_state - improved_cost_new_state));
 #ifndef NDEBUG
-        if (debug_) {
+        if (debug) {
             assert(confirm_bug(state, bug_value));
         }
 #endif
@@ -197,15 +196,13 @@ BugValue IterativeImprovementOracle::test_impl(Policy &policy, const State &stat
     }
 }
 
-TestResult
-IterativeImprovementOracle::test(Policy &, const State &) {
+TestResult BoundMaintenanceOracle::test(Policy &, const State &) {
     std::cerr << "IterativeImprovementOracle::test is not implemented" << std::endl;
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
 
-TestResult
-IterativeImprovementOracle::test_driver(Policy &policy, const PoolEntry &entry) {
+TestResult BoundMaintenanceOracle::test_driver(Policy &policy, const PoolEntry &entry) {
     const State &new_state = entry.state;
     BugValue bug_value = 0;
 
@@ -252,8 +249,8 @@ IterativeImprovementOracle::test_driver(Policy &policy, const PoolEntry &entry) 
             const State &intermediate_state = *it;
             const BugValue intermediate_bug_value = test_impl(policy, intermediate_state, false, false);
             if (intermediate_bug_value > 0) {
-                engine_->add_additional_bug(intermediate_state,
-                                            TestResult(intermediate_bug_value, upper_cost_bounds[intermediate_state]));
+                engine->add_additional_bug(intermediate_state,
+                                           TestResult(intermediate_bug_value, upper_cost_bounds[intermediate_state]));
             }
             update_parent_cost(policy, intermediate_state);
             reorder_state_sets();
@@ -270,14 +267,13 @@ IterativeImprovementOracle::test_driver(Policy &policy, const PoolEntry &entry) 
     return TestResult(bug_value, upper_cost_bounds[new_state]);
 }
 
-void
-IterativeImprovementOracle::update_cost(const State &s, PolicyCost old_cost, PolicyCost new_cost) {
+void BoundMaintenanceOracle::update_cost(const State &s, PolicyCost old_cost, PolicyCost new_cost) {
     const PolicyCost min_cost = Policy::min_cost(upper_cost_bounds[s], new_cost);
     delayed_cost_set_updates.emplace_back(s, old_cost, min_cost);
     upper_cost_bounds[s] = min_cost;
 }
 
-void IterativeImprovementOracle::removeState(const State &state, PolicyCost cost) {
+void BoundMaintenanceOracle::removeState(const State &state, PolicyCost cost) {
     assert(cost_set_size);
     --cost_set_size;
     auto &cost_set = getCostSetByCost(cost);
@@ -292,7 +288,7 @@ void IterativeImprovementOracle::removeState(const State &state, PolicyCost cost
     cost_set.pop_back();
 }
 
-void IterativeImprovementOracle::reorder_state_sets() {
+void BoundMaintenanceOracle::reorder_state_sets() {
     for (const auto &[state, old_cost, new_cost] : delayed_cost_set_updates) {
         removeState(state, old_cost);
         addState(state, new_cost);
@@ -300,7 +296,7 @@ void IterativeImprovementOracle::reorder_state_sets() {
     delayed_cost_set_updates.clear();
 }
 
-void IterativeImprovementOracle::reorder_state_sets_with_parent_updates(Policy &policy) {
+void BoundMaintenanceOracle::reorder_state_sets_with_parent_updates(Policy &policy) {
     utils::HashSet<StateID> states_to_update_parents;
     if (update_parents) {
         for (const auto &[state, old_cost, new_cost] : delayed_cost_set_updates) {
@@ -314,7 +310,7 @@ void IterativeImprovementOracle::reorder_state_sets_with_parent_updates(Policy &
     }
 }
 
-void IterativeImprovementOracle::update_parent_cost(Policy &policy, const State &s) {
+void BoundMaintenanceOracle::update_parent_cost(Policy &policy, const State &s) {
     std::queue<StateID> queue;
     queue.push(s.get_id());
     utils::HashSet<StateID> processed;
@@ -347,10 +343,10 @@ void IterativeImprovementOracle::update_parent_cost(Policy &policy, const State 
                     (lower_policy_cost_bound_parent == Policy::UNSOLVED) ? UNSOLVED_BUG_VALUE :
                     (lower_policy_cost_bound_parent - new_parent_bound);
                 assert(parent_bug_value > 0);
-                assert(engine_);
-                engine_->add_additional_bug(parent_state, TestResult(parent_bug_value, new_parent_bound));
+                assert(engine);
+                engine->add_additional_bug(parent_state, TestResult(parent_bug_value, new_parent_bound));
 #ifndef NDEBUG
-                if (debug_) {
+                if (debug) {
                     assert(confirm_bug(parent_state, parent_bug_value));
                 }
 #endif
@@ -367,7 +363,7 @@ void IterativeImprovementOracle::update_parent_cost(Policy &policy, const State 
     }
 }
 
-PolicyCost IterativeImprovementOracle::infer_upper_bound(Policy &policy, const State &new_state) {
+PolicyCost BoundMaintenanceOracle::infer_upper_bound(Policy &policy, const State &new_state) {
     const PolicyCost old_cost_bound = upper_cost_bounds[new_state];
 #ifndef NDEBUG
     if (tested_states.contains(new_state.get_id())) {
@@ -389,7 +385,7 @@ PolicyCost IterativeImprovementOracle::infer_upper_bound(Policy &policy, const S
             // dominance_old_new = D(old_state, new_state), dominating state is in first position in get_dominance_value
             const int dominance_old_new = D(old_state, new_state);
 #ifndef NDEBUG
-            if (debug_) {
+            if (debug) {
                 assert(confirm_dominance_value(old_state, new_state, dominance_old_new));
             }
 #endif
@@ -420,10 +416,10 @@ PolicyCost IterativeImprovementOracle::infer_upper_bound(Policy &policy, const S
                     (lower_policy_bound_new_state == Policy::UNSOLVED) ? UNSOLVED_BUG_VALUE :
                     (lower_policy_bound_new_state - new_cost_bound);
                 assert(bug_value > 0);
-                assert(engine_);
-                engine_->add_additional_bug(new_state, TestResult(bug_value, new_cost_bound));
+                assert(engine);
+                engine->add_additional_bug(new_state, TestResult(bug_value, new_cost_bound));
 #ifndef NDEBUG
-                if (debug_) {
+                if (debug) {
                     assert(confirm_bug(new_state, bug_value));
                 }
 #endif
@@ -437,7 +433,7 @@ PolicyCost IterativeImprovementOracle::infer_upper_bound(Policy &policy, const S
     return new_cost_bound;
 }
 
-void IterativeImprovementOracle::add_external_cost_bound(
+void BoundMaintenanceOracle::add_external_cost_bound(
     Policy &policy, const State &new_state, PolicyCost cost_bound) {
     if (cost_bound == Policy::UNSOLVED) {
         return;
@@ -466,7 +462,7 @@ void IterativeImprovementOracle::add_external_cost_bound(
             // dominating state is in 1st position in get_dominance_value
             const int dominance_new_old = D(new_state, old_state);
 #ifndef NDEBUG
-            if (debug_) {
+            if (debug) {
                 assert(confirm_dominance_value(new_state, old_state, dominance_new_old));
             }
 #endif
@@ -487,11 +483,11 @@ void IterativeImprovementOracle::add_external_cost_bound(
                     const BugValue old_state_bug_value =
                         (lower_policy_cost_bound == Policy::UNSOLVED) ? UNSOLVED_BUG_VALUE :
                         (lower_policy_cost_bound - improved_cost_old_state);
-                    assert(engine_);
+                    assert(engine);
                     assert(old_state_bug_value > 0);
-                    engine_->add_additional_bug(old_state, TestResult(old_state_bug_value, improved_cost_old_state));
+                    engine->add_additional_bug(old_state, TestResult(old_state_bug_value, improved_cost_old_state));
 #ifndef NDEBUG
-                    if (debug_) {
+                    if (debug) {
                         assert(confirm_bug(old_state, old_state_bug_value));
                     }
 #endif
@@ -516,7 +512,8 @@ void IterativeImprovementOracle::add_external_cost_bound(
     }
 }
 
-PolicyCost IterativeImprovementOracle::lookahead_search(Policy &policy, const State &s, unsigned int max_state_visits) {
+PolicyCost
+BoundMaintenanceOracle::lookahead_search(Policy &policy, const State &s, unsigned int max_state_visits) {
     struct search_node {
         StateID state;
         int g_value;
@@ -528,16 +525,16 @@ PolicyCost IterativeImprovementOracle::lookahead_search(Policy &policy, const St
     const TaskProxy &proxy = get_task_proxy();
 
     auto comp = [&](const search_node &a, const search_node &b) {
-            switch (lookahead_comp) {
-            case LookaheadComp::H:
-                return a.h_value > b.h_value;
-            case LookaheadComp::G_PLUS_H:
-                return a.h_value + a.g_value > b.h_value + b.g_value;
-            default:
-                assert(0);
-                return false;
-            }
-        };
+        switch (lookahead_comp) {
+        case LookaheadComp::H:
+            return a.h_value > b.h_value;
+        case LookaheadComp::G_PLUS_H:
+            return a.h_value + a.g_value > b.h_value + b.g_value;
+        default:
+            assert(0);
+            return false;
+        }
+    };
     std::priority_queue<search_node, std::vector<search_node>, decltype(comp)> queue(comp);
     utils::HashSet<StateID> visited;
     const StateID start_state_id = s.get_id();
@@ -615,17 +612,16 @@ PolicyCost IterativeImprovementOracle::lookahead_search(Policy &policy, const St
     return upper_bound_for_start;
 }
 
-class IterativeImprovementOracleFeature : public plugins::TypedFeature<Oracle,
-                                                                       IterativeImprovementOracle> {
+class IterativeImprovementOracleFeature : public plugins::TypedFeature<Oracle, BoundMaintenanceOracle> {
 public:
-    IterativeImprovementOracleFeature() : TypedFeature("iterative_improvement_oracle") {
-        IterativeImprovementOracle::add_options_to_feature(*this);
+    IterativeImprovementOracleFeature() : TypedFeature("bound_maintenance_oracle") {
+        BoundMaintenanceOracle::add_options_to_feature(*this);
     }
 };
 static plugins::FeaturePlugin<IterativeImprovementOracleFeature> _plugin;
 
 
-static plugins::TypedEnumPlugin<IterativeImprovementOracle::LookaheadComp> _enum_plugin({
+static plugins::TypedEnumPlugin<BoundMaintenanceOracle::LookaheadComp> _enum_plugin({
         {"h", "heuristic value only (resembles GBFS)."},
         {"g_plus_h", "f=g+h (resembles A*)"}});
 } // namespace policy_testing

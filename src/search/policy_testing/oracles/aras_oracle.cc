@@ -6,20 +6,18 @@
 
 namespace policy_testing {
 ArasOracle::ArasOracle(const plugins::Options &opts)
-    : Oracle(opts),
-      aras_dir_(opts.get<std::string>("aras_dir")),
-      aras_max_time_limit(opts.get<int>("aras_max_time_limit")),
-      aras_(nullptr),
+    : Oracle(opts), aras_dir(opts.get<std::string>("aras_dir")),
+      aras_max_time_limit(opts.get<int>("aras_max_time_limit")), aras(nullptr),
       cache_results(opts.get<bool>("cache_results")) {
 }
 
 void
 ArasOracle::initialize() {
     if (initialized) {
-        assert(aras_);
+        assert(aras);
         return;
     }
-    aras_ = std::make_unique<ArasWrapper>(aras_dir_, get_task(), get_task_proxy());
+    aras = std::make_unique<ArasWrapper>(aras_dir, get_task(), get_task_proxy());
     Oracle::initialize();
 }
 
@@ -60,7 +58,7 @@ ArasOracle::test(Policy &policy, const State &state) {
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 
-    if (!aras_->improve_plan(time_limit_int, state, plan)) {
+    if (!aras->improve_plan(time_limit_int, state, plan)) {
         if (cache_results) {
             result_cache[state.get_id()] = {};
         }

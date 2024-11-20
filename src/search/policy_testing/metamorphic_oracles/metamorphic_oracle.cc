@@ -1,4 +1,4 @@
-#include "numeric_dominance_oracle.h"
+#include "metamorphic_oracle.h"
 
 #include "../simulations/merge_and_shrink/abstraction_builder.h"
 #include "../engines/testing_base_engine.h"
@@ -9,7 +9,7 @@
 
 
 namespace policy_testing {
-NumericDominanceOracle::NumericDominanceOracle(const plugins::Options &opts)
+MetamorphicOracle::MetamorphicOracle(const plugins::Options &opts)
     : Oracle(opts),
       abstraction_builder(opts.contains("abs") ?
                           opts.get<std::shared_ptr<simulations::AbstractionBuilder>>("abs") : nullptr),
@@ -38,8 +38,7 @@ NumericDominanceOracle::NumericDominanceOracle(const plugins::Options &opts)
     }
 }
 
-void
-NumericDominanceOracle::initialize() {
+void MetamorphicOracle::initialize() {
     if (initialized) {
         return;
     }
@@ -141,9 +140,9 @@ NumericDominanceOracle::initialize() {
     Oracle::initialize();
 }
 
-bool NumericDominanceOracle::confirm_dominance_value(const State &dominated_state, const State &dominating_state,
-                                                     int dominance_value) const {
-    assert(engine_);
+bool MetamorphicOracle::confirm_dominance_value(const State &dominated_state, const State &dominating_state,
+                                                int dominance_value) const {
+    assert(engine);
     if (dominance_value == simulations::MINUS_INFINITY) {
         return true;
     }
@@ -166,7 +165,7 @@ bool NumericDominanceOracle::confirm_dominance_value(const State &dominated_stat
     return passed;
 }
 
-bool NumericDominanceOracle::could_be_based_on_atomic_abstraction() {
+bool MetamorphicOracle::could_be_based_on_atomic_abstraction() {
     if (read_simulation) {
         return true;
     } else {
@@ -174,9 +173,8 @@ bool NumericDominanceOracle::could_be_based_on_atomic_abstraction() {
     }
 }
 
-BugValue
-NumericDominanceOracle::local_bug_test_step(Policy &policy, const State &s, OperatorID op, const State &t,
-                                            BugValue additional_bug_value) {
+BugValue MetamorphicOracle::local_bug_test_step(Policy &policy, const State &s, OperatorID op, const State &t,
+                                                BugValue additional_bug_value) {
     assert(t == get_successor_state(s, op));
     assert(additional_bug_value >= 0);
     assert(additional_bug_value < UNSOLVED_BUG_VALUE);
@@ -192,13 +190,13 @@ NumericDominanceOracle::local_bug_test_step(Policy &policy, const State &s, Oper
         assert(combined_bug_value > 0);
         assert(combined_bug_value < UNSOLVED_BUG_VALUE);
         if (policy_cost == Policy::UNSOLVED) {
-            engine_->add_additional_bug(s, TestResult(combined_bug_value));
+            engine->add_additional_bug(s, TestResult(combined_bug_value));
         } else {
             assert(policy_cost > combined_bug_value);
-            engine_->add_additional_bug(s, TestResult(combined_bug_value, policy_cost - combined_bug_value));
+            engine->add_additional_bug(s, TestResult(combined_bug_value, policy_cost - combined_bug_value));
         }
 #ifndef NDEBUG
-        if (debug_) {
+        if (debug) {
             assert(confirm_bug(s, combined_bug_value));
         }
 #endif
@@ -206,13 +204,13 @@ NumericDominanceOracle::local_bug_test_step(Policy &policy, const State &s, Oper
     } else {
         if (additional_bug_value > 0) {
             if (policy_cost == Policy::UNSOLVED) {
-                engine_->add_additional_bug(s, TestResult(additional_bug_value));
+                engine->add_additional_bug(s, TestResult(additional_bug_value));
             } else {
                 assert(policy_cost > additional_bug_value);
-                engine_->add_additional_bug(s, TestResult(additional_bug_value, policy_cost - additional_bug_value));
+                engine->add_additional_bug(s, TestResult(additional_bug_value, policy_cost - additional_bug_value));
             }
 #ifndef NDEBUG
-            if (debug_) {
+            if (debug) {
                 assert(confirm_bug(s, additional_bug_value));
             }
 #endif
@@ -221,7 +219,7 @@ NumericDominanceOracle::local_bug_test_step(Policy &policy, const State &s, Oper
     }
 }
 
-BugValue NumericDominanceOracle::complete_local_bug_test(Policy &policy, const State &start) {
+BugValue MetamorphicOracle::complete_local_bug_test(Policy &policy, const State &start) {
     const PolicyCost upper_policy_cost_bound = policy.read_upper_policy_cost_bound(start).first;
     if (upper_policy_cost_bound == Policy::UNSOLVED) {
         return 0;
@@ -246,7 +244,7 @@ BugValue NumericDominanceOracle::complete_local_bug_test(Policy &policy, const S
     return aggregated_bug_value;
 }
 
-BugValue NumericDominanceOracle::local_bug_test_first(Policy &policy, const State &s) {
+BugValue MetamorphicOracle::local_bug_test_first(Policy &policy, const State &s) {
     if (policy.is_goal(s)) {
         return 0;
     }
@@ -260,7 +258,7 @@ BugValue NumericDominanceOracle::local_bug_test_first(Policy &policy, const Stat
     return local_bug_test_step(policy, s, op, get_successor_state(s, op));
 }
 
-BugValue NumericDominanceOracle::local_bug_test(Policy &policy, const State &s) {
+BugValue MetamorphicOracle::local_bug_test(Policy &policy, const State &s) {
     switch (local_bug_test_kind) {
     case LocalBugTest::NONE:
         return 0;
@@ -273,8 +271,7 @@ BugValue NumericDominanceOracle::local_bug_test(Policy &policy, const State &s) 
     }
 }
 
-void
-NumericDominanceOracle::add_options_to_feature(plugins::Feature &feature) {
+void MetamorphicOracle::add_options_to_feature(plugins::Feature &feature) {
     Oracle::add_options_to_feature(feature);
     feature.add_option<std::shared_ptr<simulations::AbstractionBuilder>>("abs", "abstraction builder",
                                                                          "builder_massim(merge_strategy=merge_dfp(), limit_transitions_merge=10000)");
@@ -298,8 +295,8 @@ NumericDominanceOracle::add_options_to_feature(plugins::Feature &feature) {
         "the path induced by executing the policy on the state (ALL)",
         "ALL");
     feature.add_option<std::string>("sim_file",
-                                              "The file to write a computed simulation to or to read a simulation from.",
-                                              plugins::ArgumentInfo::NO_DEFAULT);
+                                    "The file to write a computed simulation to or to read a simulation from.",
+                                    plugins::ArgumentInfo::NO_DEFAULT);
     feature.add_option<bool>("write_sim_and_exit",
                              "Only compute the specified dominance function, write it to the sim_file and exit.",
                              "false");
@@ -308,21 +305,20 @@ NumericDominanceOracle::add_options_to_feature(plugins::Feature &feature) {
                              "false");
 }
 
-TestResult NumericDominanceOracle::test(Policy &, const State &) {
-    std::cerr << "No test method for the base class NumericDominanceOracle is implemented. Use a derived oracle."
-              << std::endl;
+TestResult MetamorphicOracle::test(Policy &, const State &) {
+    std::cerr << "No test method for the base class NumericDominanceOracle is implemented. Use a derived oracle." << std::endl;
     utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
 }
 
-class NumericDominanceOracleFeature : public plugins::TypedFeature<Oracle, NumericDominanceOracle> {
+class NumericDominanceOracleFeature : public plugins::TypedFeature<Oracle, MetamorphicOracle> {
 public:
-    NumericDominanceOracleFeature() : TypedFeature("numeric_dominance_oracle") {
-        NumericDominanceOracle::add_options_to_feature(*this);
+    NumericDominanceOracleFeature() : TypedFeature("metamorphic_oracle") {
+        MetamorphicOracle::add_options_to_feature(*this);
     }
 };
 static plugins::FeaturePlugin<NumericDominanceOracleFeature> _plugin;
 
-static plugins::TypedEnumPlugin<NumericDominanceOracle::LocalBugTest> _enum_plugin({
+static plugins::TypedEnumPlugin<MetamorphicOracle::LocalBugTest> _enum_plugin({
         {"NONE", "Do not apply local bug tests at all."},
         {"ONE", "Only apply local bug test for test state itself."},
         {"ALL", "Apply local bug test for all states in the considered partial policy trace."}});

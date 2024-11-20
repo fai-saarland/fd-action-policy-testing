@@ -157,9 +157,9 @@ public:
 
 
     [[nodiscard]] static bool propagate_transition_pruning(int,
-                                                    const std::vector<LabelledTransitionSystem *> &,
-                                                    const DominanceRelation &,
-                                                    int, int, int) {
+                                                           const std::vector<LabelledTransitionSystem *> &,
+                                                           const DominanceRelation &,
+                                                           int, int, int) {
         std::cout << "propagate_transition_pruning not implemented." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }

@@ -8,8 +8,8 @@ DummyEngine::DummyEngine(const plugins::Options &opts)
     : PolicyTestingBaseEngine(opts) {
     finish_initialization({});
     report_initialized();
-    if (oracle_) {
-        oracle_->print_debug_info();
+    if (oracle) {
+        oracle->print_debug_info();
     }
     std::exit(0);
 }

@@ -9,10 +9,10 @@
 
 namespace policy_testing {
 HeuristicDescendPolicy::HeuristicDescendPolicy(const plugins::Options &opts)
-    : Policy(opts)
-      , heuristic_(opts.get<std::shared_ptr<Evaluator>>("eval"))
-      , strictly_descend_(opts.get<bool>("strictly_descend"))
-      , stop_at_dead_ends_(opts.get<bool>("stop_at_dead_ends")) {
+    : Policy(opts),
+      heuristic(opts.get<std::shared_ptr<Evaluator>>("eval")),
+      strictly_descend(opts.get<bool>("strictly_descend")),
+      stop_at_dead_ends(opts.get<bool>("stop_at_dead_ends")) {
 }
 
 void
@@ -26,23 +26,23 @@ HeuristicDescendPolicy::add_options_to_feature(plugins::Feature &feature) {
 OperatorID
 HeuristicDescendPolicy::apply(const State &state) {
     int h0 = std::numeric_limits<int>::max();
-    if (strictly_descend_ || stop_at_dead_ends_) {
+    if (strictly_descend || stop_at_dead_ends) {
         EvaluationContext context(state);
-        EvaluationResult r = heuristic_->compute_result(context);
+        EvaluationResult r = heuristic->compute_result(context);
         if (!r.is_infinite()) {
             h0 = r.get_evaluator_value();
-        } else if (stop_at_dead_ends_) {
+        } else if (stop_at_dead_ends) {
             return NO_OPERATOR;
         }
     }
     std::vector<OperatorID> aops;
     generate_applicable_ops(state, aops);
     int best = -1;
-    int h_best = strictly_descend_ ? h0 : std::numeric_limits<int>::max();
+    int h_best = strictly_descend ? h0 : std::numeric_limits<int>::max();
     for (int i = 0; i < aops.size(); ++i) {
         State succ = get_successor_state(state, aops[i]);
         EvaluationContext context(succ);
-        EvaluationResult r = heuristic_->compute_result(context);
+        EvaluationResult r = heuristic->compute_result(context);
         if (r.get_evaluator_value() < h_best) {
             best = i;
             h_best = r.get_evaluator_value();

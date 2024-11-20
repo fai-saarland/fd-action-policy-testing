@@ -75,8 +75,8 @@ public:
 struct TSTransition {
     AbstractStateRef src, target;
 
-    TSTransition(AbstractStateRef _src, AbstractStateRef _target) :
-        src(_src), target(_target) {
+    TSTransition(AbstractStateRef _src, AbstractStateRef _target)
+        : src(_src), target(_target) {
     }
 
     // TSTransition(const TSTransition &t) = default;

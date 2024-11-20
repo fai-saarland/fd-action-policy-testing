@@ -5,10 +5,9 @@
 #include "../../plugins/plugin.h"
 #include "../../task_utils/successor_generator.h"
 #include "../../task_utils/task_properties.h"
-#include "../custom_exceptions.h"
-#include "../fuzzing_bias.h"
-#include "../pool_filter.h"
-#include "../state_regions.h"
+#include "../utils/custom_exceptions.h"
+#include "../utils/pool_filter.h"
+#include "../utils/state_regions.h"
 
 #include <iomanip>
 #include <memory>
@@ -16,26 +15,22 @@
 
 namespace policy_testing {
 SimplifiedPoolFuzzerEngine::SimplifiedPoolFuzzerEngine(const plugins::Options &opts)
-    : PolicyTestingBaseEngine(opts)
-      , novelty_store_(opts.get<bool>("disable_novelty_store") ? nullptr :
-                       std::make_unique<NoveltyStore>(opts.get<int>("novelty_statistics"), task))
-      , rng_(opts.get<int>("seed"))
-      , eval_(opts.contains("eval") ? opts.get<std::shared_ptr<Evaluator>>("eval") : nullptr)
-      , filter_(
-          opts.contains("filter")
-              ? opts.get<std::shared_ptr<PoolFilter>>("filter")
-              : std::make_shared<PoolFilter>())
-      , store_(nullptr)
-      , max_steps_(opts.get<int>("max_steps"))
-      , max_pool_size_(opts.get<int>("max_pool_size")) {
-  fuzzing_time.reset();
-  fuzzing_time.stop();
+    : PolicyTestingBaseEngine(opts),
+      novelty_store(opts.get<bool>("disable_novelty_store") ? nullptr : std::make_unique<NoveltyStore>(opts.get<int>("novelty_statistics"), task)),
+      rng(opts.get<int>("seed")),
+      eval(opts.contains("eval") ? opts.get<std::shared_ptr<Evaluator>>("eval") : nullptr),
+      filter(opts.contains("filter") ? opts.get<std::shared_ptr<PoolFilter>>("filter") : std::make_shared<PoolFilter>()),
+      pool_store(nullptr),
+      max_steps(opts.get<int>("max_steps")),
+      max_pool_size(opts.get<int>("max_pool_size")) {
+    fuzzing_time.reset();
+    fuzzing_time.stop();
     if (opts.contains("pool_file")) {
-        store_ = std::make_unique<PoolFile>(task, opts.get<std::string>("pool_file"));
+        pool_store = std::make_unique<PoolFile>(task, opts.get<std::string>("pool_file"));
     }
-    finish_initialization({filter_.get()});
-    if (debug_) {
-        oracle_->print_debug_info();
+    finish_initialization({filter.get()});
+    if (debug) {
+        oracle->print_debug_info();
     }
     report_initialized();
     fuzzing_time.resume();
@@ -46,7 +41,6 @@ SimplifiedPoolFuzzerEngine::add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<int>("max_walk_length", "Maximal length of random walks.", "2");
 
     feature.add_option<std::string>("pool_file", "Path to pool file (optional).", plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<std::shared_ptr<FuzzingBias>>("bias", "Fuzzing bias (optional).", plugins::ArgumentInfo::NO_DEFAULT);
     feature.add_option<std::shared_ptr<PoolFilter>>("filter", "Novelty filter (optional).", plugins::ArgumentInfo::NO_DEFAULT);
     feature.add_option<std::shared_ptr<Evaluator>>("eval", "Dead end evaluator (optional).", plugins::ArgumentInfo::NO_DEFAULT);
 
@@ -65,15 +59,15 @@ SimplifiedPoolFuzzerEngine::add_options_to_feature(plugins::Feature &feature) {
 void
 SimplifiedPoolFuzzerEngine::print_statistics() const {
     std::cout << "Fuzzing time: " << fuzzing_time << std::endl;
-    std::cout << "Fuzzing steps: " << step_ << std::endl;
-    std::cout << "Pool size: " << pool_.size() << std::endl;
-    std::cout << "Max pool size: " << max_pool_size_ << std::endl;
+    std::cout << "Fuzzing steps: " << pool_step << std::endl;
+    std::cout << "Pool size: " << pool.size() << std::endl;
+    std::cout << "Max pool size: " << max_pool_size << std::endl;
     utils::HashSet<StateID> pool_bugs;
     utils::HashSet<StateID> qualitative_pool_bugs;
-    for (const auto &pool_entry : pool_) {
+    for (const auto &pool_entry : pool) {
         StateID pool_state = pool_entry.state.get_id();
-        auto it = bugs_.find(pool_state);
-        if (it != bugs_.end()) {
+        auto it = bugs.find(pool_state);
+        if (it != bugs.end()) {
             pool_bugs.insert(pool_state);
             if (it->second.bug_value == UNSOLVED_BUG_VALUE) {
                 qualitative_pool_bugs.insert(pool_state);
@@ -82,7 +76,7 @@ SimplifiedPoolFuzzerEngine::print_statistics() const {
     }
     std::cout << "Pool state ids: [";
     bool first = true;
-    for (const auto &entry : pool_) {
+    for (const auto &entry : pool) {
         if (first) {
             first = false;
         } else {
@@ -94,24 +88,24 @@ SimplifiedPoolFuzzerEngine::print_statistics() const {
     std::cout << "Pool bug states: " << pool_bugs.size() << std::endl;
     std::cout << "Qualitative pool bug states: " << qualitative_pool_bugs.size() << std::endl;
     std::cout << "Non-qualitative pool bug states: " << pool_bugs.size() - qualitative_pool_bugs.size() << std::endl;
-    std::cout << "Pool unconfirmed states: " << pool_.size() - pool_bugs.size() << std::endl;
-    std::cout << "Non-pool bug states: " << bugs_.size() - pool_bugs.size() << std::endl;
-    std::cout << "Solved pool states: " << num_solved_ << std::endl;
-    std::cout << "States filtered out: " << filtered_ << std::endl;
-    std::cout << "Identified dead ends: " << dead_ends_ << std::endl;
+    std::cout << "Pool unconfirmed states: " << pool.size() - pool_bugs.size() << std::endl;
+    std::cout << "Non-pool bug states: " << bugs.size() - pool_bugs.size() << std::endl;
+    std::cout << "Solved pool states: " << num_solved << std::endl;
+    std::cout << "States filtered out: " << filtered << std::endl;
+    std::cout << "Identified dead ends: " << dead_ends << std::endl;
     std::cout << "Identified goal states: " << goal_states << std::endl;
-    if (novelty_store_)
-        novelty_store_->print_statistics();
-    filter_->print_statistics();
+    if (novelty_store) {
+        novelty_store->print_statistics();
+    }
+    filter->print_statistics();
     print_bug_statistics();
 }
 
 void
 SimplifiedPoolFuzzerEngine::print_status_line() const {
-    std::cout << "Pool " << std::setw(14) << pool_.size() << " / "
-              << max_pool_size_ << " ["
-              << "steps=" << step_ << ", filtered=" << filtered_ << ", dead_ends=" << dead_ends_
-              << ", t=" << utils::g_timer << "]" << std::endl;
+    std::cout << "Pool " << std::setw(14) << pool.size() << " / " << max_pool_size
+              << " [" << "steps=" << pool_step << ", filtered=" << filtered
+              << ", dead_ends=" << dead_ends << ", t=" << utils::g_timer << "]" << std::endl;
 }
 
 SearchStatus
@@ -119,20 +113,21 @@ SimplifiedPoolFuzzerEngine::step() {
     utils::reserve_extra_memory_padding(50);
 
     bool state_inserted = false;
-    if (step_ == 0 || (!frontier.empty() && step_ < max_steps_ && pool_.size() < max_pool_size_)) {
+    if (pool_step == 0 || (!frontier.empty() && pool_step < max_steps &&
+                           pool.size() < max_pool_size)) {
         try {
             set_max_time(timer->get_remaining_time());
-            if (step_ == 0) {
+            if (pool_step == 0) {
                 // start with initial state
                 State initial_state = state_registry.get_initial_state();
                 const StateID initial_state_id = initial_state.get_id();
-                seen_.insert(initial_state_id);
-                is_dead_.emplace(initial_state_id, false);
-                state_inserted = insert(PoolEntry(-1, 0, state_registry.get_initial_state(), pool_));
+                seen.insert(initial_state_id);
+                is_dead.emplace(initial_state_id, false);
+                state_inserted = insert(PoolEntry(-1, 0, state_registry.get_initial_state(), pool));
             } else {
                 // insert a state from the frontier
                 while (!frontier.empty() && !state_inserted) {
-                    auto it = rng_.choose(frontier);
+                    auto it = rng.choose(frontier);
                     PoolEntry entry = *it;
                     // remove entry from frontier
                     std::swap(*it, frontier.back());
@@ -140,7 +135,7 @@ SimplifiedPoolFuzzerEngine::step() {
                     state_inserted = insert(std::move(entry));
                 }
             }
-            ++step_;
+            ++pool_step;
         } catch (const OutOfResourceException &) {
             std::cout.clear();
             std::cerr.clear();
@@ -149,12 +144,12 @@ SimplifiedPoolFuzzerEngine::step() {
             fuzzing_time.stop();
             return FAILED;
         } catch (const AbstentionException &) {
-          std::cout.clear();
-          std::cerr.clear();
-          std::cout << "aborting: decided to abstain from task [t=" << utils::g_timer << "]" << std::endl;
-          utils::release_extra_memory_padding();
-          fuzzing_time.stop();
-          return FAILED;
+            std::cout.clear();
+            std::cerr.clear();
+            std::cout << "aborting: decided to abstain from task [t=" << utils::g_timer << "]" << std::endl;
+            utils::release_extra_memory_padding();
+            fuzzing_time.stop();
+            return FAILED;
         }
     }
 
@@ -162,13 +157,12 @@ SimplifiedPoolFuzzerEngine::step() {
         utils::release_extra_memory_padding();
         return IN_PROGRESS;
     } else {
-      fuzzing_time.stop();
+        fuzzing_time.stop();
         std::cout << "Computing state regions..." << std::endl;
-        const StateRegions regions = compute_state_regions(task, state_registry, states_in_pool_);
+        const StateRegions regions = compute_state_regions(task, state_registry, states_in_pool);
         std::cout << "Number of regions: " << regions.size() << std::endl;
         compute_bug_regions_print_result();
         std::cout << "Simplified pool fuzzing completed." << std::endl;
-        // finish_testing();
         return FAILED;
     }
 }
@@ -177,8 +171,8 @@ bool
 SimplifiedPoolFuzzerEngine::insert(PoolEntry &&entry) {
     // find out if insertion could take place
     const State &state = entry.state;
-    if (!filter_->store(state)) {
-        ++filtered_;
+    if (!filter->store(state)) {
+        ++filtered;
         return false;
     }
 
@@ -191,24 +185,24 @@ SimplifiedPoolFuzzerEngine::insert(PoolEntry &&entry) {
         State succ = state_registry.get_successor_state(state, task_proxy.get_operators()[applicable_op]);
 
         // ignore state if it has been seen before and mark it as seen
-        if (!seen_.insert(succ.get_id()).second) {
-            assert(is_dead_.contains(succ.get_id()));
-            is_dead_end &= is_dead_[succ.get_id()];
+        if (!seen.insert(succ.get_id()).second) {
+            assert(is_dead.contains(succ.get_id()));
+            is_dead_end &= is_dead[succ.get_id()];
             continue;
         }
 
         // ignore dead end successors (if possible)
-        assert(!is_dead_.contains(succ.get_id()));
-        auto is_dead_insertion = is_dead_.emplace(succ.get_id(), false);
-        if (eval_) {
+        assert(!is_dead.contains(succ.get_id()));
+        auto is_dead_insertion = is_dead.emplace(succ.get_id(), false);
+        if (eval) {
             auto &inserted_pair = is_dead_insertion.first;
             if (is_dead_insertion.second) {
                 EvaluationContext context(succ);
-                EvaluationResult res = eval_->compute_result(context);
+                EvaluationResult res = eval->compute_result(context);
                 if (res.is_infinite()) {
                     // mark successor as dead end
                     inserted_pair->second = true;
-                    ++dead_ends_;
+                    ++dead_ends;
                 }
             }
             if (inserted_pair->second) {
@@ -228,19 +222,19 @@ SimplifiedPoolFuzzerEngine::insert(PoolEntry &&entry) {
 
     // successors generated, test if state is confirmed to be a dead end
     if (is_dead_end) {
-        ++dead_ends_;
-        is_dead_[state.get_id()] = true;
+        ++dead_ends;
+        is_dead[state.get_id()] = true;
         return false;
     }
 
     // state has to be inserted in pool
-    states_in_pool_.insert(state.get_id());
-    const int state_ref_index = static_cast<int>(pool_.size());
-    pool_.push_back(entry);
-    if (novelty_store_)
-        novelty_store_->insert(state);
-    if (store_) {
-        store_->write(entry);
+    states_in_pool.insert(state.get_id());
+    const int state_ref_index = static_cast<int>(pool.size());
+    pool.push_back(entry);
+    if (novelty_store)
+        novelty_store->insert(state);
+    if (pool_store) {
+        pool_store->write(entry);
     }
     print_status_line();
 
@@ -253,14 +247,14 @@ SimplifiedPoolFuzzerEngine::insert(PoolEntry &&entry) {
 
     // add successors to the frontier
     for (const State &succ : successors) {
-        frontier.emplace_back(state_ref_index, 1, succ, pool_);
+        frontier.emplace_back(state_ref_index, 1, succ, pool);
     }
     return true;
 }
 
 bool
 SimplifiedPoolFuzzerEngine::check_limits() const {
-    return pool_.size() >= max_pool_size_ || timer->is_expired() || utils::is_out_of_memory();
+    return pool.size() >= max_pool_size || timer->is_expired() || utils::is_out_of_memory();
 }
 
 class SimplifiedPoolFuzzerFeature : public plugins::TypedFeature<SearchAlgorithm, SimplifiedPoolFuzzerEngine> {

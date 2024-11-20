@@ -39,10 +39,10 @@ protected:
     virtual void dump_strategy_specific_options() const;
 
     [[nodiscard]] std::pair<int, int> compute_shrink_sizes(int size1, int size2) const;
-    [[nodiscard]] static bool must_shrink(const Abstraction &abs, int threshold, bool force) ;
+    [[nodiscard]] static bool must_shrink(const Abstraction &abs, int threshold, bool force);
     static void apply(Abstraction &abs,
-               EquivalenceRelation &equivalence_relation,
-               int threshold) ;
+                      EquivalenceRelation &equivalence_relation,
+                      int threshold);
 public:
     explicit ShrinkStrategy(const plugins::Options &opts);
     virtual ~ShrinkStrategy() = default;

@@ -1,44 +1,43 @@
-#include "atomic_unrelaxation_oracle.h"
+#include "atomic_state_morphing_oracle.h"
 
 #include <memory>
 
 #include "../simulations/merge_and_shrink/abstraction_builder.h"
 
 namespace policy_testing {
-AtomicUnrelaxationOracle::AtomicUnrelaxationOracle(const plugins::Options &opts)
-    : UnrelaxationOracle(opts) {
+AtomicStateMorphingOracle::AtomicStateMorphingOracle(const plugins::Options &opts)
+    : StateMorphingOracle(opts) {
     if (!could_be_based_on_atomic_abstraction()) {
         throw std::logic_error("AtomicUnrelaxationOracle must be based on atomic abstraction builder.");
     }
 }
 
-void
-AtomicUnrelaxationOracle::initialize() {
+void AtomicStateMorphingOracle::initialize() {
     if (initialized) {
         return;
     }
-    UnrelaxationOracle::initialize();
+    StateMorphingOracle::initialize();
     const unsigned int num_variables = simulations::global_simulation_task()->get_num_variables();
     possible_relaxations.resize(num_variables);
     possible_unrelaxations.resize(num_variables);
     for (int var = 0; var < num_variables; ++var) {
 #define PRECOMPUTE_RELAXATIONS \
-    const unsigned int domain_size = simulations::global_simulation_task()->get_variable_domain_size(var); \
-    possible_relaxations[var].resize(domain_size); \
-    possible_unrelaxations[var].resize(domain_size); \
-    for (int s = 0; s < domain_size; ++s) { \
-        for (int t = 0; t < domain_size; ++t) { \
-            if (s == t) { \
-                continue; \
+        const unsigned int domain_size = simulations::global_simulation_task()->get_variable_domain_size(var); \
+        possible_relaxations[var].resize(domain_size); \
+        possible_unrelaxations[var].resize(domain_size); \
+        for (int s = 0; s < domain_size; ++s) { \
+            for (int t = 0; t < domain_size; ++t) { \
+                if (s == t) { \
+                    continue; \
+                } \
+                int dominance_value = local_dominance_relation.atomic_q_simulates(t, s); \
+                if (dominance_value == simulations::MINUS_INFINITY) { \
+                    continue; \
+                } \
+                possible_relaxations[var][s].emplace_back(var, s, t, dominance_value); \
+                possible_unrelaxations[var][t].emplace_back(var, s, t, dominance_value); \
             } \
-            int dominance_value = local_dominance_relation.atomic_q_simulates(t, s); \
-            if (dominance_value == simulations::MINUS_INFINITY) { \
-                continue; \
-            } \
-            possible_relaxations[var][s].emplace_back(var, s, t, dominance_value); \
-            possible_unrelaxations[var][t].emplace_back(var, s, t, dominance_value); \
-        } \
-    }
+        }
         if (read_simulation) {
             const auto &local_dominance_relation = stripped_numeric_dominance_relation->get_simulation_of_variable(var);
             PRECOMPUTE_RELAXATIONS
@@ -50,13 +49,11 @@ AtomicUnrelaxationOracle::initialize() {
 }
 
 
-void
-AtomicUnrelaxationOracle::add_options_to_feature(plugins::Feature &feature) {
-    UnrelaxationOracle::add_options_to_feature(feature);
+void AtomicStateMorphingOracle::add_options_to_feature(plugins::Feature &feature) {
+    StateMorphingOracle::add_options_to_feature(feature);
 }
 
-State
-AtomicUnrelaxationOracle::relax(const State &s, const AtomicMetamorphicOption &o) const {
+State AtomicStateMorphingOracle::relax(const State &s, const AtomicMetamorphicOption &o) const {
     assert(s[o.variable].get_value() == o.unrelaxed_value);
     assert(o.dominance_value > simulations::MINUS_INFINITY);
     std::vector<int> t = s.get_values();
@@ -64,8 +61,7 @@ AtomicUnrelaxationOracle::relax(const State &s, const AtomicMetamorphicOption &o
     return get_state_registry().insert_state(t);
 }
 
-State
-AtomicUnrelaxationOracle::unrelax(const State &s, const AtomicMetamorphicOption &o) const {
+State AtomicStateMorphingOracle::unrelax(const State &s, const AtomicMetamorphicOption &o) const {
     assert(s[o.variable].get_value() == o.relaxed_value);
     assert(o.dominance_value > simulations::MINUS_INFINITY);
     std::vector<int> t = s.get_values();
@@ -73,7 +69,8 @@ AtomicUnrelaxationOracle::unrelax(const State &s, const AtomicMetamorphicOption 
     return get_state_registry().insert_state(t);
 }
 
-unsigned int AtomicUnrelaxationOracle::num_possible_relaxations(const State &s) const {
+unsigned int
+AtomicStateMorphingOracle::num_possible_relaxations(const State &s) const {
     unsigned int num_relaxation_candidates = 0;
     for (int var = 0; var < s.size(); ++var) {
         num_relaxation_candidates += possible_relaxations[var][s[var].get_value()].size();
@@ -81,7 +78,8 @@ unsigned int AtomicUnrelaxationOracle::num_possible_relaxations(const State &s) 
     return num_relaxation_candidates;
 }
 
-unsigned int AtomicUnrelaxationOracle::num_possible_unrelaxations(const State &s) const {
+unsigned int
+AtomicStateMorphingOracle::num_possible_unrelaxations(const State &s) const {
     unsigned int num_unrelaxation_candidates = 0;
     for (int var = 0; var < s.size(); ++var) {
         num_unrelaxation_candidates += possible_unrelaxations[var][s[var].get_value()].size();
@@ -89,8 +87,9 @@ unsigned int AtomicUnrelaxationOracle::num_possible_unrelaxations(const State &s
     return num_unrelaxation_candidates;
 }
 
-[[nodiscard]] AtomicMetamorphicOption AtomicUnrelaxationOracle::get_relaxation(const State &s,
-                                                                               unsigned int index) const {
+[[nodiscard]] AtomicMetamorphicOption
+AtomicStateMorphingOracle::get_relaxation(const State &s,
+                                          unsigned int index) const {
     assert(index < num_possible_relaxations(s));
     for (int var = 0; var < s.size(); ++var) {
         const auto &local_candidates = possible_relaxations[var][s[var].get_value()];
@@ -105,8 +104,9 @@ unsigned int AtomicUnrelaxationOracle::num_possible_unrelaxations(const State &s
     return {};
 }
 
-[[nodiscard]] AtomicMetamorphicOption AtomicUnrelaxationOracle::get_unrelaxation(const State &s,
-                                                                                 unsigned int index) const {
+[[nodiscard]] AtomicMetamorphicOption
+AtomicStateMorphingOracle::get_unrelaxation(const State &s,
+                                            unsigned int index) const {
     assert(index < num_possible_unrelaxations(s));
     for (int var = 0; var < s.size(); ++var) {
         const auto &local_candidates = possible_unrelaxations[var][s[var].get_value()];
@@ -121,7 +121,8 @@ unsigned int AtomicUnrelaxationOracle::num_possible_unrelaxations(const State &s
     return {};
 }
 
-std::vector<unsigned int> AtomicUnrelaxationOracle::pick_n_of_range(unsigned int n, unsigned int range) {
+std::vector<unsigned int>
+AtomicStateMorphingOracle::pick_n_of_range(unsigned int n, unsigned int range) {
     std::vector<unsigned int> res(range);
     std::iota(res.begin(), res.end(), 0);
     simulations::simulations_rng.shuffle(res);
@@ -130,14 +131,14 @@ std::vector<unsigned int> AtomicUnrelaxationOracle::pick_n_of_range(unsigned int
 }
 
 
-[[maybe_unused]] std::vector<std::pair<State, NumericDominanceOracle::DominanceValue>>
-AtomicUnrelaxationOracle::relax(
+[[maybe_unused]] std::vector<std::pair<State, MetamorphicOracle::DominanceValue>>
+AtomicStateMorphingOracle::relax(
     const State &s) const {
     const unsigned int num_relaxation_candidates = num_possible_relaxations(s);
     if (num_relaxation_candidates == 0 || operations_per_state == 1) {
         return {};
     }
-    std::vector<std::pair<State, NumericDominanceOracle::DominanceValue>> result;
+    std::vector<std::pair<State, MetamorphicOracle::DominanceValue>> result;
     if (operations_per_state == 1) {
         const int pick_index = simulations::simulations_rng.random(static_cast<int>(num_relaxation_candidates));
         AtomicMetamorphicOption pick = get_relaxation(s, pick_index);
@@ -149,7 +150,7 @@ AtomicUnrelaxationOracle::relax(
         }
     }
     assert(result.size() == std::min(operations_per_state, num_relaxation_candidates));
-    if (debug_) {
+    if (debug) {
         std::cout << "(Debug) Constructed  " << result.size() << ", relaxed states:" << std::endl;
         for (const auto &[state, dominance_value] : result) {
             std::cout << "(Debug) Relaxed state: " << state << ", dominance value: " << dominance_value <<
@@ -159,13 +160,13 @@ AtomicUnrelaxationOracle::relax(
     return result;
 }
 
-std::vector<std::pair<State, NumericDominanceOracle::DominanceValue>>
-AtomicUnrelaxationOracle::unrelax(const State &s) const {
+std::vector<std::pair<State, MetamorphicOracle::DominanceValue>>
+AtomicStateMorphingOracle::unrelax(const State &s) const {
     const unsigned int num_unrelaxation_candidates = num_possible_unrelaxations(s);
     if (num_unrelaxation_candidates == 0 || operations_per_state == 0) {
         return {};
     }
-    std::vector<std::pair<State, NumericDominanceOracle::DominanceValue>> result;
+    std::vector<std::pair<State, MetamorphicOracle::DominanceValue>> result;
     if (operations_per_state == 1) {
         const int pick_index = simulations::simulations_rng.random(static_cast<int>(num_unrelaxation_candidates));
         AtomicMetamorphicOption pick = get_unrelaxation(s, pick_index);
@@ -177,7 +178,7 @@ AtomicUnrelaxationOracle::unrelax(const State &s) const {
         }
     }
     assert(result.size() == std::min(operations_per_state, num_unrelaxation_candidates));
-    if (debug_) {
+    if (debug) {
         std::cout << "(Debug) Constructed  " << result.size() << " unrelaxed states:" << std::endl;
         for (const auto &[state, dominance_value] : result) {
             std::cout << "(Debug) " << state << " (dominance value: " << dominance_value << ")" << std::endl;
@@ -186,7 +187,7 @@ AtomicUnrelaxationOracle::unrelax(const State &s) const {
     return result;
 }
 
-void AtomicUnrelaxationOracle::print_debug_info() const {
+void AtomicStateMorphingOracle::print_debug_info() const {
     std::cout << "\n\nSummary of numeric dominance relation:" << std::endl;
     const unsigned int num_variables = simulations::global_simulation_task()->get_num_variables();
     std::cout << "Number of variables: " << num_variables << std::endl;
@@ -224,10 +225,10 @@ std::ostream &operator<<(std::ostream &out, const AtomicMetamorphicOption &o) {
                << ") = " << o.dominance_value;
 }
 
-class AtomicUnrelaxationOracleFeature : public plugins::TypedFeature<Oracle, AtomicUnrelaxationOracle> {
+class AtomicUnrelaxationOracleFeature : public plugins::TypedFeature<Oracle, AtomicStateMorphingOracle> {
 public:
-    AtomicUnrelaxationOracleFeature() : TypedFeature("atomic_unrelaxation_oracle") {
-        AtomicUnrelaxationOracle::add_options_to_feature(*this);
+    AtomicUnrelaxationOracleFeature() : TypedFeature("atomic_state_morphing_oracle") {
+        AtomicStateMorphingOracle::add_options_to_feature(*this);
     }
 };
 static plugins::FeaturePlugin<AtomicUnrelaxationOracleFeature> _plugin;

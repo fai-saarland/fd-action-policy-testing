@@ -1,24 +1,22 @@
-#include "cost_estimator_based_oracle.h"
+#include "planner_oracle.h"
 
 #include "../../plugins/plugin.h"
 
 namespace policy_testing {
-EstimatorBasedOracle::EstimatorBasedOracle(const plugins::Options &opts)
+PlannerOracle::PlannerOracle(const plugins::Options &opts)
     : Oracle(opts),
-      estimator_(opts.get<std::shared_ptr<PlanCostEstimator>>("oracle")),
+      estimator(opts.get<std::shared_ptr<PlanCostEstimator>>("oracle")),
       cache_results(opts.get<bool>("cache_results")) {
-    register_sub_component(estimator_.get());
+    register_sub_component(estimator.get());
 }
 
-void
-EstimatorBasedOracle::add_options_to_feature(plugins::Feature &feature) {
+void PlannerOracle::add_options_to_feature(plugins::Feature &feature) {
     Oracle::add_options_to_feature(feature);
     feature.add_option<std::shared_ptr<PlanCostEstimator>>("oracle", "Plan cost estimator.");
     feature.add_option<bool>("cache_results", "Cache the results of oracle invocations", "true");
 }
 
-TestResult
-EstimatorBasedOracle::test(Policy &policy, const State &state) {
+TestResult PlannerOracle::test(Policy &policy, const State &state) {
     if (cache_results) {
         auto it = result_cache.find(state.get_id());
         if (it != result_cache.end()) {
@@ -26,7 +24,7 @@ EstimatorBasedOracle::test(Policy &policy, const State &state) {
         }
     }
     const PolicyCost lower_policy_cost_bound = policy.compute_lower_policy_cost_bound(state).first;
-    const int oracle_cost = estimator_->compute_value(state);
+    const int oracle_cost = estimator->compute_value(state);
     if (oracle_cost == PlanCostEstimator::UNKNOWN || oracle_cost == PlanCostEstimator::DEAD_END) {
         if (cache_results) {
             result_cache[state.get_id()] = {};
@@ -51,11 +49,12 @@ EstimatorBasedOracle::test(Policy &policy, const State &state) {
     return {};
 }
 
-class EstimatorBasedOracleFeature : public plugins::TypedFeature<Oracle, EstimatorBasedOracle> {
+class PlannerOracleFeature
+    : public plugins::TypedFeature<Oracle, PlannerOracle> {
 public:
-    EstimatorBasedOracleFeature() : TypedFeature("estimator_based_oracle") {
-        EstimatorBasedOracle::add_options_to_feature(*this);
+    PlannerOracleFeature() : TypedFeature("planner_oracle") {
+        PlannerOracle::add_options_to_feature(*this);
     }
 };
-static plugins::FeaturePlugin<EstimatorBasedOracleFeature> _plugin;
+static plugins::FeaturePlugin<PlannerOracleFeature> _plugin;
 } // namespace policy_testing

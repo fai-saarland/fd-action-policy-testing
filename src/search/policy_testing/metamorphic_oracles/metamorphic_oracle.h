@@ -17,7 +17,7 @@ class NumericDominanceRelation;
 }
 
 namespace policy_testing {
-class NumericDominanceOracle : public Oracle {
+class MetamorphicOracle : public Oracle {
     friend class CompositeOracle;
     std::shared_ptr<simulations::AbstractionBuilder> abstraction_builder;
     std::vector<std::unique_ptr<simulations::Abstraction>> abstractions;
@@ -134,7 +134,7 @@ public:
 
     bool could_be_based_on_atomic_abstraction();
 
-    explicit NumericDominanceOracle(const plugins::Options &opts);
+    explicit MetamorphicOracle(const plugins::Options &opts);
 
     static void add_options_to_feature(plugins::Feature &feature);
 

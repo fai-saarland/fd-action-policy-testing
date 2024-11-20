@@ -1,7 +1,7 @@
 #pragma once
 
 #include "testing_environment.h"
-#include "utils.h"
+#include "utils/utils.h"
 
 #include <set>
 
@@ -63,7 +63,7 @@ public:
     /** Compute and set end timestamp. **/
     void set_max_time(timestamp_t max_time);
 
-    const bool debug_;
+    const bool debug;
     bool initialized = false;
 
 protected:
@@ -92,8 +92,8 @@ protected:
     static void add_options_to_feature(plugins::Feature &feature);
 
 private:
-    std::set<TestingBaseComponent *> sub_components_;
-    TestingEnvironment *env_ = nullptr;
-    timestamp_t end_time_;
+    std::set<TestingBaseComponent *> sub_components;
+    TestingEnvironment *component_env = nullptr;
+    timestamp_t end_time;
 };
 } // namespace policy_testing

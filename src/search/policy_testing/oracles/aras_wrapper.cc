@@ -1,6 +1,6 @@
 #include "aras_wrapper.h"
 
-#include "../utils.h"
+#include "../utils/utils.h"
 
 #include <cstdlib>
 #include <fstream>
@@ -15,9 +15,8 @@ ArasWrapper::ArasWrapper(
     std::string path,
     std::shared_ptr<AbstractTask> task,
     TaskProxy &task_proxy)
-    : aras_directory(std::move(path))
-      , task(std::move(task))
-      , plan_file_parser(task_proxy) {
+    : aras_directory(std::move(path)), task(std::move(task)),
+      plan_file_parser(task_proxy) {
 }
 
 void

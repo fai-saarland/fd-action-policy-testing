@@ -216,7 +216,7 @@ int LDSimulation::remove_useless_abstractions(std::vector<Abstraction *> &_abstr
     if (dominance_relation)
         dominance_relation->remove_useless();
     int removed_abstractions = 0;
-    for (auto & _abstraction : _abstractions) {
+    for (auto &_abstraction : _abstractions) {
         if (_abstraction && _abstraction->is_useless()) {
             useless_vars.insert(std::end(useless_vars), std::begin(_abstraction->get_varset()),
                                 std::end(_abstraction->get_varset()));

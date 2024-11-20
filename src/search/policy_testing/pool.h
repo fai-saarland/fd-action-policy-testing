@@ -27,10 +27,8 @@ struct PoolEntry {
     }
 
     PoolEntry(int ref_index, int steps, State s, const std::vector<PoolEntry> &pool)
-        : ref_state(ref_index < 0 ? StateID::no_state : pool[ref_index].state.get_id())
-          , ref_index(ref_index)
-          , steps(steps),
-          state(std::move(s)) {
+        : ref_state(ref_index < 0 ? StateID::no_state : pool[ref_index].state.get_id()),
+          ref_index(ref_index), steps(steps), state(std::move(s)) {
     }
 };
 
@@ -47,7 +45,7 @@ public:
     void write(const PoolEntry &entry);
 
 private:
-    std::ofstream out_;
+    std::ofstream out;
 };
 
 Pool load_pool_file(
@@ -57,11 +55,11 @@ Pool load_pool_file(
 
 Pool load_pool(
     const std::shared_ptr<AbstractTask> &task,
-    StateRegistry & state_registry,
+    StateRegistry &state_registry,
     std::istream &in);
 
 Pool parse_pool_entries(
     const std::shared_ptr<AbstractTask> &task,
-    StateRegistry & state_registry,
+    StateRegistry &state_registry,
     std::istream &in);
 } // namespace policy_testing

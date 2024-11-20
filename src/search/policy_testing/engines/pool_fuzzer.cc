@@ -5,10 +5,10 @@
 #include "../../plugins/plugin.h"
 #include "../../task_utils/successor_generator.h"
 #include "../../task_utils/task_properties.h"
-#include "../custom_exceptions.h"
 #include "../fuzzing_bias.h"
-#include "../pool_filter.h"
-#include "../state_regions.h"
+#include "../utils/custom_exceptions.h"
+#include "../utils/pool_filter.h"
+#include "../utils/state_regions.h"
 
 #include <iomanip>
 #include <memory>
@@ -21,10 +21,7 @@ PoolFuzzerEngine::PoolFuzzerEngine(const plugins::Options &opts)
       rng(opts.get<int>("seed")),
       eval(opts.contains("eval") ? opts.get<std::shared_ptr<Evaluator>>("eval") : nullptr),
       bias(opts.contains("bias") ? opts.get<std::shared_ptr<FuzzingBias>>("bias") : std::make_shared<NeutralBias>()),
-      filter(
-          opts.contains("filter")
-              ? opts.get<std::shared_ptr<PoolFilter>>("filter")
-              : std::make_shared<PoolFilter>()),
+      filter(opts.contains("filter") ? opts.get<std::shared_ptr<PoolFilter>>("filter") : std::make_shared<PoolFilter>()),
       store(nullptr),
       max_steps(opts.get<int>("max_steps")),
       max_pool_size(opts.get<int>("max_pool_size")),
@@ -80,8 +77,8 @@ PoolFuzzerEngine::print_statistics() const {
     utils::HashSet<StateID> qualitative_pool_bugs;
     for (const auto &pool_entry : pool) {
         StateID pool_state = pool_entry.state.get_id();
-        auto it = bugs_.find(pool_state);
-        if (it != bugs_.end()) {
+        auto it = bugs.find(pool_state);
+        if (it != bugs.end()) {
             pool_bugs.insert(pool_state);
             if (it->second.bug_value == UNSOLVED_BUG_VALUE) {
                 qualitative_pool_bugs.insert(pool_state);
@@ -103,8 +100,8 @@ PoolFuzzerEngine::print_statistics() const {
     std::cout << "Qualitative pool bug states: " << qualitative_pool_bugs.size() << std::endl;
     std::cout << "Non-qualitative pool bug states: " << pool_bugs.size() - qualitative_pool_bugs.size() << std::endl;
     std::cout << "Pool unconfirmed states: " << pool.size() - pool_bugs.size() << std::endl;
-    std::cout << "Non-pool bug states: " << bugs_.size() - pool_bugs.size() << std::endl;
-    std::cout << "Solved pool states: " << num_solved_ << std::endl;
+    std::cout << "Non-pool bug states: " << bugs.size() - pool_bugs.size() << std::endl;
+    std::cout << "Solved pool states: " << num_solved << std::endl;
     std::cout << "Intermediate states added during random walks: " << intermediate_states << std::endl;
     std::cout << "States filtered out: " << filtered << std::endl;
     std::cout << "Failed attempts: " << failed << std::endl;
@@ -125,13 +122,10 @@ SearchStatus
 PoolFuzzerEngine::step() {
     if (fuzzing_step >= max_steps || pool.size() >= max_pool_size) {
         fuzzing_time.stop();
-
         std::cout << "Computing state regions..." << std::endl;
         const StateRegions regions = compute_state_regions(task, state_registry, states_in_pool);
         std::cout << "Number of regions: " << regions.size() << std::endl;
-
         compute_bug_regions_print_result();
-
         return FAILED;
     }
 
@@ -153,12 +147,12 @@ PoolFuzzerEngine::step() {
         fuzzing_time.stop();
         return FAILED;
     } catch (const AbstentionException &) {
-      std::cout.clear();
-      std::cerr.clear();
-      std::cout << "aborting: decided to abstain from task [t=" << utils::g_timer << "]" << std::endl;
-      utils::release_extra_memory_padding();
-      fuzzing_time.stop();
-      return FAILED;
+        std::cout.clear();
+        std::cerr.clear();
+        std::cout << "aborting: decided to abstain from task [t=" << utils::g_timer << "]" << std::endl;
+        utils::release_extra_memory_padding();
+        fuzzing_time.stop();
+        return FAILED;
     }
     utils::release_extra_memory_padding();
 
@@ -199,7 +193,7 @@ PoolFuzzerEngine::random_walk() {
         unsigned int used_budget = 0;
 
         for (auto &applicable_op : applicable_ops) {
-            if (check_limits()) {
+            if (limits_reached()) {
                 throw OutOfResourceException();
             }
             if (bias_budget && used_budget >= bias_budget) {
@@ -284,7 +278,7 @@ PoolFuzzerEngine::random_walk() {
 }
 
 bool
-PoolFuzzerEngine::check_limits() const {
+PoolFuzzerEngine::limits_reached() const {
     return pool.size() >= max_pool_size || timer->is_expired() || utils::is_out_of_memory();
 }
 

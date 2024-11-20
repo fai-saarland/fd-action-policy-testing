@@ -3,7 +3,7 @@
 #include "../operator_id.h"
 #include "../per_state_information.h"
 #include "component.h"
-#include "utils.h"
+#include "utils/utils.h"
 
 #include <memory>
 #include <iostream>
@@ -61,7 +61,8 @@ public:
         // the policy solves the tested state (it reaches a goal state and does not get stuck or diverges)
         // only relevant if complete is true
         const bool solves_state = false;
-        RunResult(bool complete, bool solved) : complete(complete), solves_state(solved) {}
+        RunResult(bool complete, bool solved) : complete(complete), solves_state(solved) {
+        }
     };
 
 
@@ -236,7 +237,7 @@ public:
      * Checks if lookup_apply can return the action without calling apply
      */
     bool can_lookup_action(const State &state) const {
-        return operator_cache_[state] != NO_CACHED_OPERATOR;
+        return operator_cache[state] != NO_CACHED_OPERATOR;
     }
 
     /**
@@ -345,8 +346,8 @@ private:
                                const std::shared_ptr<Evaluator> &dead_end_evaluator);
 
 
-    PerStateInformation<int> operator_cache_;
-    PerStateInformation<PolicyCost> policy_cost_cache_;
+    PerStateInformation<int> operator_cache;
+    PerStateInformation<PolicyCost> policy_cost_cache;
     using StateVector = std::vector<StateID>;
     // list of parent states for each state s, i.e., parent states in which applying the selected policy leads to s
     // parent vectors must be kept sorted

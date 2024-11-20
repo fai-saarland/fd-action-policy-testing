@@ -90,7 +90,7 @@ Here are a few example bias configs:
 
 #### Precomputing Dominance Functions
 
-If you use an oracle that requires computing a dominance function, you might want to precompute it and store it in a simulation file (in order to load it multiple times).
+If you use an oracle that requires computing a dominance function, you might want to precompute it and pool_store it in a simulation file (in order to load it multiple times).
 You can achieve that by selecting `<search config>` to:
 
 ```
@@ -398,7 +398,7 @@ pool_fuzzer(max_walk_length=5, pool_file=<none>, bias=<none>, filter=<none>, eva
  bias (FuzzingBias): Fuzzing bias (optional)
  filter (PoolFilter): Pool filter (optional).
  eval (Evaluator): Dead end heuristic (optional).
- novelty_statistics (int): Maximal arity for novelty statistics.
+ novelty_statistics (int): Maximal arity for novelty_store statistics.
  max_pool_size (int): Maximal pool size.
  max_steps (int): Maximal number of fuzzing steps.
  penalize_policy_fails (bool): Uses a bias of infinity if the policy is known to fail on the state;only applied if policy is executed in bias computation
@@ -456,7 +456,7 @@ pool_policy_tester(policy=<none>, run_without_policy=false, testing_method, poli
  pool_file (std::__cxx11::basic_string<char>): The pool file to load.
  start_from (int): Index of first step to test.
  max_steps (int): Number of pool states to test.
- novelty_statistics (int): Maximal arity for novelty statistics.
+ novelty_statistics (int): Maximal arity for novelty_store statistics.
 
 Help for plan_cost_estimator
 

@@ -14,7 +14,8 @@ public:
     bool can_exclude_state(const State &s) override;
 
 private:
-    // Heuristic Bias is only implemented for safe heuristics, i.e., if the heuristic returns infinity a bias of negative infinity will be chosen.
+    // Heuristic Bias is only implemented for safe heuristics,
+    // i.e., if heuristic is infinity, we choose a bias of negative infinity.
     std::shared_ptr<Evaluator> heuristic;
 };
 } //namespace policy_testing

@@ -12,8 +12,8 @@ Oracle::Oracle(const plugins::Options &opts) : TestingBaseComponent(opts),
                                                enforce_intermediate(opts.get<bool>("enforce_intermediate")) {
 }
 
-void Oracle::set_engine(PolicyTestingBaseEngine *engine) {
-    engine_ = engine;
+void Oracle::set_engine(PolicyTestingBaseEngine *eng) {
+    engine = eng;
 }
 
 int Oracle::get_optimal_cost(const State &s) const {
@@ -35,8 +35,9 @@ int Oracle::get_optimal_cost(const State &s) const {
 bool
 Oracle::confirm_bug(const State &state, BugValue bug_value) const {
     assert(bug_value != 0);
-    assert(engine_);
-    const int policy_cost = engine_->get_policy()->get_complete_policy_cost(state);
+    assert(engine);
+    const int policy_cost =
+        engine->get_policy()->get_complete_policy_cost(state);
     assert(policy_cost == Policy::UNSOLVED || policy_cost >= 0);
     const int optimal_cost = get_optimal_cost(state);
     assert(optimal_cost == Policy::UNSOLVED || optimal_cost >= 0);
@@ -68,11 +69,12 @@ void Oracle::report_parents_as_bugs(Policy &policy, const State &s, TestResult t
             }
             for (const StateID &parent : policy.get_policy_parent_states(current_state)) {
                 State parent_state = get_state_registry().lookup_state(parent);
-                const BugValue old_parent_bug_value = engine_->get_stored_bug_result(parent_state).bug_value;
+                const BugValue old_parent_bug_value =
+                    engine->get_stored_bug_result(parent_state).bug_value;
                 if (test_result.bug_value <= old_parent_bug_value) {
                     continue;
                 }
-                engine_->add_additional_bug(parent_state, test_result);
+                engine->add_additional_bug(parent_state, test_result);
                 queue.push(parent);
             }
         }
@@ -89,12 +91,13 @@ void Oracle::report_parents_as_bugs(Policy &policy, const State &s, TestResult t
             }
             for (const StateID &parent : policy.get_policy_parent_states(current_state)) {
                 State parent_state = get_state_registry().lookup_state(parent);
-                const BugValue old_parent_bug_value = engine_->get_stored_bug_result(parent_state).bug_value;
+                const BugValue old_parent_bug_value =
+                    engine->get_stored_bug_result(parent_state).bug_value;
                 if (test_result.bug_value <= old_parent_bug_value) {
                     continue;
                 }
                 PolicyCost parent_cost_bound = current_cost_bound + policy.read_action_cost(parent_state);
-                engine_->add_additional_bug(parent_state, TestResult(test_result.bug_value, parent_cost_bound));
+                engine->add_additional_bug(parent_state, TestResult(test_result.bug_value, parent_cost_bound));
                 queue.emplace(parent, parent_cost_bound);
             }
         }
@@ -104,8 +107,8 @@ void Oracle::report_parents_as_bugs(Policy &policy, const State &s, TestResult t
 TestResult
 Oracle::test_driver(Policy &policy, const PoolEntry &entry) {
     const State &pool_state = entry.state;
-    if (engine_->is_known_bug(pool_state) && !enforce_intermediate) {
-        return engine_->get_stored_bug_result(pool_state);
+    if (engine->is_known_bug(pool_state) && !enforce_intermediate) {
+        return engine->get_stored_bug_result(pool_state);
     }
     if (consider_intermediate_states || enforce_intermediate) {
         std::vector<State> path = policy.execute_get_path_fragment(pool_state);
@@ -113,12 +116,13 @@ Oracle::test_driver(Policy &policy, const PoolEntry &entry) {
         // call test for intermediate states (in reverse order)
         for (auto it = path.crbegin(); it != std::prev(path.crend()); ++it) {
             const State &intermediate_state = *it;
-            if (policy.is_goal(intermediate_state) || engine_->is_known_bug(intermediate_state)) {
+            if (policy.is_goal(intermediate_state) ||
+                engine->is_known_bug(intermediate_state)) {
                 continue;
             }
             const TestResult intermediate_test_result = test(policy, intermediate_state);
             if (intermediate_test_result.bug_value > 0) {
-                engine_->add_additional_bug(intermediate_state, intermediate_test_result);
+                engine->add_additional_bug(intermediate_state, intermediate_test_result);
                 if (report_parent_bugs) {
                     report_parents_as_bugs(policy, intermediate_state, intermediate_test_result);
                     return intermediate_test_result;
@@ -126,8 +130,8 @@ Oracle::test_driver(Policy &policy, const PoolEntry &entry) {
             }
         }
 
-        if (engine_->is_known_bug(pool_state)) {
-            return engine_->get_stored_bug_result(pool_state);
+        if (engine->is_known_bug(pool_state)) {
+            return engine->get_stored_bug_result(pool_state);
         }
     }
 

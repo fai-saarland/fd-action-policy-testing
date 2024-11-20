@@ -1,7 +1,7 @@
 #include "state_regions.h"
 
-#include "../task_utils/successor_generator.h"
-#include "oracle.h"
+#include "../../task_utils/successor_generator.h"
+#include "../oracle.h"
 
 #include <algorithm>
 

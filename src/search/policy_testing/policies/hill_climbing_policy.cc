@@ -4,16 +4,16 @@
 #include "../../evaluator.h"
 #include "../../plugins/plugin.h"
 #include "../../task_utils/task_properties.h"
-#include "../custom_exceptions.h"
+#include "../utils/custom_exceptions.h"
 
 #include <deque>
 #include <vector>
 
 namespace policy_testing {
 HillClimbingPolicy::HillClimbingPolicy(const plugins::Options &opts)
-    : Policy(opts)
-      , heuristic_(opts.get<std::shared_ptr<Evaluator>>("eval"))
-      , helpful_actions_pruning_(opts.get<bool>("helpful_actions_pruning")) {
+    : Policy(opts),
+      heuristic(opts.get<std::shared_ptr<Evaluator>>("eval")),
+      helpful_actions_pruning(opts.get<bool>("helpful_actions_pruning")) {
 }
 
 void
@@ -57,7 +57,7 @@ HillClimbingPolicy::apply(const State &state0) {
         // evaluate only upon expansion as otherwise heuristic would need to be
         // recomputed if helpful actions pruning is activated
         EvaluationContext context(state, nullptr, true);
-        const EvaluationResult h = heuristic_->compute_result(context);
+        const EvaluationResult h = heuristic->compute_result(context);
         if (h.is_infinite()) {
             continue;
         }
@@ -74,7 +74,7 @@ HillClimbingPolicy::apply(const State &state0) {
         const OperatorID chosen_before = can_lookup_action(state) ? lookup_action(state) : NO_OPERATOR;
         if (chosen_before != NO_OPERATOR) {
             aops.push_back(chosen_before);
-        } else if (helpful_actions_pruning_) {
+        } else if (helpful_actions_pruning) {
             aops = h.get_preferred_operators();
         } else {
             generate_applicable_ops(state, aops);

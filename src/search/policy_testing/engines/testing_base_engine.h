@@ -3,7 +3,7 @@
 #include "../../search_algorithm.h"
 #include "../../utils/hash.h"
 #include "../../utils/timer.h"
-#include "../bug_value.h"
+#include "../utils/bug_value.h"
 #include "../testing_environment.h"
 #include "../policy.h"
 #include "../oracle.h"
@@ -60,12 +60,12 @@ public:
     }
 
     std::shared_ptr<Policy> get_policy() const {
-        return policy_;
+        return policy;
     }
 
-    unsigned num_tests_ = 0;
-    unsigned num_solved_ = 0;
-    unsigned num_unsolved_state_bugs_ = 0;
+    unsigned num_tests = 0;
+    unsigned num_solved = 0;
+    unsigned num_unsolved_state_bugs = 0;
 
 protected:
     SearchStatus step() override = 0;
@@ -82,24 +82,26 @@ protected:
     void compute_bug_regions_print_result();
     void print_bug_statistics() const;
 
-    TestingEnvironment env_;
+    TestingEnvironment env;
 
-    utils::HashMap<StateID, TestResult> bugs_;
-    utils::HashSet<StateID> non_bugs_; // states that have been tested but that have not been reported as bugs
+    utils::HashMap<StateID, TestResult> bugs;
+    // states that have been tested but that have not been reported as bugs
+    utils::HashSet<StateID> non_bugs;
 
-    std::shared_ptr<Policy> policy_;
-    std::shared_ptr<Oracle> oracle_;
-    std::string policy_cache_file_;
-    bool write_bugs_file_;
-    std::ofstream bugs_stream_;
-    bool read_policy_cache_;
-    bool just_write_policy_cache_;
-    utils::Timer testing_timer_;
-    const bool debug_;
+    std::shared_ptr<Policy> policy;
+    std::shared_ptr<Oracle> oracle;
+    std::string policy_cache_file;
+    bool write_bugs_file;
+    std::ofstream bugs_stream;
+    bool read_policy_cache;
+    bool just_write_policy_cache;
+    utils::Timer testing_timer;
+    const bool debug;
+
 private:
-    std::set<TestingBaseComponent *> components_;
-    const bool verbose_;
+    std::set<TestingBaseComponent *> engine_components;
+    const bool verbose;
     const bool abstain_if_first_state_not_known_solved;
-    bool print_bug_states_;
+    bool print_bug_states;
 };
 } // namespace policy_testing

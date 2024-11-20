@@ -6,25 +6,25 @@
 
 namespace policy_testing {
 PoolFile::PoolFile(const std::shared_ptr<AbstractTask> &task, const std::string &path) {
-    out_.open(path);
-    out_ << "sas_variables\n" << task->get_num_variables() << "\n";
+    out.open(path);
+    out << "sas_variables\n" << task->get_num_variables() << "\n";
     for (int var = 0; var < task->get_num_variables(); ++var) {
-        out_ << task->get_variable_domain_size(var);
+        out << task->get_variable_domain_size(var);
         for (int val = 0; val < task->get_variable_domain_size(var); ++val) {
-            out_ << ";" << task->get_fact_name(FactPair(var, val));
+            out << ";" << task->get_fact_name(FactPair(var, val));
         }
-        out_ << "\n";
+        out << "\n";
     }
-    out_ << "pool" << std::endl;
+    out << "pool" << std::endl;
 }
 
 void
 PoolFile::write(int ref_index, int steps, const State &state) {
-    out_ << ref_index << ";" << steps << ";" << state.get_id();
+    out << ref_index << ";" << steps << ";" << state.get_id();
     for (const auto f : state) {
-        out_ << ";" << f.get_value();
+        out << ";" << f.get_value();
     }
-    out_ << std::endl;
+    out << std::endl;
 }
 
 void PoolFile::write(const PoolEntry &entry) {

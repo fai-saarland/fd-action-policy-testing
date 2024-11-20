@@ -16,7 +16,7 @@ stolower(std::string s) {
 
 PlanFileParser::PlanFileParser(TaskProxy &task_proxy) {
     for (OperatorProxy op : task_proxy.get_operators()) {
-        reverse_mapping_[stolower(op.get_name())] = op.get_id();
+        reverse_mapping[stolower(op.get_name())] = op.get_id();
     }
 }
 
@@ -46,8 +46,8 @@ PlanFileParser::parse(std::istream &in, std::vector<OperatorID> &result) const {
             continue;
         }
         op = op.substr(op.find('(') + 1, op.find(')') - 1);
-        auto it = reverse_mapping_.find(op);
-        if (it == reverse_mapping_.end()) {
+        auto it = reverse_mapping.find(op);
+        if (it == reverse_mapping.end()) {
             std::cerr << "operator " << op << " not found" << std::endl;
             return false;
         } else {

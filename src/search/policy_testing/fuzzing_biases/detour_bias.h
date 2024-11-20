@@ -17,7 +17,7 @@ public:
 
 protected:
     std::shared_ptr<relaxation_heuristic::RelaxationHeuristic> h;
-    const std::shared_ptr<InternalPlannerPlanCostEstimator> internalPlanCostEstimator;
+    const std::shared_ptr<InternalPlannerPlanCostEstimator> internal_planner;
     const bool omit_maximization;
 };
 } //namespace policy_testing

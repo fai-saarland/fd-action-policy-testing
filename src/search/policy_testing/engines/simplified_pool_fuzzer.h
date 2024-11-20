@@ -2,14 +2,13 @@
 
 #include "../../utils/rng.h"
 #include "../../utils/timer.h"
-#include "../novelty_store.h"
 #include "../pool.h"
+#include "../utils/novelty_store.h"
 #include "testing_base_engine.h"
 
 class Evaluator;
 
 namespace policy_testing {
-class FuzzingBias;
 class PoolFilter;
 
 class SimplifiedPoolFuzzerEngine : public PolicyTestingBaseEngine {
@@ -38,28 +37,28 @@ private:
     // This means all states in the frontier eventually end up in the pool, or are removed because they are filtered
     std::vector<PoolEntry> frontier;
 
-    // The list of pool states. Each given to the oracle upon insertion.
-    Pool pool_;
+    // list of pool states, each given to the oracle upon insertion.
+    Pool pool;
 
-    utils::HashSet<StateID> states_in_pool_;
-    std::unique_ptr<NoveltyStore> novelty_store_;
+    utils::HashSet<StateID> states_in_pool;
+    std::unique_ptr<NoveltyStore> novelty_store;
 
     // set of all states that have been generated so far
-    utils::HashSet<StateID> seen_;
-    utils::HashMap<StateID, bool> is_dead_;
+    utils::HashSet<StateID> seen;
+    utils::HashMap<StateID, bool> is_dead;
 
-    utils::RandomNumberGenerator rng_;
-    std::shared_ptr<Evaluator> eval_;
-    std::shared_ptr<PoolFilter> filter_;
-    std::unique_ptr<PoolFile> store_;
+    utils::RandomNumberGenerator rng;
+    std::shared_ptr<Evaluator> eval;
+    std::shared_ptr<PoolFilter> filter;
+    std::unique_ptr<PoolFile> pool_store;
 
-    const unsigned max_steps_;
-    const unsigned max_pool_size_;
+    const unsigned max_steps;
+    const unsigned max_pool_size;
 
     utils::Timer fuzzing_time;
-    unsigned step_ = 0;
-    unsigned filtered_ = 0;
-    unsigned dead_ends_ = 0;
+    unsigned pool_step = 0;
+    unsigned filtered = 0;
+    unsigned dead_ends = 0;
     unsigned goal_states = 0;
 };
 } // namespace policy_testing

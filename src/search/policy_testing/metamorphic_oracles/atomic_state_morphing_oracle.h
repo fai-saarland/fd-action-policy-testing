@@ -1,6 +1,6 @@
 #pragma once
 
-#include "unrelaxation_oracle.h"
+#include "state_morphing_oracle.h"
 #include <string>
 
 namespace policy_testing {
@@ -10,19 +10,20 @@ struct AtomicMetamorphicOption {
     int relaxed_value;
     int dominance_value;
 
-    AtomicMetamorphicOption(int variable, int unrelaxed_value, int relaxed_value, int dominance_value) :
-        variable(variable),
-        unrelaxed_value(unrelaxed_value),
-        relaxed_value(relaxed_value),
-        dominance_value(dominance_value) {
+    AtomicMetamorphicOption(int variable, int unrelaxed_value, int relaxed_value, int dominance_value)
+        : variable(variable),
+          unrelaxed_value(unrelaxed_value),
+          relaxed_value(relaxed_value),
+          dominance_value(dominance_value) {
     }
 
-    AtomicMetamorphicOption() : variable(-1), unrelaxed_value(-1), relaxed_value(-1), dominance_value(-1) {}
+    AtomicMetamorphicOption() : variable(-1), unrelaxed_value(-1), relaxed_value(-1), dominance_value(-1) {
+    }
 
     friend std::ostream &operator<<(std::ostream &os, const AtomicMetamorphicOption &p);
 };
 
-class AtomicUnrelaxationOracle : public UnrelaxationOracle {
+class AtomicStateMorphingOracle : public StateMorphingOracle {
     using AtomicMetamorphicOptions = std::vector<AtomicMetamorphicOption>;
     // possible (un)relaxations for each variable and value
     std::vector<std::vector<AtomicMetamorphicOptions>> possible_relaxations;
@@ -75,7 +76,7 @@ protected:
     void initialize() override;
 
 public:
-    explicit AtomicUnrelaxationOracle(const plugins::Options &opts);
+    explicit AtomicStateMorphingOracle(const plugins::Options &opts);
 
     static void add_options_to_feature(plugins::Feature &feature);
 

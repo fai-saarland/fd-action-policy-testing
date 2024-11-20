@@ -1,8 +1,8 @@
 #include "utils.h"
 
-#include "../task_proxy.h"
-#include "../task_utils/task_properties.h"
-#include "additions/tasks/modified_init_goals_task.h"
+#include "../../task_proxy.h"
+#include "../../task_utils/task_properties.h"
+#include "tasks/modified_init_goals_task.h"
 
 #include <utility>
 #include <chrono>

@@ -17,7 +17,8 @@ struct Prevail {
     int var;
     int prev;
 
-    Prevail(int v, int p) : var(v), prev(p) {}
+    Prevail(int v, int p) : var(v), prev(p) {
+    }
 
     [[nodiscard]] bool is_applicable(const State &state) const {
         assert(var >= 0 && var < global_simulation_task()->get_num_variables());
@@ -41,7 +42,8 @@ struct PrePost {
     int pre, post;
     std::vector<Prevail> cond;
 
-    PrePost(int v, int pr, int po, std::vector<Prevail> co) : var(v), pre(pr), post(po), cond(std::move(co)) {}
+    PrePost(int v, int pr, int po, std::vector<Prevail> co) : var(v), pre(pr), post(po), cond(std::move(co)) {
+    }
 
     [[nodiscard]] bool is_applicable(const State &state) const {
         assert(var >= 0 && var < global_simulation_task()->get_num_variables());

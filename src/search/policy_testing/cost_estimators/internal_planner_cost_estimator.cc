@@ -7,7 +7,7 @@
 #include "../../search_algorithms/eager_search.h"
 #include "../../search_algorithms/enforced_hill_climbing_search.h"
 #include "../../search_algorithms/search_common.h"
-#include "../custom_exceptions.h"
+#include "../utils/custom_exceptions.h"
 
 #include <memory>
 
@@ -15,19 +15,16 @@ namespace policy_testing {
 static std::shared_ptr<AbstractTask> g_modified_task = nullptr;
 
 InternalPlannerPlanCostEstimator::InternalPlannerPlanCostEstimator(const plugins::Options &opts)
-    : PlanCostEstimator(),
-      configuration_(opts.get<Configuration>("conf")),
-      print_output_(opts.get<bool>("print_output")),
-      print_plan_(opts.get<bool>("print_plan")),
+    : PlanCostEstimator(), configuration(opts.get<Configuration>("conf")),
+      print_output(opts.get<bool>("print_output")),
+      print_plan(opts.get<bool>("print_plan")),
       max_planner_time(opts.get<int>("max_planner_time")),
       continue_after_time_out(opts.get<bool>("continue_after_time_out")) {
 }
 
 InternalPlannerPlanCostEstimator::InternalPlannerPlanCostEstimator(TestingEnvironment *env, bool continue_after_timeout)
-    : PlanCostEstimator(),
-      configuration_(Configuration::ASTAR_LMCUT),
-      print_output_(false),
-      print_plan_(false),
+    : PlanCostEstimator(), configuration(Configuration::ASTAR_LMCUT),
+      print_output(false), print_plan(false),
       max_planner_time(14400),
       continue_after_time_out(continue_after_timeout) {
     connect_environment(env);
@@ -90,14 +87,14 @@ InternalPlannerPlanCostEstimator::compute_trusted_value_with_cache(const State &
 bool
 InternalPlannerPlanCostEstimator::run_planner(std::vector<OperatorID> &plan, const State &start_state,
                                               const State *goal_state) {
-    if (!print_output_) {
+    if (!print_output) {
         std::cout.setstate(std::ios_base::failbit);
         std::cerr.setstate(std::ios_base::failbit);
     }
     const timestamp_t time_limit = std::min<timestamp_t>(get_remaining_time(), max_planner_time);
     std::shared_ptr<SearchAlgorithm> engine = create(static_cast<int>(time_limit), start_state, goal_state);
     if (!engine) {
-        if (!print_output_) {
+        if (!print_output) {
             std::cout.clear();
             std::cerr.clear();
         }
@@ -106,18 +103,18 @@ InternalPlannerPlanCostEstimator::run_planner(std::vector<OperatorID> &plan, con
     try{
         engine->search();
     } catch (const enforced_hill_climbing_search::InitException &) {
-        if (!print_output_) {
+        if (!print_output) {
             std::cout.clear();
             std::cerr.clear();
         }
         return false;
     }
-    if (!print_output_) {
+    if (!print_output) {
         std::cout.clear();
         std::cerr.clear();
     }
     SearchStatus engine_exit_status = engine->get_status();
-    if (print_plan_) {
+    if (print_plan) {
         if (engine->found_solution()) {
             std::cout << "Plan found for state " << start_state << std::endl;
             for (auto op_id : engine->get_plan()) {
@@ -155,7 +152,7 @@ InternalPlannerPlanCostEstimator::create(double max_time, const State &state, co
     search_algorithm_opts.set("max_time", max_time);
     search_algorithm_opts.set("transform", g_modified_task);
 
-    switch (configuration_) {
+    switch (configuration) {
     case Configuration::ASTAR_LMCUT:
     {
         plugins::Options lmcut_opts;
@@ -203,7 +200,7 @@ InternalPlannerPlanCostEstimator::create(double max_time, const State &state, co
 class InternalPlannerPlanCostEstimatorFeature
     : public plugins::TypedFeature<PlanCostEstimator, InternalPlannerPlanCostEstimator> {
 public:
-    InternalPlannerPlanCostEstimatorFeature() : TypedFeature("internal_planner_plan_cost_estimator") {
+    InternalPlannerPlanCostEstimatorFeature() : TypedFeature("internal_planner") {
         InternalPlannerPlanCostEstimator::add_options_to_feature(*this);
     }
 };

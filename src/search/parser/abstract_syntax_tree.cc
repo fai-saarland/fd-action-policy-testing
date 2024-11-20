@@ -171,7 +171,7 @@ bool FunctionCallNode::collect_argument(
                 *max_node, arg_info.type, context);
         }
         decorated_arg = utils::make_unique_ptr<CheckBoundsNode>(
-                std::move(decorated_arg), std::move(decorated_min_node), std::move(decorated_max_node));
+            std::move(decorated_arg), std::move(decorated_min_node), std::move(decorated_max_node));
     }
     FunctionArgument function_arg(key, std::move(decorated_arg), arg_info.lazy_construction);
     arguments.insert({key, std::move(function_arg)});
@@ -360,7 +360,7 @@ DecoratedASTNodePtr ListNode::decorate(DecorateContext &context) const {
             if (element_type != *common_element_type) {
                 assert(element_type.can_convert_into(*common_element_type));
                 decorated_element_node = utils::make_unique_ptr<ConvertNode>(
-                        std::move(decorated_element_node), element_type, *common_element_type);
+                    std::move(decorated_element_node), element_type, *common_element_type);
             }
             decorated_elements.push_back(std::move(decorated_element_node));
         }

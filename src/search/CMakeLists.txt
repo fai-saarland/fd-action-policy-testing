@@ -967,16 +967,11 @@ create_fast_downward_library(
     HELP "Framework for action policy testing."
     SOURCES
         policy_testing/pool
-        policy_testing/utils
-        policy_testing/state_regions
-        policy_testing/novelty_store
-        policy_testing/plan_file_parser
         policy_testing/testing_environment
         policy_testing/component
         policy_testing/policy
         policy_testing/cost_estimator
         policy_testing/oracle
-        policy_testing/pool_filter
         policy_testing/fuzzing_bias
         policy_testing/policies/heuristic_descend_policy
         policy_testing/policies/hill_climbing_policy
@@ -985,28 +980,34 @@ create_fast_downward_library(
         policy_testing/oracles/aras_oracle
         policy_testing/oracles/invertible_domain_oracle
         policy_testing/oracles/bounded_lookahead_oracle
-        policy_testing/oracles/cost_estimator_based_oracle
-        policy_testing/metamorphic_oracles/numeric_dominance_oracle
-        policy_testing/metamorphic_oracles/atomic_unrelaxation_oracle
-        policy_testing/metamorphic_oracles/unrelaxation_oracle
-        policy_testing/metamorphic_oracles/iterative_improvement_oracle
+        policy_testing/oracles/planner_oracle
+        policy_testing/metamorphic_oracles/metamorphic_oracle
+        policy_testing/metamorphic_oracles/atomic_state_morphing_oracle
+        policy_testing/metamorphic_oracles/state_morphing_oracle
+        policy_testing/metamorphic_oracles/bound_maintenance_oracle
         policy_testing/metamorphic_oracles/composite_oracle
         policy_testing/metamorphic_oracles/sequence_oracle
         policy_testing/cost_estimators/internal_planner_cost_estimator
         policy_testing/cost_estimators/external_planner_cost_estimator
         policy_testing/fuzzing_biases/plan_length_bias
         policy_testing/fuzzing_biases/heuristic_bias
+        policy_testing/fuzzing_biases/internal_planner_bias
         policy_testing/fuzzing_biases/internalPlannerOracle_bias
         policy_testing/fuzzing_biases/loopiness_bias
         policy_testing/fuzzing_biases/surface_bias
         policy_testing/fuzzing_biases/detour_bias
-        policy_testing/pool_filters/novelty_filter
         policy_testing/engines/testing_base_engine
         policy_testing/engines/pool_policy_tester
         policy_testing/engines/pool_fuzzer
         policy_testing/engines/simplified_pool_fuzzer
         policy_testing/engines/dummy_engine
-        policy_testing/additions/tasks/modified_init_goals_task
+        policy_testing/utils/tasks/modified_init_goals_task
+        policy_testing/utils/utils
+        policy_testing/utils/state_regions
+        policy_testing/utils/novelty_store
+        policy_testing/utils/plan_file_parser
+        policy_testing/utils/pool_filter
+        policy_testing/utils/novelty_filter
         policy_testing/simulations/simulations_manager
         policy_testing/simulations/merge_and_shrink/abstraction_builder
         policy_testing/simulations/merge_and_shrink/abstraction

@@ -30,7 +30,7 @@ public:
     void reset() {}
 
     static bool update(const std::vector<LabelledTransitionSystem *> & /*lts*/,
-                const DominanceRelation & /*sim*/) {return false;}
+                       const DominanceRelation & /*sim*/) {return false;}
 
     void dump() const {}
 
@@ -69,8 +69,8 @@ public:
     get_equivalent_labels_relation(const LabelMap &labelMap, std::set<int> &dangerous_LTSs) const;
 
     [[nodiscard]] static bool propagate_transition_pruning(int lts_id,
-                                                    const std::vector<LabelledTransitionSystem *> &ltss,
-                                                    const DominanceRelation &simulations,
-                                                    int src, int l1, int target) ;
+                                                           const std::vector<LabelledTransitionSystem *> &ltss,
+                                                           const DominanceRelation &simulations,
+                                                           int src, int l1, int target);
 };
 }

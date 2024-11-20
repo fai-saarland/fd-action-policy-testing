@@ -84,7 +84,7 @@ protected:
             T best = (minimize ? *(std::min_element(criterion.begin(), criterion.end())) :
                       *(std::max_element(criterion.begin(), criterion.end())));
             T bestcmp = static_cast<T>(minimize ? std::max(best * opt_margin, best + opt_diff) :
-                         std::min(best * opt_margin, best - opt_diff));
+                                       std::min(best * opt_margin, best - opt_diff));
             std::cout << " (" << best << " " << bestcmp << ") ";
             for (int var : vars) {
                 T score = criterion[var];

@@ -52,8 +52,8 @@ CompositeOracle::CompositeOracle(const plugins::Options &opts)
             "in metamorphic oracle so that oracles can be combined properly" << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
-    if (metamorphic_oracle && std::dynamic_pointer_cast<IterativeImprovementOracle>(metamorphic_oracle) &&
-        !std::dynamic_pointer_cast<IterativeImprovementOracle>(metamorphic_oracle)->update_parents) {
+    if (metamorphic_oracle && std::dynamic_pointer_cast<BoundMaintenanceOracle>(metamorphic_oracle) &&
+        !std::dynamic_pointer_cast<BoundMaintenanceOracle>(metamorphic_oracle)->update_parents) {
         std::cerr << "metamorphic oracle should be used to report parent bugs" << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
@@ -109,8 +109,8 @@ CompositeOracle::test_driver(Policy &policy, const PoolEntry &entry) {
         if (metamorphic_test_result.bug_value > 0 && !enforce_external) {
             return metamorphic_test_result;
         }
-        if (engine_->is_known_bug(state) && !enforce_external) {
-            return engine_->get_stored_bug_result(state);
+        if (engine->is_known_bug(state) && !enforce_external) {
+            return engine->get_stored_bug_result(state);
         }
         // run other oracle
         TestResult result;
@@ -120,12 +120,13 @@ CompositeOracle::test_driver(Policy &policy, const PoolEntry &entry) {
                     std::vector<State> path = policy.execute_get_path_fragment(state);
                     // call test for intermediate states (in reverse order) and for pool state
                     for (const auto &intermediate_state : std::ranges::reverse_view(path)) {
-                        if (policy.is_goal(intermediate_state) || engine_->is_known_bug(intermediate_state)) {
+                        if (policy.is_goal(intermediate_state) ||
+                            engine->is_known_bug(intermediate_state)) {
                             continue;
                         }
                         const TestResult intermediate_test = quant_oracle->test(policy, intermediate_state);
                         if (intermediate_test.bug_value > 0) {
-                            engine_->add_additional_bug(intermediate_state, intermediate_test);
+                            engine->add_additional_bug(intermediate_state, intermediate_test);
                             metamorphic_oracle->add_external_cost_bound(policy, intermediate_state,
                                                                         intermediate_test.upper_cost_bound);
                             return best_of(intermediate_test, metamorphic_test_result);
@@ -142,12 +143,13 @@ CompositeOracle::test_driver(Policy &policy, const PoolEntry &entry) {
                     assert(!path.empty());
                     // call test for intermediate states (in reverse order) and for pool state
                     for (const auto &intermediate_state : std::ranges::reverse_view(path)) {
-                        if (policy.is_goal(intermediate_state) || engine_->is_known_bug(intermediate_state)) {
+                        if (policy.is_goal(intermediate_state) ||
+                            engine->is_known_bug(intermediate_state)) {
                             continue;
                         }
                         const TestResult intermediate_test = qual_oracle->test(policy, intermediate_state);
                         if (intermediate_test.bug_value > 0) {
-                            engine_->add_additional_bug(intermediate_state, intermediate_test);
+                            engine->add_additional_bug(intermediate_state, intermediate_test);
                             metamorphic_oracle->add_external_cost_bound(policy, intermediate_state,
                                                                         intermediate_test.upper_cost_bound);
                             return best_of(intermediate_test, metamorphic_test_result);
@@ -172,8 +174,8 @@ CompositeOracle::test_driver(Policy &policy, const PoolEntry &entry) {
             if (metamorphic_test_result.bug_value > 0) {
                 return metamorphic_test_result;
             }
-            if (engine_->is_known_bug(state)) {
-                return engine_->get_stored_bug_result(state);
+            if (engine->is_known_bug(state)) {
+                return engine->get_stored_bug_result(state);
             }
             // metamorphic oracle could not confirm bug, run other oracle
             TestResult result;

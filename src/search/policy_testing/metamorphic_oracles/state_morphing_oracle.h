@@ -1,10 +1,10 @@
 #pragma once
 
-#include "numeric_dominance_oracle.h"
+#include "metamorphic_oracle.h"
 #include <string>
 
 namespace policy_testing {
-class UnrelaxationOracle : public NumericDominanceOracle {
+class StateMorphingOracle : public MetamorphicOracle {
 protected:
 
     // maximal number of operation to apply to each state
@@ -29,7 +29,7 @@ protected:
     [[nodiscard]] virtual std::vector<std::pair<State, DominanceValue>> unrelax(const State &s) const;
 
 public:
-    explicit UnrelaxationOracle(const plugins::Options &opts);
+    explicit StateMorphingOracle(const plugins::Options &opts);
 
     static void add_options_to_feature(plugins::Feature &feature);
 

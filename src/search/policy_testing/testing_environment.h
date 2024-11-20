@@ -34,8 +34,8 @@ public:
 
 
 private:
-    std::shared_ptr<AbstractTask> task_;
-    StateRegistry *state_registry_;
-    TaskProxy task_proxy_;
+    std::shared_ptr<AbstractTask> task;
+    StateRegistry *state_registry;
+    TaskProxy task_proxy;
 };
 } // namespace policy_testing

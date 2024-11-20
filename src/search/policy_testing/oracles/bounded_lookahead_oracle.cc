@@ -2,7 +2,7 @@
 
 #include "../../plugins/plugin.h"
 #include "../../task_utils/task_properties.h"
-#include "../custom_exceptions.h"
+#include "../utils/custom_exceptions.h"
 
 #include <cassert>
 #include <utility>
@@ -10,8 +10,7 @@
 
 namespace policy_testing {
 BoundedLookaheadOracle::BoundedLookaheadOracle(const plugins::Options &opts)
-    : Oracle(opts),
-      depth_(opts.get<int>("depth")),
+    : Oracle(opts), lookahead_depth(opts.get<int>("depth")),
       max_evaluation_steps(opts.get<int>("max_evaluation_steps")),
       dead_end_eval(opts.contains("dead_end_eval") ?
                     opts.get<std::shared_ptr<Evaluator>>("dead_end_eval"): nullptr),
@@ -55,8 +54,8 @@ BoundedLookaheadOracle::test(Policy &policy, const State &state) {
     // for non-unit cost domains the oracle should be sound but maintaining a closed list for each depth is suboptimal
     // as depth is not equal to g_value anymore and there could be a new state with a lower g_value that is pruned
 
-    std::vector<std::vector<Node>> open(depth_);
-    std::vector<utils::HashSet<StateID>> closed(depth_);
+    std::vector<std::vector<Node>> open(lookahead_depth);
+    std::vector<utils::HashSet<StateID>> closed(lookahead_depth);
     std::vector<OperatorID> aops;
 
     open[0].emplace_back(state, 0);
@@ -76,7 +75,7 @@ BoundedLookaheadOracle::test(Policy &policy, const State &state) {
         if (task_properties::is_goal_state(get_task_proxy(), current_state)) {
             if (lower_policy_cost_bound == Policy::UNSOLVED) {
 #ifndef NDEBUG
-                if (debug_) {
+                if (debug) {
                     assert(confirm_bug(state, UNSOLVED_BUG_VALUE));
                 }
 #endif
@@ -86,7 +85,7 @@ BoundedLookaheadOracle::test(Policy &policy, const State &state) {
                 return TestResult(UNSOLVED_BUG_VALUE, g_value);
             } else if (lower_policy_cost_bound > g_value) {
 #ifndef NDEBUG
-                if (debug_) {
+                if (debug) {
                     assert(confirm_bug(state, lower_policy_cost_bound - g_value));
                 }
 #endif
@@ -98,7 +97,7 @@ BoundedLookaheadOracle::test(Policy &policy, const State &state) {
             continue;
         }
         generate_applicable_ops(current_state, aops);
-        if (depth + 1 == depth_) {
+        if (depth + 1 == lookahead_depth) {
             for (const auto &op : aops) {
                 State succ = get_successor_state(current_state, op);
                 PolicyCost succ_g_value = policy.get_operator_cost(op) + g_value;
@@ -118,7 +117,7 @@ BoundedLookaheadOracle::test(Policy &policy, const State &state) {
                 if (succ_plan_cost != Policy::UNSOLVED) {
                     if (lower_policy_cost_bound == Policy::UNSOLVED) {
 #ifndef NDEBUG
-                        if (debug_) {
+                        if (debug) {
                             assert(confirm_bug(state, UNSOLVED_BUG_VALUE));
                         }
 #endif
@@ -129,7 +128,7 @@ BoundedLookaheadOracle::test(Policy &policy, const State &state) {
                         return TestResult(UNSOLVED_BUG_VALUE, succ_plan_cost + succ_g_value);
                     } else if (lower_policy_cost_bound > succ_plan_cost + succ_g_value) {
 #ifndef NDEBUG
-                        if (debug_) {
+                        if (debug) {
                             assert(confirm_bug(state, lower_policy_cost_bound - succ_plan_cost - succ_g_value));
                         }
 #endif

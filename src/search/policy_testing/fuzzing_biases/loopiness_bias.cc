@@ -10,16 +10,16 @@ LoopinessBias::LoopinessBias(const plugins::Options &opts) :
     h(opts.contains("h") ?
       std::dynamic_pointer_cast<relaxation_heuristic::RelaxationHeuristic>(
           opts.get<std::shared_ptr<Evaluator>>("h")) : nullptr),
-    internalPlanCostEstimator(opts.contains("ipo") ? std::dynamic_pointer_cast<InternalPlannerPlanCostEstimator>(
-                                  opts.get<std::shared_ptr<PlanCostEstimator>>("ipo")) : nullptr),
+    internalPlanCostEstimator(opts.contains("cost_estimator") ? std::dynamic_pointer_cast<InternalPlannerPlanCostEstimator>(
+                                  opts.get<std::shared_ptr<PlanCostEstimator>>("cost_estimator")) : nullptr),
     omit_maximization(opts.get<bool>("omit_maximization")),
     omit_maximization_if_task_invertible(opts.get<bool>("omit_maximization_if_task_invertible")) {
     if (internalPlanCostEstimator) {
         register_sub_component(internalPlanCostEstimator.get());
     }
-    if ((!h && !internalPlanCostEstimator) || (opts.contains("h") && opts.contains("ipo"))) {
+    if ((!h && !internalPlanCostEstimator) || (opts.contains("h") && opts.contains("cost_estimator"))) {
         std::cerr << "Surface Bias needs either a heuristic or an internal planner oracle (and not both)\nh must be"
-            " a RelaxationHeuristic and ipo must be an InternalPlannerPlanCostEstimator" << std::endl;
+            " a RelaxationHeuristic and cost_estimator must be an InternalPlannerPlanCostEstimator" << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     if (internalPlanCostEstimator && internalPlanCostEstimator->continue_after_time_out) {
@@ -47,8 +47,8 @@ void LoopinessBias::initialize() {
 
 void
 LoopinessBias::add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<std::shared_ptr<Evaluator>>("h", "heuristic (required if no ipo is given)", plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<std::shared_ptr<PlanCostEstimator>>("ipo", "plan cost estimator (e.g. to compute h*)", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<Evaluator>>("h", "heuristic (required if no cost_estimator is given)", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<PlanCostEstimator>>("cost_estimator", "plan cost estimator (e.g. to compute h*)", plugins::ArgumentInfo::NO_DEFAULT);
     feature.add_option<bool>("omit_maximization",
                              "do not maximize over all sub-paths, only consider first and last state", "false");
     feature.add_option<bool>("omit_maximization_if_task_invertible", "omit maximization if task is invertible",

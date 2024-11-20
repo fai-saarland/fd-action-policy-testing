@@ -1,10 +1,10 @@
 #pragma once
 
-#include "bug_value.h"
 #include "component.h"
 #include "policy.h"
 #include "pool.h"
-#include "utils.h"
+#include "utils/bug_value.h"
+#include "utils/utils.h"
 
 #include <memory>
 
@@ -15,12 +15,15 @@ struct TestResult {
     BugValue bug_value;
     PolicyCost upper_cost_bound;
 
-    explicit TestResult(BugValue bug_value, PolicyCost upper_cost_bound) :
-        bug_value(bug_value), upper_cost_bound(upper_cost_bound) {}
+    explicit TestResult(BugValue bug_value, PolicyCost upper_cost_bound)
+        : bug_value(bug_value), upper_cost_bound(upper_cost_bound) {
+    }
 
-    explicit TestResult(BugValue bug_value) : bug_value(bug_value), upper_cost_bound(Policy::UNSOLVED) {}
+    explicit TestResult(BugValue bug_value) : bug_value(bug_value), upper_cost_bound(Policy::UNSOLVED) {
+    }
 
-    TestResult() : bug_value(0), upper_cost_bound(Policy::UNSOLVED) {}
+    TestResult() : bug_value(0), upper_cost_bound(Policy::UNSOLVED) {
+    }
 
     [[nodiscard]] std::string to_string() const {
         return "result\n" + std::to_string((bug_value < UNSOLVED_BUG_VALUE ? bug_value : -1)) + "\n" + std::to_string(
@@ -94,7 +97,7 @@ public:
     virtual void print_debug_info() const {}
 
 protected:
-    PolicyTestingBaseEngine *engine_ = nullptr;
+    PolicyTestingBaseEngine *engine = nullptr;
     const bool enforce_intermediate;
 
     /**

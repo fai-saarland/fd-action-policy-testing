@@ -5,7 +5,7 @@
 #include "../evaluator.h"
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
-#include "custom_exceptions.h"
+#include "utils/custom_exceptions.h"
 
 #include <cassert>
 #include <vector>
@@ -17,30 +17,29 @@
 
 namespace policy_testing {
 Policy::Policy(const plugins::Options &opts)
-    : TestingBaseComponent(),
-      operator_cache_(NO_CACHED_OPERATOR),
-      policy_cost_cache_(UNKNOWN),
+    : TestingBaseComponent(), operator_cache(NO_CACHED_OPERATOR),
+      policy_cost_cache(UNKNOWN),
       steps_limit(static_cast<unsigned int>(std::max(opts.get<int>("steps_limit"), 0))) {
 }
 
 Policy::Policy()
-    : TestingBaseComponent(),
-      operator_cache_(NO_CACHED_OPERATOR),
-      policy_cost_cache_(UNKNOWN),
+    : TestingBaseComponent(), operator_cache(NO_CACHED_OPERATOR),
+      policy_cost_cache(UNKNOWN),
       steps_limit(0) {
 }
 
 void
 Policy::store_operator(const State &state, const OperatorID &op_id) {
     // assume deterministic policy:
-    assert(operator_cache_[state] == NO_CACHED_OPERATOR || operator_cache_[state] == op_id.get_index());
+    assert(operator_cache[state] == NO_CACHED_OPERATOR ||
+           operator_cache[state] == op_id.get_index());
     assert(op_id == NO_OPERATOR || task_properties::is_applicable(get_task_proxy().get_operators()[op_id], state));
-    operator_cache_[state] = op_id.get_index();
+    operator_cache[state] = op_id.get_index();
 }
 
 OperatorID
 Policy::lookup_apply(const State &state) {
-    int &op_cache = operator_cache_[state];
+    int &op_cache = operator_cache[state];
     if (op_cache == NO_CACHED_OPERATOR) {
         const OperatorID op = apply(state);
         assert(op == NO_OPERATOR || task_properties::is_applicable(get_task_proxy().get_operators()[op], state));
@@ -287,7 +286,7 @@ bool Policy::is_goal(const State &state) const {
 PolicyCost
 Policy::compute_policy_cost(const State &state, std::optional<unsigned int> step_limit_override,
                             bool continue_with_cached_actions) {
-    PolicyCost &cost_cache_start = policy_cost_cache_[state];
+    PolicyCost &cost_cache_start = policy_cost_cache[state];
     if (cost_cache_start == UNKNOWN) {
         // calculate policy cost
         std::vector<OperatorID> plan;
@@ -307,7 +306,8 @@ Policy::compute_policy_cost(const State &state, std::optional<unsigned int> step
                 }
                 // update cost of intermediate state
                 const auto &intermediate_state = path[path_index];
-                PolicyCost &cost_cache_intermediate = policy_cost_cache_[intermediate_state];
+                PolicyCost &cost_cache_intermediate =
+                    policy_cost_cache[intermediate_state];
                 if (cost_cache_intermediate == UNKNOWN) {
                     cost_cache_intermediate = remaining_cost;
                 } else {
@@ -333,8 +333,8 @@ Policy::compute_lower_policy_cost_bound(const State &s, std::optional<unsigned i
     seen.insert(current_state.get_id());
     while (true) {
         if (task_properties::is_goal_state(get_task_proxy(), current_state)) {
-            assert(policy_cost_cache_[s] == UNKNOWN);
-            policy_cost_cache_[s] = lower_cost_bound;
+            assert(policy_cost_cache[s] == UNKNOWN);
+            policy_cost_cache[s] = lower_cost_bound;
             return {lower_cost_bound, true};
         }
         if (!can_lookup_action(current_state)) {
@@ -342,15 +342,15 @@ Policy::compute_lower_policy_cost_bound(const State &s, std::optional<unsigned i
         }
         OperatorID op = lookup_action(current_state);
         if (op == NO_OPERATOR) {
-            assert(policy_cost_cache_[s] == UNKNOWN);
-            policy_cost_cache_[s] = UNSOLVED;
+            assert(policy_cost_cache[s] == UNKNOWN);
+            policy_cost_cache[s] = UNSOLVED;
             return {UNSOLVED, true};
         }
         lower_cost_bound += get_operator_cost(op);
         current_state = get_successor_state(current_state, op);
         if (!seen.insert(current_state.get_id()).second) {
-            assert(policy_cost_cache_[s] == UNKNOWN);
-            policy_cost_cache_[s] = UNSOLVED;
+            assert(policy_cost_cache[s] == UNKNOWN);
+            policy_cost_cache[s] = UNSOLVED;
             return {UNSOLVED, true};
         }
     }
@@ -359,7 +359,7 @@ Policy::compute_lower_policy_cost_bound(const State &s, std::optional<unsigned i
 
 std::pair<PolicyCost, bool>
 Policy::read_lower_policy_cost_bound(const State &s) {
-    const PolicyCost base_cost = policy_cost_cache_[s];
+    const PolicyCost base_cost = policy_cost_cache[s];
     if (base_cost != UNKNOWN) {
         return {base_cost, true};
     }
@@ -370,8 +370,8 @@ Policy::read_lower_policy_cost_bound(const State &s) {
     seen.insert(current_state.get_id());
     while (true) {
         if (task_properties::is_goal_state(get_task_proxy(), current_state)) {
-            assert(policy_cost_cache_[s] == UNKNOWN);
-            policy_cost_cache_[s] = lower_cost_bound;
+            assert(policy_cost_cache[s] == UNKNOWN);
+            policy_cost_cache[s] = lower_cost_bound;
             return {lower_cost_bound, true};
         }
         if (!can_lookup_action(current_state)) {
@@ -379,15 +379,15 @@ Policy::read_lower_policy_cost_bound(const State &s) {
         }
         OperatorID op = lookup_action(current_state);
         if (op == NO_OPERATOR) {
-            assert(policy_cost_cache_[s] == UNKNOWN);
-            policy_cost_cache_[s] = UNSOLVED;
+            assert(policy_cost_cache[s] == UNKNOWN);
+            policy_cost_cache[s] = UNSOLVED;
             return {UNSOLVED, true};
         }
         lower_cost_bound += get_operator_cost(op);
         current_state = get_successor_state(current_state, op);
         if (!seen.insert(current_state.get_id()).second) {
-            assert(policy_cost_cache_[s] == UNKNOWN);
-            policy_cost_cache_[s] = UNSOLVED;
+            assert(policy_cost_cache[s] == UNKNOWN);
+            policy_cost_cache[s] = UNSOLVED;
             return {UNSOLVED, true};
         }
     }
@@ -405,7 +405,7 @@ PolicyCost Policy::lazy_compute_policy_cost(const State &state,
 OperatorID
 Policy::lookup_action(const State &state) const {
     assert(can_lookup_action(state));
-    const int op_id = operator_cache_[state];
+    const int op_id = operator_cache[state];
     return (op_id == NO_CACHED_OPERATOR) ? NO_OPERATOR : OperatorID(op_id);
 }
 
@@ -431,7 +431,7 @@ void Policy::read_running_policy_cache(const std::string &cache_file) {
         }
 
         State state = get_state_registry().insert_state(state_vec);
-        operator_cache_[state] = op;
+        operator_cache[state] = op;
 
         if (OperatorID(op) != NO_OPERATOR) {
             assert(op >= 0);

@@ -18,13 +18,20 @@ public:
     explicit InternalPlannerPlanCostEstimator(TestingEnvironment *env, bool continue_after_timeout);
     static void add_options_to_feature(plugins::Feature &feature);
 
+    /**
+     * Runs an internal planner in order to obtain a plan cost estimate.
+     */
     int compute_value(const State &state) override;
 
-    /// like compute value but return DEAD_END if no plan has been found
-    /// the search configuration needs to be complete for this to work!
+    /**
+     * Like compute_value but returns DEAD_END if no plan has been found
+     * the search configuration needs to be complete for this to work!
+    **/
     int compute_trusted_value(const State &state, const State *goal_state = nullptr);
 
-    /// wrapper around compute_trusted_value, caching call results
+    /**
+     * wrapper around compute_trusted_value, caching call results
+     **/
     int compute_trusted_value_with_cache(const State &start_state, const State *goal_state = nullptr);
 
     /**
@@ -34,14 +41,16 @@ public:
      **/
     bool run_planner(std::vector<OperatorID> &plan, const State &start_state, const State *goal_state = nullptr);
 
-    const Configuration configuration_;
-    const bool print_output_;
-    const bool print_plan_;
+    const Configuration configuration;
+    const bool print_output;
+    const bool print_plan;
     const int max_planner_time;
     const bool continue_after_time_out;
 
 private:
-    /** @brief attempt to create a search engine with the given max search time and initial state and
+
+    /**
+     * @brief attempt to create a search engine with the given max search time and initial state and
      * (if provided) goal state.
      * Return nullptr if engine the creation failed.
      */

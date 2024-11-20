@@ -22,8 +22,8 @@ protected:
     OperatorID apply(const State &state) override;
 
 private:
-    std::shared_ptr<Evaluator> heuristic_;
-    const bool strictly_descend_;
-    const bool stop_at_dead_ends_;
+    std::shared_ptr<Evaluator> heuristic;
+    const bool strictly_descend;
+    const bool stop_at_dead_ends;
 };
 } // namespace policy_testing

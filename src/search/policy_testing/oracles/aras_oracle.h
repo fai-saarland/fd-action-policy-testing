@@ -15,9 +15,9 @@ protected:
     void initialize() override;
 
 private:
-    const std::string aras_dir_;
+    const std::string aras_dir;
     const int aras_max_time_limit;
-    std::unique_ptr<ArasWrapper> aras_;
+    std::unique_ptr<ArasWrapper> aras;
 
     const bool cache_results;
     utils::HashMap<StateID, TestResult> result_cache;

@@ -9,18 +9,18 @@ DetourBias::DetourBias(const plugins::Options &opts) :
     h(opts.contains("h") ?
       std::dynamic_pointer_cast<relaxation_heuristic::RelaxationHeuristic>(
           opts.get<std::shared_ptr<Evaluator>>("h")) : nullptr),
-    internalPlanCostEstimator(opts.contains("ipo") ? std::dynamic_pointer_cast<InternalPlannerPlanCostEstimator>(
-                                  opts.get<std::shared_ptr<PlanCostEstimator>>("ipo")) : nullptr),
+    internal_planner(opts.contains("cost_estimator") ? std::dynamic_pointer_cast<InternalPlannerPlanCostEstimator>(
+                         opts.get<std::shared_ptr<PlanCostEstimator>>("cost_estimator")) : nullptr),
     omit_maximization(opts.get<bool>("omit_maximization")) {
-    if (internalPlanCostEstimator) {
-        register_sub_component(internalPlanCostEstimator.get());
+    if (internal_planner) {
+        register_sub_component(internal_planner.get());
     }
-    if ((!h && !internalPlanCostEstimator) || (opts.contains("h") && opts.contains("ipo"))) {
+    if ((!h && !internal_planner) || (opts.contains("h") && opts.contains("cost_estimator"))) {
         std::cerr << "Surface Bias needs either a heuristic or an internal plan cost estimator (and not both)\nh must be"
-            " a RelaxationHeuristic and ipo must be an InternalPlannerPlanCostEstimator" << std::endl;
+            " a RelaxationHeuristic and cost_estimator must be an InternalPlannerPlanCostEstimator" << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
-    if (internalPlanCostEstimator && internalPlanCostEstimator->continue_after_time_out) {
+    if (internal_planner && internal_planner->continue_after_time_out) {
         std::cerr << "Do not use continue_after_timeout in the configuration of the internalPlanCostEstimator. "
             "States would be classified as dead ends if the planner times out." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
@@ -29,8 +29,8 @@ DetourBias::DetourBias(const plugins::Options &opts) :
 
 void
 DetourBias::add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<std::shared_ptr<Evaluator>>("h", "heuristic (required if no ipo is given)", plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<std::shared_ptr<PlanCostEstimator>>("ipo", "plan cost estimator (e.g. to compute h*)", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<Evaluator>>("h", "heuristic (required if no cost estimator is given)", plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<std::shared_ptr<PlanCostEstimator>>("cost_estimator", "plan cost estimator (e.g. to compute h*)", plugins::ArgumentInfo::NO_DEFAULT);
     feature.add_option<bool>("omit_maximization",
                              "do not maximize over all sub-paths, only consider first and last state", "false");
     PolicyBasedBias::add_options_to_feature(feature);
@@ -51,8 +51,8 @@ DetourBias::bias_without_maximization(const State &state, unsigned int budget) {
         }
         return path_cost - h_value;
     } else {
-        assert(internalPlanCostEstimator);
-        const int h_value = internalPlanCostEstimator->compute_trusted_value_with_cache(path.front(), &path.back());
+        assert(internal_planner);
+        const int h_value = internal_planner->compute_trusted_value_with_cache(path.front(), &path.back());
         assert(h_value != PlanCostEstimator::ReturnCode::DEAD_END);
         return path_cost - h_value;
     }
@@ -80,8 +80,8 @@ DetourBias::bias_with_maximization(const State &state, unsigned int budget) {
                     continue;
                 }
             } else {
-                assert(internalPlanCostEstimator);
-                h_value = internalPlanCostEstimator->compute_trusted_value_with_cache(s_i, &s_j);
+                assert(internal_planner);
+                h_value = internal_planner->compute_trusted_value_with_cache(s_i, &s_j);
                 assert(h_value != PlanCostEstimator::ReturnCode::DEAD_END);
             }
             max_value = std::max<int>(max_value, path_fragment_cost - h_value);

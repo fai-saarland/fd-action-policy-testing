@@ -1,25 +1,23 @@
-#include "unrelaxation_oracle.h"
+#include "state_morphing_oracle.h"
 
 #include <memory>
 
 #include "../simulations/merge_and_shrink/abstraction_builder.h"
 
 namespace policy_testing {
-UnrelaxationOracle::UnrelaxationOracle(const plugins::Options &opts)
-    : NumericDominanceOracle(opts), operations_per_state(static_cast<unsigned int>(std::max(opts.get<int>("operations_per_state"), 1))),
+StateMorphingOracle::StateMorphingOracle(const plugins::Options &opts)
+    : MetamorphicOracle(opts), operations_per_state(static_cast<unsigned int>(std::max(opts.get<int>("operations_per_state"), 1))),
       max_evaluation_steps(opts.get<int>("max_evaluation_steps")),
       dead_end_eval(opts.contains("dead_end_eval") ?
                     opts.get<std::shared_ptr<Evaluator>>("dead_end_eval"): nullptr) {
 }
 
-void
-UnrelaxationOracle::initialize() {
-    NumericDominanceOracle::initialize();
+void StateMorphingOracle::initialize() {
+    MetamorphicOracle::initialize();
 }
 
-void
-UnrelaxationOracle::add_options_to_feature(plugins::Feature &feature) {
-    NumericDominanceOracle::add_options_to_feature(feature);
+void StateMorphingOracle::add_options_to_feature(plugins::Feature &feature) {
+    MetamorphicOracle::add_options_to_feature(feature);
     feature.add_option<int>("operations_per_state", "Number of unrelaxations to check in each state. Values smaller than 1 will be set to 1.", "4");
     feature.add_option<int>("max_evaluation_steps",
                             "Maximal number of steps in evaluation of policy in unrelaxed state.", "-1");
@@ -28,11 +26,11 @@ UnrelaxationOracle::add_options_to_feature(plugins::Feature &feature) {
                                                    plugins::ArgumentInfo::NO_DEFAULT);
 }
 
-std::vector<std::pair<State, NumericDominanceOracle::DominanceValue>>
-UnrelaxationOracle::unrelax(const State &s) const {
+std::vector<std::pair<State, MetamorphicOracle::DominanceValue>>
+StateMorphingOracle::unrelax(const State &s) const {
     // dominance_value is D(unrelaxed_state, relaxed_state)
-    std::vector<std::pair<State, NumericDominanceOracle::DominanceValue>> result;
-    std::vector<int> relaxed_state = s.get_values();
+    std::vector<std::pair<State, MetamorphicOracle::DominanceValue>> result;
+    const std::vector<int> &relaxed_state = s.get_values();
 
     // compute all possible unrelaxed states obtainable by changing one variable along and the dominance values
     const unsigned int num_variables = simulations::global_simulation_task()->get_num_variables();
@@ -56,7 +54,7 @@ UnrelaxationOracle::unrelax(const State &s) const {
     simulations::simulations_rng.shuffle(result);
     result.resize(std::min<unsigned int>(result.size(), operations_per_state));
 
-    if (debug_) {
+    if (debug) {
         std::cout << "(Debug) Constructed  " << result.size() << " unrelaxed states:" << std::endl;
         for (const auto &[state, dominance_value] : result) {
             std::cout << "(Debug) " << state << " (dominance value: " << dominance_value << ")" << std::endl;
@@ -65,8 +63,7 @@ UnrelaxationOracle::unrelax(const State &s) const {
     return result;
 }
 
-TestResult
-UnrelaxationOracle::test(Policy &policy, const State &relaxed_state) {
+TestResult StateMorphingOracle::test(Policy &policy, const State &relaxed_state) {
     const auto [lower_cost_bound_relaxed,
                 policy_bound_is_exact] = policy.compute_lower_policy_cost_bound(relaxed_state);
 
@@ -75,7 +72,7 @@ UnrelaxationOracle::test(Policy &policy, const State &relaxed_state) {
     // skip test if bug could already be confirmed by local test
     if (bug_value > 0) {
 #ifndef NDEBUG
-        if (debug_) {
+        if (debug) {
             assert(confirm_bug(relaxed_state, bug_value));
         }
 #endif
@@ -95,7 +92,7 @@ UnrelaxationOracle::test(Policy &policy, const State &relaxed_state) {
         }
         assert(relaxed_state != unrelaxed_state);
 #ifndef NDEBUG
-        if (debug_) {
+        if (debug) {
             assert(confirm_dominance_value(unrelaxed_state, relaxed_state, dominance_value));
         }
 #endif
@@ -140,17 +137,17 @@ UnrelaxationOracle::test(Policy &policy, const State &relaxed_state) {
         }
     }
 #ifndef NDEBUG
-    if (debug_) {
+    if (debug) {
         assert(bug_value == 0 || confirm_bug(relaxed_state, bug_value));
     }
 #endif
     return TestResult(bug_value, upper_cost_bound);
 }
 
-class UnrelaxationOracleFeature : public plugins::TypedFeature<Oracle, UnrelaxationOracle> {
+class UnrelaxationOracleFeature : public plugins::TypedFeature<Oracle, StateMorphingOracle> {
 public:
-    UnrelaxationOracleFeature() : TypedFeature("unrelaxation_oracle") {
-        UnrelaxationOracle::add_options_to_feature(*this);
+    UnrelaxationOracleFeature() : TypedFeature("state_morphing_oracle") {
+        StateMorphingOracle::add_options_to_feature(*this);
     }
 };
 static plugins::FeaturePlugin<UnrelaxationOracleFeature> _plugin;

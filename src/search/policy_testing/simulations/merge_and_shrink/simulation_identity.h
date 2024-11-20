@@ -44,6 +44,5 @@ public:
     //                                        SimulationRelation &) const {
     //    return true;
     //}
-
 };
 }

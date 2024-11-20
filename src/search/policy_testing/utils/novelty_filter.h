@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../novelty_store.h"
-#include "../pool_filter.h"
+#include "novelty_store.h"
+#include "pool_filter.h"
 
 #include <memory>
 
@@ -16,7 +16,7 @@ protected:
     void initialize() override;
 
 private:
-    const int novelty_size_;
-    std::unique_ptr<NoveltyStore> novelty_;
+    const int novelty_size;
+    std::unique_ptr<NoveltyStore> novelty_store;
 };
 } // namespace policy_testing

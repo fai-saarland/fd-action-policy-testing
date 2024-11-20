@@ -2,8 +2,8 @@
 
 #include "../../utils/rng.h"
 #include "../../utils/timer.h"
-#include "../novelty_store.h"
 #include "../pool.h"
+#include "../utils/novelty_store.h"
 #include "testing_base_engine.h"
 
 class Evaluator;
@@ -16,25 +16,47 @@ class PoolFuzzerEngine : public PolicyTestingBaseEngine {
 public:
     explicit PoolFuzzerEngine(const plugins::Options &opts);
     static void add_options_to_feature(plugins::Feature &feature);
-
     void print_statistics() const override;
 
 protected:
     SearchStatus step() override;
 
 private:
+
+    /**
+     * Print status information.
+     */
     void print_status_line() const;
+
+    /**
+     * Conduct a guided random walk.
+     * If this results in a new state, call insert to add it to the pool.
+     */
     void random_walk();
+
+    /**
+     * Inserts state to pool and triggers test run on state.
+     * @param ref index of reference state (parent state) in pool
+     * @param steps number of steps conducted in random walk
+     * @param state
+     * @return true iff can be inserted (not filtered out)
+     */
     bool insert(int ref, int steps, const State &state);
-    bool check_limits() const;
+
+    /**
+     * Check size and resource limits.
+     * @return true if pool size is reached or if out of time or memory.
+     */
+    bool limits_reached() const;
 
     Pool pool;
     utils::HashSet<StateID> states_in_pool;
     NoveltyStore novelty_store;
-    utils::HashMap<StateID, bool> is_dead;  // marks states that are not worthy to be further considered by the parser (not necessarily dead ends)
 
+    // marks states that are not worthy to be further considered by the fuzzer
+    // (not necessarily dead ends)
+    utils::HashMap<StateID, bool> is_dead;
     utils::RandomNumberGenerator rng;
-
     std::shared_ptr<Evaluator> eval;
     std::shared_ptr<FuzzingBias> bias;
     std::shared_ptr<PoolFilter> filter;

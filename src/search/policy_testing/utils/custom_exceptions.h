@@ -3,7 +3,6 @@
 #include <exception>
 
 namespace policy_testing {
-
 // testing engine out of resource
 class OutOfResourceException : public std::exception {
 };

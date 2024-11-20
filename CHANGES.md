@@ -657,7 +657,7 @@ Details:
   be passed to `cout` but to `utils::g_log`. Further changes to
   logging are in the works.
 
-- For developers: store enum options as enums (not ints) in Options objects.
+- For developers: pool_store enum options as enums (not ints) in Options objects.
   <https://issues.fast-downward.org/issue962>
 
 - For developers: allow creating Timers in stopped state.

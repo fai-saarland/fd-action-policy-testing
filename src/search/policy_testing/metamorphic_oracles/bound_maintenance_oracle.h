@@ -1,6 +1,6 @@
 #pragma once
 
-#include "numeric_dominance_oracle.h"
+#include "metamorphic_oracle.h"
 #include "../../evaluator.h"
 
 #include <deque>
@@ -16,8 +16,10 @@ struct CostSetRef {
     // index of the state set in the state_sets list
     unsigned int index;
 
-    explicit CostSetRef(PolicyCost cost) : cost(cost), index(0) {}
-    CostSetRef(PolicyCost cost, unsigned int index) : cost(cost), index(index) {}
+    explicit CostSetRef(PolicyCost cost) : cost(cost), index(0) {
+    }
+    CostSetRef(PolicyCost cost, unsigned int index) : cost(cost), index(index) {
+    }
 
     bool operator==(const CostSetRef &rhs) const {
         return cost == rhs.cost;
@@ -49,7 +51,7 @@ struct CostSetRef {
  * - If c_t < policycost(t), flag t as a bug. Likewise, if c_s < c, flag s as a bug.
  * - Put t into S^{min(policycost(t), c_t)} and move s to S^{c_s} if c_s < c
  */
-class IterativeImprovementOracle : public NumericDominanceOracle {
+class BoundMaintenanceOracle : public MetamorphicOracle {
     friend class CompositeOracle;
     friend class CostSetIterator;
     using StateSet = std::vector<State>;
@@ -237,7 +239,7 @@ protected:
     TestResult test(Policy &, const State &) override;
 
 public:
-    explicit IterativeImprovementOracle(const plugins::Options &opts);
+    explicit BoundMaintenanceOracle(const plugins::Options &opts);
 
     static void add_options_to_feature(plugins::Feature &feature);
 

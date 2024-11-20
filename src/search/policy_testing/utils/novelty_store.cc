@@ -1,7 +1,7 @@
 #include "novelty_store.h"
 
-#include "../abstract_task.h"
-#include "../task_proxy.h"
+#include "../../abstract_task.h"
+#include "../../task_proxy.h"
 
 #include <cassert>
 #include <iostream>
@@ -11,8 +11,7 @@
 namespace policy_testing {
 struct VarsetIterator {
     explicit VarsetIterator(unsigned num_vars, unsigned varset_size)
-        : vars_(varset_size)
-          , num_vars_(num_vars) {
+        : vars_(varset_size), num_vars_(num_vars) {
         for (unsigned i = 0; i < varset_size; ++i) {
             vars_[i] = i;
         }
@@ -44,31 +43,29 @@ struct VarsetIterator {
     unsigned idx_;
 };
 
-NoveltyStore::NoveltyStore(
-    unsigned max_arity,
-    const std::shared_ptr<AbstractTask> &task)
-    : max_arity_(std::min(static_cast<unsigned>(task->get_num_variables()), max_arity))
-      , domains_(task->get_num_variables())
-      , offsets_(max_arity_)
-      , fact_sets_(max_arity_) {
-    if (max_arity_ > 0) {
-        for (int i = static_cast<int>(domains_.size()) - 1; i >= 0; --i) {
-            domains_[i] = task->get_variable_domain_size(i);
+NoveltyStore::NoveltyStore(unsigned max_arity, const std::shared_ptr<AbstractTask> &task)
+    : max_arity(std::min(static_cast<unsigned>(task->get_num_variables()), max_arity)),
+      domains(task->get_num_variables()),
+      offsets(max_arity),
+      fact_sets(max_arity) {
+    if (max_arity > 0) {
+        for (int i = static_cast<int>(domains.size()) - 1; i >= 0; --i) {
+            domains[i] = task->get_variable_domain_size(i);
         }
-        for (unsigned i = 0; i < max_arity_; ++i) {
+        for (unsigned i = 0; i < max_arity; ++i) {
             FactSetType offset = 0;
-            VarsetIterator varsets(domains_.size(), i + 1);
-            offsets_[i].push_back(0);
+            VarsetIterator varsets(domains.size(), i + 1);
+            offsets[i].push_back(0);
             do {
                 const auto &vars = *varsets;
                 FactSetType product = 1;
                 for (int j = static_cast<int>(i); j >= 0; --j) {
                     // TODO assertion can fail
-                    assert(vars[j] < domains_.size());
-                    product *= domains_[vars[j]];
+                    assert(vars[j] < domains.size());
+                    product *= domains[vars[j]];
                 }
                 offset += product;
-                offsets_[i].push_back(offset);
+                offsets[i].push_back(offset);
             } while (varsets.next());
         }
     }
@@ -76,17 +73,17 @@ NoveltyStore::NoveltyStore(
 
 int
 NoveltyStore::compute_novelty(const State &state) {
-    for (unsigned i = 0; i < max_arity_; ++i) {
-        VarsetIterator varsets(domains_.size(), i + 1);
+    for (unsigned i = 0; i < max_arity; ++i) {
+        VarsetIterator varsets(domains.size(), i + 1);
         do {
             const auto &vars = *varsets;
-            FactSetType res = offsets_[i][varsets.get_idx()];
+            FactSetType res = offsets[i][varsets.get_idx()];
             FactSetType product = 1;
             for (unsigned j = 0; j <= i; ++j) {
                 res += product * state[vars[j]].get_value();
-                product *= domains_[vars[j]];
+                product *= domains[vars[j]];
             }
-            if (!fact_sets_[i].count(res)) {
+            if (!fact_sets[i].count(res)) {
                 return static_cast<int>(i) + 1;
             }
         } while (varsets.next());
@@ -98,18 +95,19 @@ NoveltyStore::compute_novelty(const State &state) {
 bool
 NoveltyStore::insert(const State &state) {
     bool is_novel = false;
-    for (unsigned i = 0; i < max_arity_; ++i) {
-        VarsetIterator varsets(domains_.size(), i + 1);
+    for (unsigned i = 0; i < max_arity; ++i) {
+        VarsetIterator varsets(domains.size(), i + 1);
         do {
             const auto &vars = *varsets;
-            FactSetType res = offsets_[i][varsets.get_idx()];
+            FactSetType res = offsets[i][varsets.get_idx()];
             FactSetType product = 1;
             for (unsigned j = 0; j <= i; ++j) {
                 res += product * state[vars[j]].get_value();
-                assert(vars[j] < domains_.size());
-                product *= domains_[vars[j]];
+                assert(vars[j] < domains.size());
+                product *= domains[vars[j]];
             }
-            auto inserted = fact_sets_[i].insert(std::pair<FactSetType, int>(res, 1));
+            auto inserted =
+                fact_sets[i].insert(std::pair<FactSetType, int>(res, 1));
             if (inserted.second) {
                 DMSG(
                     std::cout << "novel " << (i + 1) << "-fact-set: vars=[";
@@ -133,16 +131,16 @@ NoveltyStore::insert(const State &state) {
 
 bool
 NoveltyStore::has_unique_factset(const State &state, unsigned arity) const {
-    VarsetIterator varsets(domains_.size(), arity);
+    VarsetIterator varsets(domains.size(), arity);
     do {
         const auto &vars = *varsets;
-        FactSetType res = offsets_[arity - 1][varsets.get_idx()];
+        FactSetType res = offsets[arity - 1][varsets.get_idx()];
         FactSetType product = 1;
         for (unsigned j = 0; j < arity; ++j) {
             res += product * state[vars[j]].get_value();
-            product *= domains_[vars[j]];
+            product *= domains[vars[j]];
         }
-        auto it = fact_sets_[arity - 1].find(res);
+        auto it = fact_sets[arity - 1].find(res);
         if (it->second == 1) {
             return true;
         }
@@ -153,13 +151,13 @@ NoveltyStore::has_unique_factset(const State &state, unsigned arity) const {
 unsigned
 NoveltyStore::size(unsigned arity) const {
     assert(arity > 0);
-    assert(arity <= max_arity_);
-    return fact_sets_[arity - 1].size();
+    assert(arity <= max_arity);
+    return fact_sets[arity - 1].size();
 }
 
 unsigned
 NoveltyStore::get_arity() const {
-    return max_arity_;
+    return max_arity;
 }
 
 void

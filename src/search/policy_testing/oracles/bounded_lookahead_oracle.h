@@ -11,7 +11,7 @@ public:
     TestResult test(Policy &policy, const State &state) override;
 
 private:
-    const int depth_;
+    const int lookahead_depth;
 
     // maximal number of steps in evaluation of policy in unrelaxed state
     int max_evaluation_steps;

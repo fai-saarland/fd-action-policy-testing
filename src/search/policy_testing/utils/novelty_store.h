@@ -11,9 +11,7 @@ class AbstractTask;
 namespace policy_testing {
 class NoveltyStore {
 public:
-    explicit NoveltyStore(
-        unsigned max_arity,
-        const std::shared_ptr<AbstractTask> &task);
+    explicit NoveltyStore(unsigned max_arity, const std::shared_ptr<AbstractTask> &task);
     ~NoveltyStore() = default;
 
     int compute_novelty(const State &state);
@@ -27,9 +25,9 @@ public:
 
 private:
     using FactSetType = unsigned long long;
-    const unsigned max_arity_;
-    std::vector<unsigned> domains_;
-    std::vector<std::vector<FactSetType>> offsets_;
-    std::vector<std::unordered_map<FactSetType, int>> fact_sets_;
+    const unsigned max_arity;
+    std::vector<unsigned> domains;
+    std::vector<std::vector<FactSetType>> offsets;
+    std::vector<std::unordered_map<FactSetType, int>> fact_sets;
 };
 } // namespace policy_testing

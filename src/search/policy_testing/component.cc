@@ -10,47 +10,48 @@
 
 namespace policy_testing {
 TestingBaseComponent::TestingBaseComponent(const plugins::Options &opts)
-    : debug_(opts.get<bool>("debug")), end_time_(std::numeric_limits<timestamp_t>::max()) {
+    : debug(opts.get<bool>("debug")),
+      end_time(std::numeric_limits<timestamp_t>::max()) {
 }
 
 TestingBaseComponent::TestingBaseComponent()
-    : debug_(false), end_time_(std::numeric_limits<timestamp_t>::max()) {
+    : debug(false), end_time(std::numeric_limits<timestamp_t>::max()) {
 }
 
 void
 TestingBaseComponent::set_max_time(timestamp_t max_time) {
-    for (TestingBaseComponent *c : sub_components_) {
+    for (TestingBaseComponent *c : sub_components) {
         c->set_max_time(max_time);
     }
     if (max_time < 0) {
-        end_time_ = std::numeric_limits<timestamp_t>::max();
+        end_time = std::numeric_limits<timestamp_t>::max();
     } else {
-        end_time_ = get_end_timestamp(max_time);
+        end_time = get_end_timestamp(max_time);
     }
 }
 
 timestamp_t
 TestingBaseComponent::get_remaining_time() const {
-    return end_time_ - get_timestamp();
+    return end_time - get_timestamp();
 }
 
 bool
 TestingBaseComponent::are_limits_reached() const {
-    return end_time_ <= get_timestamp() || utils::is_out_of_memory();
+    return end_time <= get_timestamp() || utils::is_out_of_memory();
 }
 
 void
 TestingBaseComponent::register_sub_component(TestingBaseComponent *component) {
-    sub_components_.insert(component);
+    sub_components.insert(component);
 }
 
 void
 TestingBaseComponent::connect_environment(TestingEnvironment *env) {
     assert(env != nullptr);
-    assert(env_ == nullptr || env_ == env);
-    if (env_ == nullptr) {
-        env_ = env;
-        for (TestingBaseComponent *c : sub_components_) {
+    assert(component_env == nullptr || component_env == env);
+    if (component_env == nullptr) {
+        component_env = env;
+        for (TestingBaseComponent *c : sub_components) {
             c->connect_environment(env);
         }
         initialize();
@@ -59,27 +60,31 @@ TestingBaseComponent::connect_environment(TestingEnvironment *env) {
 
 TestingEnvironment *
 TestingBaseComponent::get_environment() const {
-    return env_;
+    return component_env;
 }
 
 std::shared_ptr<AbstractTask>
 TestingBaseComponent::get_task() const {
-    return env_->get_task();
+    assert(component_env);
+    return component_env->get_task();
 }
 
 TaskProxy &
 TestingBaseComponent::get_task_proxy() const {
-    return env_->get_task_proxy();
+    assert(component_env);
+    return component_env->get_task_proxy();
 }
 
 StateRegistry &
 TestingBaseComponent::get_state_registry() const {
-    return *env_->get_state_registry();
+    assert(component_env);
+    return *component_env->get_state_registry();
 }
 
 successor_generator::SuccessorGenerator &
 TestingBaseComponent::get_successor_generator() const {
-    return env_->get_successor_generator();
+    assert(component_env);
+    return component_env->get_successor_generator();
 }
 
 void

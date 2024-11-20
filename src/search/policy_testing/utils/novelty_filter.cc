@@ -6,7 +6,7 @@
 
 namespace policy_testing {
 NoveltyPoolFilter::NoveltyPoolFilter(const plugins::Options &opts)
-    : novelty_size_(opts.get<int>("novelty")) {
+    : novelty_size(opts.get<int>("novelty")) {
 }
 
 void
@@ -14,7 +14,7 @@ NoveltyPoolFilter::initialize() {
     if (initialized) {
         return;
     }
-    novelty_ = std::make_unique<NoveltyStore>(novelty_size_, get_task());
+    novelty_store = std::make_unique<NoveltyStore>(novelty_size, get_task());
     PoolFilter::initialize();
 }
 
@@ -25,7 +25,7 @@ NoveltyPoolFilter::add_options_to_feature(plugins::Feature &feature) {
 
 bool
 NoveltyPoolFilter::store(const State &state) {
-    return novelty_->insert(state);
+    return novelty_store->insert(state);
 }
 
 class NoveltyPoolFilterFeature : public plugins::TypedFeature<PoolFilter, NoveltyPoolFilter> {

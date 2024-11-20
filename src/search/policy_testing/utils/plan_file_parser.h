@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../operator_id.h"
-#include "../task_proxy.h"
+#include "../../operator_id.h"
+#include "../../task_proxy.h"
 
 #include <iostream>
 #include <string>
@@ -17,6 +17,6 @@ public:
     bool parse(std::istream &in, std::vector<OperatorID> &plan) const;
 
 private:
-    std::unordered_map<std::string, int> reverse_mapping_;
+    std::unordered_map<std::string, int> reverse_mapping;
 };
 } // namespace policy_testing

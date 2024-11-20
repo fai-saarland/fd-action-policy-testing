@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../abstract_task.h"
-#include "../operator_id.h"
-#include "../utils/rng.h"
+#include "../../abstract_task.h"
+#include "../../operator_id.h"
+#include "../../utils/rng.h"
 
 #include <memory>
 #include <utility>
