@@ -16,8 +16,9 @@ public:
 };
 
 class RemotePolicy : public Policy {
-    inline static phrm_policy_t *pheromone_policy = nullptr;
+    inline static phrm_policy_t *g_pheromone_policy = nullptr;
     inline static std::shared_ptr<RemotePolicy> g_default_policy = nullptr;
+    inline static int g_num_policy_models = 0;
 
 public:
     RemotePolicy() = default;
@@ -31,9 +32,9 @@ public:
     static void establish_connection(const std::string &url);
 
     /**
-     * Establishes a connection to the remote server.
+     * Returns true iff a connection to the remote server is established.
      */
-    static bool connection_established() {return pheromone_policy;}
+    static bool connection_established() {return g_pheromone_policy;}
 
     static std::shared_ptr<RemotePolicy> get_global_default_policy();
 
@@ -41,7 +42,6 @@ public:
      * Returns FDR planning task in the Fast Downward format
      * https://www.fast-downward.org/TranslatorOutputFormat
      */
-
     static std::string input_fdr();
 
     /**
@@ -49,6 +49,13 @@ public:
      */
     OperatorID apply(const State &state) override;
     static OperatorID static_apply(const State &state);
+
+    /**
+     * Returns the number of loaded policy model served by the remote policy.
+     */
+    static int get_num_models() {
+        return g_num_policy_models;
+    }
 };
 
 

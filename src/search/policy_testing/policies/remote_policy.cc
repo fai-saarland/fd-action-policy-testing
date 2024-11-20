@@ -13,8 +13,8 @@ void RemotePolicyError::print() const {
 RemotePolicy::RemotePolicy(const plugins::Options &opts) : Policy(opts) {}
 
 RemotePolicy::~RemotePolicy() {
-    if (pheromone_policy) {
-        phrmPolicyDel(pheromone_policy);
+    if (g_pheromone_policy) {
+        phrmPolicyDel(g_pheromone_policy);
     }
 }
 
@@ -24,16 +24,18 @@ void RemotePolicy::add_options_to_feature(plugins::Feature &feature) {
 
 void RemotePolicy::establish_connection(const std::string &url) {
     utils::g_log << "Establishing connection to remote policy at " << url << std::endl;
-    pheromone_policy = phrmPolicyConnect(url.c_str());
-    if (!pheromone_policy) {
+    g_pheromone_policy = phrmPolicyConnect(url.c_str());
+    if (!g_pheromone_policy) {
         throw RemotePolicyError("Cannot connect to " + url);
     }
     utils::g_log << "Connection to " << url << " established" << std::endl;
     g_default_policy = std::make_shared<RemotePolicy>();
+    g_num_policy_models = phrmPolicyNumModels(g_pheromone_policy);
+    utils::g_log << "Policy server provides " << g_num_policy_models << " model(s)." << std::endl;
 }
 
 std::shared_ptr<RemotePolicy> RemotePolicy::get_global_default_policy() {
-    if (!pheromone_policy) {
+    if (!g_pheromone_policy) {
         throw RemotePolicyError("Global default policy not available, no connection established");
     }
     assert(g_default_policy);
@@ -45,7 +47,7 @@ std::string RemotePolicy::input_fdr() {
         throw RemotePolicyError("No connection to remote policy established.\n"
                                 "Make sure your FD call starts with --remote-policy <url>.");
     }
-    char *fdr = phrmPolicyFDRTaskFD(pheromone_policy);
+    char *fdr = phrmPolicyFDRTaskFD(g_pheromone_policy);
     if (!fdr) {
         throw RemotePolicyError("Cannot obtain FDR task");
     }
@@ -60,8 +62,8 @@ OperatorID RemotePolicy::static_apply(const State &state_in) {
                                 "Make sure your FD call starts with --remote-policy <url>.");
     }
     const std::vector<int> &state = state_in.get_values();
-    int op_id =
-        phrmPolicyFDRStateOperator(pheromone_policy, state.data(), state.size());
+    // TODO support for multiple models
+    int op_id = phrmPolicyFDRStateOperator(g_pheromone_policy, state.data(), state.size(), 0);
     if (op_id >= 0) {
         return OperatorID(op_id);
     } else if (op_id == -1) {
