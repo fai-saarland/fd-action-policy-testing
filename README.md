@@ -63,7 +63,7 @@ The (adapted) source code for the computation of dominance functions can be foun
 Check out the test drivers in [the bughive repository](https://github.com/fai-saarland/bughive/tree/master/test_drivers) to learn how to easily invoke the tool.
 
 As search configuration you must specify a search algorithm such as `pool_fuzzer`.
-This could be of the form `pool_fuzzer(bias=<bias>,testing_method=<oracle>)`, 
+This could be of the form `pool_fuzzer(bias=<bias>,oracle=<oracle>)`, 
 where `<bias>` is one determines the fuzzing bias to be used in the fuzzing step (if one shall be used)
 and `<oracle>` is the oracle to be used in the oracle step.
 
@@ -94,32 +94,31 @@ If you use an oracle that requires computing a dominance function, you might wan
 You can achieve that by selecting `<search config>` to:
 
 ```
-dummy_engine(testing_method=numeric_dominance_oracle(abs=builder_massim(merge_strategy=merge_dfp(),limit_transitions_merge=10000),write_sim_and_exit=true,sim_file="<path/to/sim/file/for/result>",max_simulation_time=1800,max_total_time=7200))
+dummy_engine(oracle=metamorphic_oracle(abs=builder_massim(merge_strategy=merge_dfp(),limit_transitions_merge=10000),write_sim_and_exit=true,sim_file="<path/to/sim/file/for/result>",max_simulation_time=1800,max_total_time=7200))
 ```
 
 #### Oracle Step
 
 In order to run the oracle on a precomputed pool, you could select e.g. this `<search config>`:
 ```
-pool_policy_tester(max_time=<time limit in seconds>,pool_file="<path/to/pool/file>",testing_method=<oracle>)
+pool_policy_tester(max_time=<time limit in seconds>,pool_file="<path/to/pool/file>",oracle=<oracle>)
 ```
 where `<oracle>` could be:
 
 ```
-composite_oracle(qual_oracle=estimator_based_oracle(oracle=internal_planner_plan_cost_estimator(conf=ehc_ff,max_planner_time=300)),\
+composite_oracle(qual_oracle=planner_oracle(oracle=internal_planner(conf=ehc_ff,max_planner_time=300)),\
 quant_oracle=aras(aras_dir="<path/to/aras/tool>",aras_max_time_limit=300),\
-metamorphic_oracle=iterative_improvement_oracle(conduct_lookahead_search=true,lookahead_heuristic=ff(),consider_intermediate_states=true,read_simulation=true,sim_file="<path/to/simulation/file>"))
+metamorphic_oracle=bound_maintenance_oracle(conduct_lookahead_search=true,lookahead_heuristic=ff(),consider_intermediate_states=true,read_simulation=true,sim_file="<path/to/simulation/file>"))
 ```
 
 A selection of possible oracles is:
 
 * `aras(...)`
 * `composite_oracle(...)`
-* `estimator_based_oracle(...)`
-* `iterative_improvement_oracle(...)`
-* `unrelaxation_oracle(...)`
+* `planner_oracle(...)`
+* `bound_maintenance_oracle(...)`
+* `state_morphing_oracle(...)`
 
-`iterative_improvement_oracle` implements the bound maintenance oracles (BMOs), while `atomic_unrelaxation_oracle` and `unrelaxation_oracle` implement state morphing oracles (SMOs).
 
 #### Aras Oracle
 
@@ -148,22 +147,22 @@ To learn about the options of a specific feature (e.g., `pool_fuzzer`) only you 
 Help for FuzzingBias
 
 == detour_bias ==
-detour_bias(h=<none>, ipo=<none>, omit_maximization=false, policy=<none>, horizon=50)
- h (Evaluator): heuristic (required if no ipo is given)
- ipo (plan_cost_estimator): plan cost estimator (e.g. to compute h*)
+detour_bias(h=<none>, cost_estimator=<none>, omit_maximization=false, policy=<none>, horizon=50)
+ h (Evaluator): heuristic (required if no cost estimator is given)
+ cost_estimator (plan_cost_estimator): plan cost estimator (e.g. to compute h*)
  omit_maximization (bool): do not maximize over all sub-paths, only consider first and last state
  policy (PolicyForTesting): policy to test (omit if global remote policy is set)
  horizon (int): number of policy steps to consider in bias computation; choose 0 or negative value to set no limit
 == heuristic_bias ==
 heuristic_bias(h)
  h (Evaluator): heuristic; only implemented for safe heuristics (if the heuristic returns infinity a bias of negative infinity will be chosen).
-== internal_planner_oracle_bias ==
-internal_planner_oracle_bias(internal_planner_oracle)
+== internal_planner_bias ==
+internal_planner_bias(internal_planner_oracle)
  internal_planner_oracle (plan_cost_estimator): plan cost estimator (e.g. to compute h*)
 == loopiness_bias ==
-loopiness_bias(h=<none>, ipo=<none>, omit_maximization=false, omit_maximization_if_task_invertible=false, policy=<none>, horizon=50)
- h (Evaluator): heuristic (required if no ipo is given)
- ipo (plan_cost_estimator): plan cost estimator (e.g. to compute h*)
+loopiness_bias(h=<none>, cost_estimator=<none>, omit_maximization=false, omit_maximization_if_task_invertible=false, policy=<none>, horizon=50)
+ h (Evaluator): heuristic (required if no cost_estimator is given)
+ cost_estimator (plan_cost_estimator): plan cost estimator (e.g. to compute h*)
  omit_maximization (bool): do not maximize over all sub-paths, only consider first and last state
  omit_maximization_if_task_invertible (bool): omit maximization if task is invertible
  policy (PolicyForTesting): policy to test (omit if global remote policy is set)
@@ -173,9 +172,9 @@ plan_length_bias(policy=<none>, horizon=50)
  policy (PolicyForTesting): policy to test (omit if global remote policy is set)
  horizon (int): number of policy steps to consider in bias computation; choose 0 or negative value to set no limit
 == surface_bias ==
-surface_bias(h=<none>, ipo=<none>, omit_maximization=false, policy=<none>, horizon=50)
- h (Evaluator): heuristic (required if no ipo is given)
- ipo (plan_cost_estimator): plan cost estimator (e.g. to compute h*)
+surface_bias(h=<none>, cost_estimator=<none>, omit_maximization=false, policy=<none>, horizon=50)
+ h (Evaluator): heuristic (required if no cost_estimator is given)
+ cost_estimator (plan_cost_estimator): plan cost estimator (e.g. to compute h*)
  omit_maximization (bool): do not maximize over all sub-paths, only consider first and last state
  policy (PolicyForTesting): policy to test (omit if global remote policy is set)
  horizon (int): number of policy steps to consider in bias computation; choose 0 or negative value to set no limit
@@ -191,8 +190,8 @@ aras(debug=false, report_parent_bugs=false, consider_intermediate_states=false, 
  aras_dir (std::__cxx11::basic_string<char>): Base directory of the ARAS plan improver
  aras_max_time_limit (int): Maximal time to run ARAS.
  cache_results (bool): Cache the results of oracle invocations
-== atomic_unrelaxation_oracle ==
-atomic_unrelaxation_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, abs=builder_massim(merge_strategy=merge_dfp(), limit_transitions_merge=10000), tau_labels_recursive=true, tau_labels_self_loops=true, tau_labels_noop=false, truncate_value=1000, max_simulation_time=1800, min_simulation_time=1, max_total_time=7200, max_lts_size_to_compute_simulation=1000000, num_labels_to_use_dominates_in=0, dump=false, local_bug_test=ALL, sim_file=<none>, write_sim_and_exit=false, read_simulation=false, test_serialization=false, operations_per_state=4, max_evaluation_steps=-1, dead_end_eval=<none>)
+== atomic_state_morphing_oracle ==
+atomic_state_morphing_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, abs=builder_massim(merge_strategy=merge_dfp(), limit_transitions_merge=10000), tau_labels_recursive=true, tau_labels_self_loops=true, tau_labels_noop=false, truncate_value=1000, max_simulation_time=1800, min_simulation_time=1, max_total_time=7200, max_lts_size_to_compute_simulation=1000000, num_labels_to_use_dominates_in=0, dump=false, local_bug_test=ALL, sim_file=<none>, write_sim_and_exit=false, read_simulation=false, test_serialization=false, operations_per_state=4, max_evaluation_steps=-1, dead_end_eval=<none>)
  debug (bool): Run in (very costly) debug mode.
  report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
  consider_intermediate_states (bool): Run bug test also on intermediate states.
@@ -219,42 +218,8 @@ atomic_unrelaxation_oracle(debug=false, report_parent_bugs=false, consider_inter
  operations_per_state (int): Number of unrelaxations to check in each state. Values smaller than 1 will be set to 1.
  max_evaluation_steps (int): Maximal number of steps in evaluation of policy in unrelaxed state.
  dead_end_eval (Evaluator): Evaluator used for dead end detection in policy evaluation of dead end states.
-== bounded_lookahead_oracle ==
-bounded_lookahead_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, depth=2, max_evaluation_steps=-1, dead_end_eval=<none>, cache_results=true)
- debug (bool): Run in (very costly) debug mode.
- report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
- consider_intermediate_states (bool): Run bug test also on intermediate states.
- enforce_intermediate (bool): Consider intermediate states even if bug candidate is known to be a bug
- depth (int): Depth limit.
- max_evaluation_steps (int): Maximal number of steps in evaluation of policy in unrelaxed state.
- dead_end_eval (Evaluator): Evaluator used for dead end detection in policy evaluation of dead end states.
- cache_results (bool): Cache the results of oracle invocations
-== composite_oracle ==
-composite_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, qual_oracle=<none>, quant_oracle=<none>, metamorphic_oracle=<none>, enforce_external=false)
- debug (bool): Run in (very costly) debug mode.
- report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
- consider_intermediate_states (bool): Run bug test also on intermediate states.
- enforce_intermediate (bool): Consider intermediate states even if bug candidate is known to be a bug
- qual_oracle (Oracle): oracle for qualitative evaluation
- quant_oracle (Oracle): oracle for quantitative evaluation
- metamorphic_oracle (Oracle): oracle for metamorphic testing
- enforce_external (bool): run external oracle(s) on intermediate states even if pool state could be confirmed as a bug by metamorphic oracle
-== estimator_based_oracle ==
-estimator_based_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, oracle, cache_results=true)
- debug (bool): Run in (very costly) debug mode.
- report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
- consider_intermediate_states (bool): Run bug test also on intermediate states.
- enforce_intermediate (bool): Consider intermediate states even if bug candidate is known to be a bug
- oracle (plan_cost_estimator): Plan cost estimator.
- cache_results (bool): Cache the results of oracle invocations
-== invertible_domain_oracle ==
-invertible_domain_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false)
- debug (bool): Run in (very costly) debug mode.
- report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
- consider_intermediate_states (bool): Run bug test also on intermediate states.
- enforce_intermediate (bool): Consider intermediate states even if bug candidate is known to be a bug
-== iterative_improvement_oracle ==
-iterative_improvement_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, abs=builder_massim(merge_strategy=merge_dfp(), limit_transitions_merge=10000), tau_labels_recursive=true, tau_labels_self_loops=true, tau_labels_noop=false, truncate_value=1000, max_simulation_time=1800, min_simulation_time=1, max_total_time=7200, max_lts_size_to_compute_simulation=1000000, num_labels_to_use_dominates_in=0, dump=false, local_bug_test=ALL, sim_file=<none>, write_sim_and_exit=false, read_simulation=false, test_serialization=false, max_state_comparisons=1000000, max_lookahead_state_comparisons=1000000, conduct_lookahead_search=true, update_parents=true, lookahead_heuristic=<none>, deferred_evaluation=false, domain_unit_cost_and_invertible=false, max_lookahead_state_visits=100, lookahead_comp=h)
+== bound_maintenance_oracle ==
+bound_maintenance_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, abs=builder_massim(merge_strategy=merge_dfp(), limit_transitions_merge=10000), tau_labels_recursive=true, tau_labels_self_loops=true, tau_labels_noop=false, truncate_value=1000, max_simulation_time=1800, min_simulation_time=1, max_total_time=7200, max_lts_size_to_compute_simulation=1000000, num_labels_to_use_dominates_in=0, dump=false, local_bug_test=ALL, sim_file=<none>, write_sim_and_exit=false, read_simulation=false, test_serialization=false, max_state_comparisons=1000000, max_lookahead_state_comparisons=1000000, conduct_lookahead_search=true, update_parents=true, lookahead_heuristic=<none>, deferred_evaluation=false, domain_unit_cost_and_invertible=false, max_lookahead_state_visits=100, lookahead_comp=h)
  debug (bool): Run in (very costly) debug mode.
  report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
  consider_intermediate_states (bool): Run bug test also on intermediate states.
@@ -289,8 +254,34 @@ iterative_improvement_oracle(debug=false, report_parent_bugs=false, consider_int
  lookahead_comp ({h, g_plus_h}): The comparator to be used in lookahead search; h (resembles GBFS) or g+h (resembles A*)
  - h: heuristic value only (resembles GBFS).
  - g_plus_h: f=g+h (resembles A*)
-== numeric_dominance_oracle ==
-numeric_dominance_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, abs=builder_massim(merge_strategy=merge_dfp(), limit_transitions_merge=10000), tau_labels_recursive=true, tau_labels_self_loops=true, tau_labels_noop=false, truncate_value=1000, max_simulation_time=1800, min_simulation_time=1, max_total_time=7200, max_lts_size_to_compute_simulation=1000000, num_labels_to_use_dominates_in=0, dump=false, local_bug_test=ALL, sim_file=<none>, write_sim_and_exit=false, read_simulation=false, test_serialization=false)
+== bounded_lookahead_oracle ==
+bounded_lookahead_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, depth=2, max_evaluation_steps=-1, dead_end_eval=<none>, cache_results=true)
+ debug (bool): Run in (very costly) debug mode.
+ report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
+ consider_intermediate_states (bool): Run bug test also on intermediate states.
+ enforce_intermediate (bool): Consider intermediate states even if bug candidate is known to be a bug
+ depth (int): Depth limit.
+ max_evaluation_steps (int): Maximal number of steps in evaluation of policy in unrelaxed state.
+ dead_end_eval (Evaluator): Evaluator used for dead end detection in policy evaluation of dead end states.
+ cache_results (bool): Cache the results of oracle invocations
+== composite_oracle ==
+composite_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, qual_oracle=<none>, quant_oracle=<none>, metamorphic_oracle=<none>, enforce_external=false)
+ debug (bool): Run in (very costly) debug mode.
+ report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
+ consider_intermediate_states (bool): Run bug test also on intermediate states.
+ enforce_intermediate (bool): Consider intermediate states even if bug candidate is known to be a bug
+ qual_oracle (Oracle): oracle for qualitative evaluation
+ quant_oracle (Oracle): oracle for quantitative evaluation
+ metamorphic_oracle (Oracle): oracle for metamorphic testing
+ enforce_external (bool): run external oracle(s) on intermediate states even if pool state could be confirmed as a bug by metamorphic oracle
+== invertible_domain_oracle ==
+invertible_domain_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false)
+ debug (bool): Run in (very costly) debug mode.
+ report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
+ consider_intermediate_states (bool): Run bug test also on intermediate states.
+ enforce_intermediate (bool): Consider intermediate states even if bug candidate is known to be a bug
+== metamorphic_oracle ==
+metamorphic_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, abs=builder_massim(merge_strategy=merge_dfp(), limit_transitions_merge=10000), tau_labels_recursive=true, tau_labels_self_loops=true, tau_labels_noop=false, truncate_value=1000, max_simulation_time=1800, min_simulation_time=1, max_total_time=7200, max_lts_size_to_compute_simulation=1000000, num_labels_to_use_dominates_in=0, dump=false, local_bug_test=ALL, sim_file=<none>, write_sim_and_exit=false, read_simulation=false, test_serialization=false)
  debug (bool): Run in (very costly) debug mode.
  report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
  consider_intermediate_states (bool): Run bug test also on intermediate states.
@@ -314,6 +305,14 @@ numeric_dominance_oracle(debug=false, report_parent_bugs=false, consider_interme
  write_sim_and_exit (bool): Only compute the specified dominance function, write it to the sim_file and exit.
  read_simulation (bool): Read simulation from sim_file instead of computing it.
  test_serialization (bool): Write simulation to disk, read it and make sure it coincides.
+== planner_oracle ==
+planner_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, oracle, cache_results=true)
+ debug (bool): Run in (very costly) debug mode.
+ report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
+ consider_intermediate_states (bool): Run bug test also on intermediate states.
+ enforce_intermediate (bool): Consider intermediate states even if bug candidate is known to be a bug
+ oracle (plan_cost_estimator): Plan cost estimator.
+ cache_results (bool): Cache the results of oracle invocations
 == sequence_oracle ==
 sequence_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, first_oracle, second_oracle)
  debug (bool): Run in (very costly) debug mode.
@@ -322,8 +321,8 @@ sequence_oracle(debug=false, report_parent_bugs=false, consider_intermediate_sta
  enforce_intermediate (bool): Consider intermediate states even if bug candidate is known to be a bug
  first_oracle (Oracle): oracle to be invoked first
  second_oracle (Oracle): oracle to be invoked second
-== unrelaxation_oracle ==
-unrelaxation_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, abs=builder_massim(merge_strategy=merge_dfp(), limit_transitions_merge=10000), tau_labels_recursive=true, tau_labels_self_loops=true, tau_labels_noop=false, truncate_value=1000, max_simulation_time=1800, min_simulation_time=1, max_total_time=7200, max_lts_size_to_compute_simulation=1000000, num_labels_to_use_dominates_in=0, dump=false, local_bug_test=ALL, sim_file=<none>, write_sim_and_exit=false, read_simulation=false, test_serialization=false, operations_per_state=4, max_evaluation_steps=-1, dead_end_eval=<none>)
+== state_morphing_oracle ==
+state_morphing_oracle(debug=false, report_parent_bugs=false, consider_intermediate_states=false, enforce_intermediate=false, abs=builder_massim(merge_strategy=merge_dfp(), limit_transitions_merge=10000), tau_labels_recursive=true, tau_labels_self_loops=true, tau_labels_noop=false, truncate_value=1000, max_simulation_time=1800, min_simulation_time=1, max_total_time=7200, max_lts_size_to_compute_simulation=1000000, num_labels_to_use_dominates_in=0, dump=false, local_bug_test=ALL, sim_file=<none>, write_sim_and_exit=false, read_simulation=false, test_serialization=false, operations_per_state=4, max_evaluation_steps=-1, dead_end_eval=<none>)
  debug (bool): Run in (very costly) debug mode.
  report_parent_bugs (bool): For every reported bug go through all policy parents and report them as bugs as well.
  consider_intermediate_states (bool): Run bug test also on intermediate states.
@@ -371,34 +370,15 @@ hill_climbing_policy(steps_limit=0, eval, helpful_actions_pruning=false)
 == remote_policy ==
 remote_policy(steps_limit=0)
  steps_limit (int): The maximal number of steps to execute the policy. 0 or negative value means no limit
-
-Help for SearchAlgorithm
-
-== A* search (eager) ==
-astar(eval, lazy_evaluator=<none>, pruning=null(), cost_type=normal, bound=infinity, max_time=infinity, transform=<none>, verbosity=normal)
- eval (Evaluator): evaluator for h-value
- lazy_evaluator (Evaluator): An evaluator that re-evaluates a state before it is expanded.
- pruning (PruningMethod): Pruning methods can prune or reorder the set of applicable operators in each state and thereby influence the number and order of successor states that are considered.
- cost_type ({normal, one, plusone}): Operator cost adjustment type. No matter what this setting is, axioms will always be considered as actions of cost 0 by the heuristics that treat axioms as actions.
- - normal: all actions are accounted for with their real cost
- - one: all actions are accounted for as unit cost
- - plusone: all actions are accounted for as their real cost + 1 (except if all actions have original cost 1, in which case cost 1 is used). This is the behaviour known for the heuristics of the LAMA planner. This is intended to be used by the heuristics, not search algorithms, but is supported for both.
- bound (int): exclusive depth bound on g-values. Cutoffs are always performed according to the real cost, regardless of the cost_type parameter
- max_time (double): maximum time in seconds the search is allowed to run for. The timeout is only checked after each complete search step (usually a node expansion), so the actual runtime can be arbitrarily longer. Therefore, this parameter should not be used for time-limiting experiments. Timed-out searches are treated as failed searches, just like incomplete search algorithms that exhaust their search space.
- transform (AbstractTask): Optional task transformation for the search algorithm.
- verbosity ({silent, normal, verbose, debug}): Option to specify the verbosity level.
- - silent: only the most basic output
- - normal: relevant information to monitor progress
- - verbose: full output
- - debug: like verbose with additional debug output
-== pool_fuzzer ==
-pool_fuzzer(max_walk_length=5, pool_file=<none>, bias=<none>, filter=<none>, eval=<none>, novelty_statistics=2, max_pool_size=infinity, max_steps=infinity, penalize_policy_fails=false, seed=1734, bias_budget=200, cache_bias=false, policy=<none>, run_without_policy=false, testing_method=<none>, policy_cache_file=<none>, bugs_file=<none>, read_policy_cache=false, just_write_policy_cache=false, debug=false, verbose=false, abstain_if_first_state_not_known_solved=false, print_bug_states=false, cost_type=normal, bound=infinity, max_time=infinity, transform=<none>, verbosity=normal)
+ 
+ == pool_fuzzer ==
+pool_fuzzer(max_walk_length=5, pool_file=<none>, bias=<none>, filter=<none>, eval=<none>, novelty_statistics=2, max_pool_size=infinity, max_steps=infinity, penalize_policy_fails=false, seed=1734, bias_budget=200, cache_bias=false, policy=<none>, run_without_policy=false, oracle=<none>, policy_cache_file=<none>, bugs_file=<none>, read_policy_cache=false, just_write_policy_cache=false, debug=false, verbose=false, abstain_if_first_state_not_known_solved=false, print_bug_states=false, cost_type=normal, bound=infinity, max_time=infinity, transform=<none>, verbosity=normal)
  max_walk_length (int): Maximal length of policy walks.
  pool_file (std::__cxx11::basic_string<char>): Path to pool file (optional).
  bias (FuzzingBias): Fuzzing bias (optional)
  filter (PoolFilter): Pool filter (optional).
  eval (Evaluator): Dead end heuristic (optional).
- novelty_statistics (int): Maximal arity for novelty_store statistics.
+ novelty_statistics (int): Maximal arity for novelty statistics.
  max_pool_size (int): Maximal pool size.
  max_steps (int): Maximal number of fuzzing steps.
  penalize_policy_fails (bool): Uses a bias of infinity if the policy is known to fail on the state;only applied if policy is executed in bias computation
@@ -407,7 +387,7 @@ pool_fuzzer(max_walk_length=5, pool_file=<none>, bias=<none>, filter=<none>, eva
  cache_bias (bool): indicates whether the bias should be cached for each state
  policy (PolicyForTesting): The policy to test (optional). Also consider using global a global remote policy.
  run_without_policy (bool): Run engine without policy.
- testing_method (Oracle): The oracle to be used.
+ oracle (Oracle): The oracle to be used.
  policy_cache_file (std::__cxx11::basic_string<char>): Policy cache file to write to or read from.
  bugs_file (std::__cxx11::basic_string<char>): Path to bugs file.
  read_policy_cache (bool): Read policy cache instead of running the policy (requires policy_cache_file)
@@ -429,10 +409,10 @@ pool_fuzzer(max_walk_length=5, pool_file=<none>, bias=<none>, filter=<none>, eva
  - verbose: full output
  - debug: like verbose with additional debug output
 == pool_policy_tester ==
-pool_policy_tester(policy=<none>, run_without_policy=false, testing_method, policy_cache_file=<none>, bugs_file=<none>, read_policy_cache=false, just_write_policy_cache=false, debug=false, verbose=false, abstain_if_first_state_not_known_solved=false, print_bug_states=false, cost_type=normal, bound=infinity, max_time=infinity, transform=<none>, verbosity=normal, pool_file, start_from=0, max_steps=infinity, novelty_statistics=2)
+pool_policy_tester(policy=<none>, run_without_policy=false, oracle, policy_cache_file=<none>, bugs_file=<none>, read_policy_cache=false, just_write_policy_cache=false, debug=false, verbose=false, abstain_if_first_state_not_known_solved=false, print_bug_states=false, cost_type=normal, bound=infinity, max_time=infinity, transform=<none>, verbosity=normal, pool_file, start_from=0, max_steps=infinity, novelty_statistics=2)
  policy (PolicyForTesting): The policy to test (optional). Also consider using global a global remote policy.
  run_without_policy (bool): Run engine without policy.
- testing_method (Oracle): The oracle to be used.
+ oracle (Oracle): The oracle to be used.
  policy_cache_file (std::__cxx11::basic_string<char>): Policy cache file to write to or read from.
  bugs_file (std::__cxx11::basic_string<char>): Path to bugs file.
  read_policy_cache (bool): Read policy cache instead of running the policy (requires policy_cache_file)
@@ -456,12 +436,48 @@ pool_policy_tester(policy=<none>, run_without_policy=false, testing_method, poli
  pool_file (std::__cxx11::basic_string<char>): The pool file to load.
  start_from (int): Index of first step to test.
  max_steps (int): Number of pool states to test.
- novelty_statistics (int): Maximal arity for novelty_store statistics.
+ novelty_statistics (int): Maximal arity for novelty statistics.
+== simplified_pool_fuzzer ==
+simplified_pool_fuzzer(max_walk_length=2, pool_file=<none>, filter=<none>, eval=<none>, disable_novelty_store=true, novelty_statistics=2, check_policy_unsolved=false, descend_unsolved=false, max_pool_size=infinity, max_steps=infinity, seed=1734, policy=<none>, run_without_policy=false, oracle=<none>, policy_cache_file=<none>, bugs_file=<none>, read_policy_cache=false, just_write_policy_cache=false, debug=false, verbose=false, abstain_if_first_state_not_known_solved=false, print_bug_states=false, cost_type=normal, bound=infinity, max_time=infinity, transform=<none>, verbosity=normal)
+ max_walk_length (int): Maximal length of random walks.
+ pool_file (std::__cxx11::basic_string<char>): Path to pool file (optional).
+ filter (PoolFilter): Novelty filter (optional).
+ eval (Evaluator): Dead end evaluator (optional).
+ disable_novelty_store (bool): Disable novelty statistics.
+ novelty_statistics (int): Maximal arity in novelty statistics.
+ check_policy_unsolved (bool): Check if policy is unsolved.
+ descend_unsolved (bool): Descend if policy is unsolved.
+ max_pool_size (int): Maximal pool size.
+ max_steps (int): Maximal number of fuzzing steps.
+ seed (int): Random seed.
+ policy (PolicyForTesting): The policy to test (optional). Also consider using global a global remote policy.
+ run_without_policy (bool): Run engine without policy.
+ oracle (Oracle): The oracle to be used.
+ policy_cache_file (std::__cxx11::basic_string<char>): Policy cache file to write to or read from.
+ bugs_file (std::__cxx11::basic_string<char>): Path to bugs file.
+ read_policy_cache (bool): Read policy cache instead of running the policy (requires policy_cache_file)
+ just_write_policy_cache (bool): Skip any calls to oracles (and thus the actual testing), just write the policy cache into the provided cache file.
+ debug (bool): Run in (very expensive) debug mode.
+ verbose (bool): More verbose output for debugging.
+ abstain_if_first_state_not_known_solved (bool): Abort the testing if the first tested state is not solved (possibly within the provided step limit)
+ print_bug_states (bool): Print out all found bug states including state values
+ cost_type ({normal, one, plusone}): Operator cost adjustment type. No matter what this setting is, axioms will always be considered as actions of cost 0 by the heuristics that treat axioms as actions.
+ - normal: all actions are accounted for with their real cost
+ - one: all actions are accounted for as unit cost
+ - plusone: all actions are accounted for as their real cost + 1 (except if all actions have original cost 1, in which case cost 1 is used). This is the behaviour known for the heuristics of the LAMA planner. This is intended to be used by the heuristics, not search algorithms, but is supported for both.
+ bound (int): exclusive depth bound on g-values. Cutoffs are always performed according to the real cost, regardless of the cost_type parameter
+ max_time (double): maximum time in seconds the search is allowed to run for. The timeout is only checked after each complete search step (usually a node expansion), so the actual runtime can be arbitrarily longer. Therefore, this parameter should not be used for time-limiting experiments. Timed-out searches are treated as failed searches, just like incomplete search algorithms that exhaust their search space.
+ transform (AbstractTask): Optional task transformation for the search algorithm.
+ verbosity ({silent, normal, verbose, debug}): Option to specify the verbosity level.
+ - silent: only the most basic output
+ - normal: relevant information to monitor progress
+ - verbose: full output
+ - debug: like verbose with additional debug output
 
 Help for plan_cost_estimator
 
-== internal_planner_plan_cost_estimator ==
-internal_planner_plan_cost_estimator(conf, print_output=false, print_plan=false, max_planner_time=14400, continue_after_time_out=true)
+== internal_planner ==
+internal_planner(conf, print_output=false, print_plan=false, max_planner_time=14400, continue_after_time_out=true)
  conf ({astar_lmcut, ehc_ff}): search algorithm, possible choices: astar_lmcut, ehc_ff
  - astar_lmcut: A* with LM-Cut heuristic.
  - ehc_ff: Enforced hill climbing with FF heuristic.
