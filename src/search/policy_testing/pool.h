@@ -55,11 +55,11 @@ Pool load_pool_file(
 
 Pool load_pool(
     const std::shared_ptr<AbstractTask> &task,
-    StateRegistry &state_registry,
+    StateRegistry & state_registry,
     std::istream &in);
 
 Pool parse_pool_entries(
     const std::shared_ptr<AbstractTask> &task,
-    StateRegistry &state_registry,
+    StateRegistry & state_registry,
     std::istream &in);
 } // namespace policy_testing

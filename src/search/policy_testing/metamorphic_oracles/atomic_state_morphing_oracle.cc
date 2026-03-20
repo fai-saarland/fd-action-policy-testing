@@ -22,22 +22,22 @@ void AtomicStateMorphingOracle::initialize() {
     possible_unrelaxations.resize(num_variables);
     for (int var = 0; var < num_variables; ++var) {
 #define PRECOMPUTE_RELAXATIONS \
-        const unsigned int domain_size = simulations::global_simulation_task()->get_variable_domain_size(var); \
-        possible_relaxations[var].resize(domain_size); \
-        possible_unrelaxations[var].resize(domain_size); \
-        for (int s = 0; s < domain_size; ++s) { \
-            for (int t = 0; t < domain_size; ++t) { \
-                if (s == t) { \
-                    continue; \
-                } \
-                int dominance_value = local_dominance_relation.atomic_q_simulates(t, s); \
-                if (dominance_value == simulations::MINUS_INFINITY) { \
-                    continue; \
-                } \
-                possible_relaxations[var][s].emplace_back(var, s, t, dominance_value); \
-                possible_unrelaxations[var][t].emplace_back(var, s, t, dominance_value); \
+    const unsigned int domain_size = simulations::global_simulation_task()->get_variable_domain_size(var); \
+    possible_relaxations[var].resize(domain_size); \
+    possible_unrelaxations[var].resize(domain_size); \
+    for (int s = 0; s < domain_size; ++s) { \
+        for (int t = 0; t < domain_size; ++t) { \
+            if (s == t) { \
+                continue; \
             } \
-        }
+            int dominance_value = local_dominance_relation.atomic_q_simulates(t, s); \
+            if (dominance_value == simulations::MINUS_INFINITY) { \
+                continue; \
+            } \
+            possible_relaxations[var][s].emplace_back(var, s, t, dominance_value); \
+            possible_unrelaxations[var][t].emplace_back(var, s, t, dominance_value); \
+        } \
+    }
         if (read_simulation) {
             const auto &local_dominance_relation = stripped_numeric_dominance_relation->get_simulation_of_variable(var);
             PRECOMPUTE_RELAXATIONS

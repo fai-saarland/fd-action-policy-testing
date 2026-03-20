@@ -55,6 +55,10 @@ public:
     inline static constexpr PolicyCost UNKNOWN = -2;
     inline static constexpr const OperatorID NO_OPERATOR = OperatorID(-1);
 
+    /**
+     * Fields complete (run has not been aborted) and solves_state (policy reaches goal state).
+     * solved_state is only relevant if complete is true.
+     */
     struct RunResult {
         // the run of the policy has not been aborted
         const bool complete = false;

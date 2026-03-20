@@ -160,11 +160,11 @@ int MergeLinearCriteria::next(const std::vector<Abstraction *> &all_abstractions
                                        std::end(candidate_vars),
                                        [&](int var) {
                                            return !all_abstractions[var] ||
-                                                  all_abstractions[var]->size() > limit ||
-                                                  (limit_transitions_merge &&
-                                                   abstraction->estimate_transitions(all_abstractions[var]) >
-                                                   limit_transitions_merge &&
-                                                   all_abstractions[var]->size() > min_limit);
+                                           all_abstractions[var]->size() > limit ||
+                                           (limit_transitions_merge &&
+                                            abstraction->estimate_transitions(all_abstractions[var]) >
+                                            limit_transitions_merge &&
+                                            all_abstractions[var]->size() > min_limit);
                                        }), std::end(candidate_vars));
     }
 

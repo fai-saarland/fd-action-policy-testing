@@ -24,7 +24,7 @@ void DominanceRelation::init_incremental(CompositeAbstraction *new_abs,
                                      std::end(simulations),
                                      [&](std::unique_ptr<SimulationRelation> &ptr) {
                                          return ptr.get() == (&simrel_one) ||
-                                                ptr.get() == (&simrel_two);
+                                         ptr.get() == (&simrel_two);
                                      }), std::end(simulations));
 }
 

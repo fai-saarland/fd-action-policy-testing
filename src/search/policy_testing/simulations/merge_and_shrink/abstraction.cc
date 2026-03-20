@@ -1583,7 +1583,7 @@ int Abstraction::prune_transitions_dominated_label(int lts_id,
                                std::end(transitions_by_label[label_no_by]),
                                [&](AbstractTransition &t2) {
                                    return t2.src == t.src &&
-                                          rel.simulates(t2.target, t.target);
+                                   rel.simulates(t2.target, t.target);
                                }) != std::end(transitions_by_label[label_no_by]) &&
                                domrel.propagate_transition_pruning(lts_id, ltss, t.src, label_id,
                                                                    t.target);
@@ -1643,9 +1643,9 @@ int Abstraction::prune_transitions_dominated_label_equiv(int lts_id,
                                         [&](AbstractTransition &t2) {
                                             /* PIET-edit: Make sure that not both, the target states and the labels, are the same */
                                             return t2.src == t.src &&
-                                                   rel.simulates(t2.target, t.target) &&
-                                                   (!rel.simulates(t.target, t2.target) ||
-                                                    t.target > t2.target);
+                                            rel.simulates(t2.target, t.target) &&
+                                            (!rel.simulates(t.target, t2.target) ||
+                                             t.target > t2.target);
                                         }) != std::end(transitions_by_label[label_no2])
                                         && domrel.propagate_transition_pruning(
                                         lts_id, ltss, t.src, label_id, t.target);
@@ -1679,10 +1679,10 @@ int Abstraction::prune_transitions_dominated_label_equiv(int lts_id,
                                                        [&](AbstractTransition &t2) {
                                                            /* PIET-edit: Make sure that not both, the target states and the labels, are the same */
                                                            return t2.src == t.src &&
-                                                                  rel.simulates(t2.target, t.target) &&
-                                                                  (!rel.simulates(t.target, t2.target) ||
-                                                                   label_no >
-                                                                   label_no2 /* || (label_no==label_no2 && t.target > t2.target)*/);
+                                                           rel.simulates(t2.target, t.target) &&
+                                                           (!rel.simulates(t.target, t2.target) ||
+                                                            label_no >
+                                                            label_no2 /* || (label_no==label_no2 && t.target > t2.target)*/);
                                                        }) != std::end(transitions_by_label[label_no2]) &&
                                    domrel.propagate_transition_pruning(lts_id, ltss, t.src, label_id,
                                                                        t.target);
@@ -1719,9 +1719,9 @@ int Abstraction::prune_transitions_dominated_label_equiv(int lts_id,
                                                        [&](AbstractTransition &t2) {
                                                            /* PIET-edit: Make sure that not both, the target states and the labels, are the same */
                                                            return t2.src == t.src &&
-                                                                  rel.simulates(t2.target, t.target) &&
-                                                                  (!rel.simulates(t.target, t2.target) ||
-                                                                   label_no2 > label_no);
+                                                           rel.simulates(t2.target, t.target) &&
+                                                           (!rel.simulates(t.target, t2.target) ||
+                                                            label_no2 > label_no);
                                                        }) != std::end(transitions_by_label[label_no]) &&
                                    domrel.propagate_transition_pruning(lts_id, ltss, t.src, label_id2,
                                                                        t.target);

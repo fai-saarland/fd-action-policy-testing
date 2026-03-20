@@ -981,6 +981,14 @@ create_fast_downward_library(
         policy_testing/oracles/invertible_domain_oracle
         policy_testing/oracles/bounded_lookahead_oracle
         policy_testing/oracles/planner_oracle
+        policy_testing/oracles/policy_comparison_oracle
+        policy_testing/oracles/policy_comparison_oracle_online
+        policy_testing/oracles/policy_comparison_along_path
+        policy_testing/oracles/policy_comparison_oracle_bounds
+        policy_testing/metamorphic_oracles/bound_maintenance_pcto_oracle
+        policy_testing/upper_bounds
+        policy_testing/upper_bounds_base
+        policy_testing/online_handler
         policy_testing/metamorphic_oracles/metamorphic_oracle
         policy_testing/metamorphic_oracles/atomic_state_morphing_oracle
         policy_testing/metamorphic_oracles/state_morphing_oracle
@@ -1044,6 +1052,10 @@ create_fast_downward_library(
         policy_testing/simulations/numeric_dominance/tau_labels
         policy_testing/simulations/utils/equivalence_relation
         policy_testing/simulations/utils/scc
+        search_algorithms/policy_search
+        search_algorithms/plugin_policy
+        search_algorithms/mult_policy_search
+        search_algorithms/plugin_mult_policy
     DEPENDS
         task_properties
         search_common

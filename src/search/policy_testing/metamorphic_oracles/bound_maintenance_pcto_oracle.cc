@@ -1,4 +1,4 @@
-#include "bound_maintenance_oracle.h"
+#include "bound_maintenance_pcto_oracle.h"
 
 #include <memory>
 #include <queue>
@@ -12,9 +12,10 @@
 #include "../../evaluation_context.h"
 
 namespace policy_testing {
-BoundMaintenanceOracle::BoundMaintenanceOracle(const plugins::Options &opts)
+BoundMaintenancePctoOracle::BoundMaintenancePctoOracle(const plugins::Options &opts)
     : MetamorphicOracle(opts),
-      upper_cost_bounds(Policy::UNSOLVED),
+      upper_bounds(std::make_shared<UpperBoundsExtended>(30, opts.get<bool>("update_parents"), opts.get<bool>("register_unsolved"))),
+      // upper_cost_bounds(Policy::UNSOLVED),
       max_state_comparisons(static_cast<unsigned int>(std::max(opts.get<int>("max_state_comparisons"), 0))),
       conduct_lookahead_search(opts.get<bool>("conduct_lookahead_search")),
       update_parents(opts.get<bool>("update_parents")),
@@ -28,13 +29,32 @@ BoundMaintenanceOracle::BoundMaintenanceOracle(const plugins::Options &opts)
         std::cerr << "update_parents cannot be disabled if consider_intermediate_states is enabled." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
+
+    if (opts.contains("pcto_oracle")) {
+        pcto_oracle = std::dynamic_pointer_cast<PolicyComparisonOracle>(opts.get<std::shared_ptr<Oracle>>("pcto_oracle"));
+        if (!pcto_oracle) {
+            std::cerr << "Cannot retrieve PCTO Bounds oracle." << std::endl;
+            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+        }
+        register_sub_component(pcto_oracle.get());
+        pcto_oracle->set_upper_bounds(upper_bounds);
+        // std::cout << "In Constructor BMO UB: " << upper_bounds.get() << std::endl;
+        // std::cout << "In Constructor PCTO UB: " << pcto_oracle->get_upper_bounds().get() << std::endl;
+    }
 }
 
-void BoundMaintenanceOracle::initialize() {
+void BoundMaintenancePctoOracle::initialize() {
     MetamorphicOracle::initialize();
 }
 
-void BoundMaintenanceOracle::add_options_to_feature(plugins::Feature &feature) {
+void BoundMaintenancePctoOracle::set_engine(PolicyTestingBaseEngine *engine) {
+    Oracle::set_engine(engine);
+    if (pcto_oracle) {
+        pcto_oracle->set_engine(engine);
+    }
+}
+
+void BoundMaintenancePctoOracle::add_options_to_feature(plugins::Feature &feature) {
     MetamorphicOracle::add_options_to_feature(feature);
     feature.add_option<int>("max_state_comparisons", "Maximal number of states to compare bug candidates to",
                             "1000000");
@@ -58,9 +78,20 @@ void BoundMaintenanceOracle::add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<LookaheadComp>("lookahead_comp",
                                       "The comparator to be used in lookahead search; h (resembles GBFS) or g+h (resembles A*)",
                                       "h");
+    feature.add_option<std::shared_ptr<Oracle>>("pcto_oracle", "PCTO oracle integration.",
+                                                plugins::ArgumentInfo::NO_DEFAULT);
+    feature.add_option<bool>("register_unsolved", "If set, registers paths even if they do not reach a goal.", "false");
 }
 
-BugValue BoundMaintenanceOracle::test_impl(Policy &policy, const State &state, bool local_test, bool lookahead) {
+BugValue BoundMaintenancePctoOracle::test_impl(Policy &policy, const State &state, bool local_test, bool lookahead) {
+    // std::cout << "BMO Pcto uses upper bounds " << upper_bounds.get() << std::endl;
+    // upper_bounds->upper_bounds[state] = 42;
+
+    // std::cout << "Beginning of test_impl: " << utils::g_timer() << std::endl;
+
+    // std::cout << "At state state in BMO: " << upper_bounds->upper_bounds[state] << std::endl;
+    // std::cout << "At state state in PCTO: " << pcto_oracle.get()->get_upper_bounds()->get_cost_for_state(state) << std::endl;
+
     // skip if state is already known to be a bug
     if (!tested_states.insert(state.get_id()).second) {
         const BugValue stored_bug_value =
@@ -70,7 +101,9 @@ BugValue BoundMaintenanceOracle::test_impl(Policy &policy, const State &state, b
         }
         // remove it to guarantee that the cost sets remain consistent
         // it is then added later (just like if a new state would be added)
-        removeState(state, upper_cost_bounds[state]);
+        // std::cout << "Before removeState in skip bug if known (bmo pcto)" << std::endl;
+        upper_bounds->removeState(state, upper_bounds->upper_bounds[state]);
+        // std::cout << "After removeState in skip bug if known (bmo pcto)" << std::endl;
     }
 
     const auto [lower_policy_cost_bound_new_state,
@@ -78,11 +111,11 @@ BugValue BoundMaintenanceOracle::test_impl(Policy &policy, const State &state, b
     const PolicyCost upper_policy_cost_bound_new_state =
         policy_bound_is_exact ? lower_policy_cost_bound_new_state : Policy::UNSOLVED;
 
-    PolicyCost improved_cost_new_state = Policy::min_cost(upper_policy_cost_bound_new_state, upper_cost_bounds[state]);
+    PolicyCost improved_cost_new_state = Policy::min_cost(upper_policy_cost_bound_new_state, upper_bounds->upper_bounds[state]);
 
     BugValue bug_value = 0;
     if (local_test) {
-        bug_value = local_bug_test(policy, state);
+        bug_value = local_bug_test(policy, state); // TODO: bug test using dominance function comparing DIRECT NEIGHBORS in policy path?
         if (bug_value > 0 && bug_value < UNSOLVED_BUG_VALUE && policy_bound_is_exact) {
             PolicyCost inferred_cost_bound = upper_policy_cost_bound_new_state - bug_value;
             improved_cost_new_state = Policy::min_cost(improved_cost_new_state, inferred_cost_bound);
@@ -91,8 +124,11 @@ BugValue BoundMaintenanceOracle::test_impl(Policy &policy, const State &state, b
 
     unsigned int compared_states = 0;
 
-    for (const CostSetRef &set_ref : CostSetIterator(upper_policy_cost_bound_new_state, set_refs)) {
-        const auto &cost_set = getCostSet(set_ref);
+    // std::cout << "Before CostSetIteration in test_impl: " << utils::g_timer() << std::endl;
+
+    // TODO: iteration over other pool states where some upper bound is known through CostSets
+    for (const CostSetRefExt &set_ref : CostSetIteratorExt(upper_policy_cost_bound_new_state, upper_bounds->set_refs)) {
+        const auto &cost_set = upper_bounds->getCostSet(set_ref);
         const int original_cost_old_state = set_ref.cost;
         for (const State &old_state : cost_set) {
             ++compared_states;
@@ -162,14 +198,17 @@ BugValue BoundMaintenanceOracle::test_impl(Policy &policy, const State &state, b
         }
     }
  comparisons_finished:
-    assert(compared_states == max_state_comparisons || compared_states == cost_set_size);
+    assert(compared_states == max_state_comparisons || compared_states == upper_bounds->cost_set_size);
+    // std::cout << "After CostSetIteration in test_impl: " << utils::g_timer() << std::endl;
 
     // remember new state
-    upper_cost_bounds[state] = improved_cost_new_state;
-    addState(state, improved_cost_new_state);
+    upper_bounds->upper_bounds[state] = improved_cost_new_state;
+    upper_bounds->addState(state, improved_cost_new_state);
 
     // make sure upper_cost_bounds are again consistent with state sets and update their parent states
+    // std::cout << "Before reorder and update parents in test_impl: " << utils::g_timer() << std::endl;
     reorder_state_sets_with_parent_updates(policy);
+    // std::cout << "After reorder and update parents in test_impl: " << utils::g_timer() << std::endl;
 
     // potentially conduct lookahead search, which updates the cost bound on its own
     if (lookahead &&
@@ -178,6 +217,8 @@ BugValue BoundMaintenanceOracle::test_impl(Policy &policy, const State &state, b
         improved_cost_new_state =
             Policy::min_cost(improved_cost_new_state, lookahead_search(policy, state, max_lookahead_state_visits));
     }
+
+    // std::cout << "After lookahead in test_impl: " << utils::g_timer() << std::endl;
 
     // and report bug value
     if (Policy::is_less(improved_cost_new_state, lower_policy_cost_bound_new_state)) {
@@ -191,18 +232,17 @@ BugValue BoundMaintenanceOracle::test_impl(Policy &policy, const State &state, b
         }
 #endif
         return bug_value;
-    } else {
-        return 0;
     }
+    return 0;
 }
 
-TestResult BoundMaintenanceOracle::test(Policy &, const State &) {
-    std::cerr << "IterativeImprovementOracle::test is not implemented" << std::endl;
+auto BoundMaintenancePctoOracle::test(Policy &, const State &) -> TestResult {
+    std::cerr << "BoundMaintenancePctoOracle::test is not implemented" << std::endl;
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
 
-TestResult BoundMaintenanceOracle::test_driver(Policy &policy, const PoolEntry &entry) {
+auto BoundMaintenancePctoOracle::test_driver(Policy &policy, const PoolEntry &entry) -> TestResult {
     const State &new_state = entry.state;
     BugValue bug_value = 0;
 
@@ -213,7 +253,7 @@ TestResult BoundMaintenanceOracle::test_driver(Policy &policy, const PoolEntry &
     PolicyCost preprocessing_cost_bound = Policy::UNSOLVED;
     if (domain_unit_cost_and_invertible) {
         // make sure unsolved states are reported as bugs
-        if (lower_policy_cost_bound == Policy::UNSOLVED) {
+        if (lower_policy_cost_bound == Policy::UNSOLVED) { // TODO: why?
             bug_value = UNSOLVED_BUG_VALUE;
         }
         // attempt to get cost bound
@@ -222,7 +262,7 @@ TestResult BoundMaintenanceOracle::test_driver(Policy &policy, const PoolEntry &
         }
         const State &ref_state = get_state_registry().lookup_state(entry.ref_state);
         const PolicyCost ref_cost_bound =
-            Policy::min_cost(upper_cost_bounds[ref_state], policy.read_upper_policy_cost_bound(ref_state).first);
+            Policy::min_cost(upper_bounds->upper_bounds[ref_state], policy.read_upper_policy_cost_bound(ref_state).first);
         if (ref_cost_bound == Policy::UNSOLVED) {
             if (bug_value > 0) {
                 report_parents_as_bugs(policy, new_state, TestResult(bug_value));
@@ -242,6 +282,7 @@ TestResult BoundMaintenanceOracle::test_driver(Policy &policy, const PoolEntry &
 
  main_test:
     if (consider_intermediate_states && bug_value <= 0) {
+        // std::cout << "Beginning consider intermediate: " << utils::g_timer() << std::endl;
         std::vector<State> path = policy.execute_get_path_fragment(new_state);
         assert(!path.empty());
         // call test for intermediate states (in reverse order)
@@ -250,13 +291,24 @@ TestResult BoundMaintenanceOracle::test_driver(Policy &policy, const PoolEntry &
             const BugValue intermediate_bug_value = test_impl(policy, intermediate_state, false, false);
             if (intermediate_bug_value > 0) {
                 engine->add_additional_bug(intermediate_state,
-                                           TestResult(intermediate_bug_value, upper_cost_bounds[intermediate_state]));
+                                           TestResult(intermediate_bug_value, upper_bounds->upper_bounds[intermediate_state]));
             }
             update_parent_cost(policy, intermediate_state);
             reorder_state_sets();
         }
+        // std::cout << "After consider intermediate: " << utils::g_timer() << std::endl;
     }
+    // std::cout << "Before entire test_impl: " << utils::g_timer() << std::endl;
     bug_value = std::max(bug_value, test_impl(policy, new_state, true, conduct_lookahead_search && bug_value <= 0));
+    // std::cout << "After entire test_impl: " << utils::g_timer() << std::endl;
+
+    // Call PCTO here: BMO with bounds and comparisons finished; NOT along path as this is very slow for PCTO
+    if (bug_value == 0 && pcto_oracle != nullptr) {
+        reorder_state_sets();
+        bug_value = std::max(bug_value, pcto_oracle->test_driver(policy, entry).bug_value); // TODO: call oracle here
+        reorder_state_sets(); // potentially superfluous call
+    }
+
     if (bug_value > 0 && update_parents) {
         update_parent_cost(policy, new_state);
         reorder_state_sets();
@@ -264,42 +316,44 @@ TestResult BoundMaintenanceOracle::test_driver(Policy &policy, const PoolEntry &
     if (bug_value > 0 && preprocessing_cost_bound != Policy::UNSOLVED) {
         add_external_cost_bound(policy, new_state, preprocessing_cost_bound);
     }
-    return TestResult(bug_value, upper_cost_bounds[new_state]);
+    return TestResult(bug_value, upper_bounds->upper_bounds[new_state]);
 }
 
-void BoundMaintenanceOracle::update_cost(const State &s, PolicyCost old_cost, PolicyCost new_cost) {
-    const PolicyCost min_cost = Policy::min_cost(upper_cost_bounds[s], new_cost);
-    delayed_cost_set_updates.emplace_back(s, old_cost, min_cost);
-    upper_cost_bounds[s] = min_cost;
+void BoundMaintenancePctoOracle::update_cost(const State &s, PolicyCost old_cost, PolicyCost new_cost) {
+    const PolicyCost min_cost = Policy::min_cost(upper_bounds->upper_bounds[s], new_cost);
+    upper_bounds->delayed_cost_set_updates.emplace_back(s, old_cost, min_cost);
+    upper_bounds->upper_bounds[s] = min_cost;
 }
 
-void BoundMaintenanceOracle::removeState(const State &state, PolicyCost cost) {
-    assert(cost_set_size);
-    --cost_set_size;
-    auto &cost_set = getCostSetByCost(cost);
-    auto it = std::find(cost_set.begin(), cost_set.end(), state);
-    assert(it != cost_set.end());
-    if (it == cost_set.end()) {
-        std::cerr << "Trying to remove state with id " << std::string(state.get_id())
-                  << " that is not contained in cost set for cost " << cost << std::endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+// void BoundMaintenancePctoOracle::removeState(const State &state, PolicyCost cost) {
+//     assert(cost_set_size);
+//     --cost_set_size;
+//     auto &cost_set = getCostSetByCost(cost);
+//     auto it = std::find(cost_set.begin(), cost_set.end(), state);
+//     assert(it != cost_set.end());
+//     if (it == cost_set.end()) {
+//         std::cerr << "Trying to remove state with id " << std::string(state.get_id())
+//                   << " that is not contained in cost set for cost " << cost << std::endl;
+//         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+//     }
+//     std::swap(*it, cost_set.back());
+//     cost_set.pop_back();
+// }
+
+void BoundMaintenancePctoOracle::reorder_state_sets() {
+    for (const auto &[state, old_cost, new_cost] : upper_bounds->delayed_cost_set_updates) {
+        // std::cout << "Before removeState in reorder_state_sets (bmo pcto)" << std::endl;
+        upper_bounds->removeState(state, old_cost);
+        // std::cout << "After removeState in reorder_state_sets (bmo pcto)" << std::endl;
+        upper_bounds->addState(state, new_cost);
     }
-    std::swap(*it, cost_set.back());
-    cost_set.pop_back();
+    upper_bounds->delayed_cost_set_updates.clear();
 }
 
-void BoundMaintenanceOracle::reorder_state_sets() {
-    for (const auto &[state, old_cost, new_cost] : delayed_cost_set_updates) {
-        removeState(state, old_cost);
-        addState(state, new_cost);
-    }
-    delayed_cost_set_updates.clear();
-}
-
-void BoundMaintenanceOracle::reorder_state_sets_with_parent_updates(Policy &policy) {
+void BoundMaintenancePctoOracle::reorder_state_sets_with_parent_updates(Policy &policy) {
     utils::HashSet<StateID> states_to_update_parents;
     if (update_parents) {
-        for (const auto &[state, old_cost, new_cost] : delayed_cost_set_updates) {
+        for (const auto &[state, old_cost, new_cost] : upper_bounds->delayed_cost_set_updates) {
             states_to_update_parents.insert(state.get_id());
         }
     }
@@ -310,7 +364,11 @@ void BoundMaintenanceOracle::reorder_state_sets_with_parent_updates(Policy &poli
     }
 }
 
-void BoundMaintenanceOracle::update_parent_cost(Policy &policy, const State &s) {
+// TODO: why is this so complicated?
+// Normal parent propagation, but why read_lower_policy_cost_bound?
+void BoundMaintenancePctoOracle::update_parent_cost(Policy &policy, const State &s) {
+    // std::cout << "Parent costs to be updated." << std::endl;
+
     std::queue<StateID> queue;
     queue.push(s.get_id());
     utils::HashSet<StateID> processed;
@@ -320,20 +378,22 @@ void BoundMaintenanceOracle::update_parent_cost(Policy &policy, const State &s) 
         if (!processed.insert(current_state).second) {
             continue;
         }
-        PolicyCost current_state_cost_bound = upper_cost_bounds.read(get_state_registry(), current_state);
+        PolicyCost current_state_cost_bound = upper_bounds->upper_bounds.read(get_state_registry(), current_state);
         if (current_state_cost_bound == Policy::UNSOLVED) {
             continue;
         }
         for (StateID parent : policy.get_policy_parent_states(current_state)) {
+            // std::cout << "Parent of state " << s << " cached and used in propagation." << std::endl;
+
             const int op_cost = policy.read_action_cost(parent);
             State parent_state = get_state_registry().lookup_state(parent);
             // make sure upper bound does not exceed policy cost
-            const PolicyCost old_parent_bound = upper_cost_bounds[parent_state];
+            const PolicyCost old_parent_bound = upper_bounds->upper_bounds[parent_state];
             assert(current_state_cost_bound >= 0); // holds because we do not backtrack from unsolved states
             PolicyCost new_parent_bound = Policy::min_cost(old_parent_bound, current_state_cost_bound + op_cost);
 
             const auto [lower_policy_cost_bound_parent, policy_bound_is_exact] =
-                policy.read_lower_policy_cost_bound(parent_state);
+                policy.read_lower_policy_cost_bound(parent_state); // TODO: why read_lower_policy_cost_bound here?
             if (policy_bound_is_exact) {
                 assert(lower_policy_cost_bound_parent == policy.get_complete_policy_cost(parent_state));
                 new_parent_bound = Policy::min_cost(new_parent_bound, lower_policy_cost_bound_parent);
@@ -344,7 +404,7 @@ void BoundMaintenanceOracle::update_parent_cost(Policy &policy, const State &s) 
                     (lower_policy_cost_bound_parent - new_parent_bound);
                 assert(parent_bug_value > 0);
                 assert(engine);
-                engine->add_additional_bug(parent_state, TestResult(parent_bug_value, new_parent_bound));
+                engine->add_additional_bug(parent_state, TestResult(parent_bug_value, new_parent_bound)); // TODO: why is this possible; no pool state?
 #ifndef NDEBUG
                 if (debug) {
                     assert(confirm_bug(parent_state, parent_bug_value));
@@ -355,7 +415,7 @@ void BoundMaintenanceOracle::update_parent_cost(Policy &policy, const State &s) 
                 if (tested_states.contains(parent_state.get_id())) {
                     update_cost(parent_state, old_parent_bound, new_parent_bound);
                 } else {
-                    upper_cost_bounds[parent_state] = new_parent_bound;
+                    upper_bounds->upper_bounds[parent_state] = new_parent_bound;
                 }
                 queue.push(parent);
             }
@@ -363,18 +423,19 @@ void BoundMaintenanceOracle::update_parent_cost(Policy &policy, const State &s) 
     }
 }
 
-PolicyCost BoundMaintenanceOracle::infer_upper_bound(Policy &policy, const State &new_state) {
-    const PolicyCost old_cost_bound = upper_cost_bounds[new_state];
+PolicyCost BoundMaintenancePctoOracle::infer_upper_bound(Policy &policy, const State &new_state) {
+    const PolicyCost old_cost_bound = upper_bounds->upper_bounds[new_state];
 #ifndef NDEBUG
     if (tested_states.contains(new_state.get_id())) {
-        assert(stateIsInCostSet(new_state, old_cost_bound));
+        assert(upper_bounds->stateIsInCostSet(new_state, old_cost_bound));
     }
 #endif
     PolicyCost new_cost_bound = Policy::min_cost(old_cost_bound, policy.read_upper_policy_cost_bound(new_state).first);
 
+    // TODO: for each known (pool?) state attempts to decrease upper bound value of new_state through dominance values
     unsigned int compared_states = 0;
-    for (const CostSetRef &set_ref : CostSetIterator(old_cost_bound, set_refs)) {
-        const auto &cost_set = getCostSet(set_ref);
+    for (const CostSetRefExt &set_ref : CostSetIteratorExt(old_cost_bound, upper_bounds->set_refs)) {
+        const auto &cost_set = upper_bounds->getCostSet(set_ref);
         const int original_cost_old_state = set_ref.cost;
         if (original_cost_old_state == Policy::UNSOLVED) {
             continue;
@@ -405,11 +466,14 @@ PolicyCost BoundMaintenanceOracle::infer_upper_bound(Policy &policy, const State
         }
     }
  comparisons_finished:
+    // TODO: bookkeeping, i.e. update upper_cost_bounds, update tested_states, pot. report bug, pot. propagate parents; state sets REORDERED; new_state not added if not present?
     if (old_cost_bound != new_cost_bound) {
-        upper_cost_bounds[new_state] = new_cost_bound;
+        upper_bounds->upper_bounds[new_state] = new_cost_bound;
         if (tested_states.contains(new_state.get_id())) {
-            removeState(new_state, old_cost_bound);
-            addState(new_state, new_cost_bound);
+            // std::cout << "Before removeState in infer_upper_bound (bmo pcto)" << std::endl;
+            upper_bounds->removeState(new_state, old_cost_bound);
+            // std::cout << "After removeState in infer_upper_bound (bmo pcto)" << std::endl;
+            upper_bounds->addState(new_state, new_cost_bound);
             const PolicyCost lower_policy_bound_new_state = policy.read_lower_policy_cost_bound(new_state).first;
             if (Policy::is_less(new_cost_bound, lower_policy_bound_new_state)) {
                 const BugValue bug_value =
@@ -433,26 +497,28 @@ PolicyCost BoundMaintenanceOracle::infer_upper_bound(Policy &policy, const State
     return new_cost_bound;
 }
 
-void BoundMaintenanceOracle::add_external_cost_bound(
+void BoundMaintenancePctoOracle::add_external_cost_bound(
     Policy &policy, const State &new_state, PolicyCost cost_bound) {
     if (cost_bound == Policy::UNSOLVED) {
         return;
     }
 
-    const PolicyCost old_cost_bound = upper_cost_bounds[new_state];
+    const PolicyCost old_cost_bound = upper_bounds->upper_bounds[new_state];
     const PolicyCost new_cost_bound = Policy::min_cost(old_cost_bound, cost_bound);
     if (old_cost_bound == new_cost_bound) {
         return;
     }
 
     if (tested_states.contains(new_state.get_id())) {
-        assert(stateIsInCostSet(new_state, old_cost_bound));
-        removeState(new_state, old_cost_bound);
+        assert(upper_bounds->stateIsInCostSet(new_state, old_cost_bound));
+        // std::cout << "Before removeState in add_external_cost_bound (bmo pcto)" << std::endl;
+        upper_bounds->removeState(new_state, old_cost_bound);
+        // std::cout << "After removeState in add_external_cost_bound (bmo pcto)" << std::endl;
     }
 
     unsigned int compared_states = 0;
-    for (const CostSetRef &set_ref : CostSetIterator(old_cost_bound, set_refs)) {
-        const auto &cost_set = getCostSet(set_ref);
+    for (const CostSetRefExt &set_ref : CostSetIteratorExt(old_cost_bound, upper_bounds->set_refs)) {
+        const auto &cost_set = upper_bounds->getCostSet(set_ref);
         const int original_cost_old_state = set_ref.cost;
         for (const State &old_state : cost_set) {
             ++compared_states;
@@ -460,7 +526,7 @@ void BoundMaintenanceOracle::add_external_cost_bound(
 
             // dominance_new_old = D(state, old_state)
             // dominating state is in 1st position in get_dominance_value
-            const int dominance_new_old = D(new_state, old_state);
+            const int dominance_new_old = D(new_state, old_state); // TODO: why here new-old but in infer upper bound old-new? -> HERE infer bounds for OLD from NEW; ABOVE infer for NEW from OLD
 #ifndef NDEBUG
             if (debug) {
                 assert(confirm_dominance_value(new_state, old_state, dominance_new_old));
@@ -474,7 +540,7 @@ void BoundMaintenanceOracle::add_external_cost_bound(
                 improved_cost_old_state = Policy::min_cost(improved_cost_old_state, inferred_cost);
                 assert(improved_cost_old_state >= 0);
             }
-            // report old state as a bug if possible
+            // report old state as a bug if possible, TODO: only pool states in CostSet?
             if (original_cost_old_state != improved_cost_old_state) {
                 assert(improved_cost_old_state >= 0);
                 update_cost(old_state, original_cost_old_state, improved_cost_old_state);
@@ -502,8 +568,9 @@ void BoundMaintenanceOracle::add_external_cost_bound(
     }
 
  comparisons_finished:
-    upper_cost_bounds[new_state] = new_cost_bound;
-    addState(new_state, new_cost_bound);
+    // TODO: bookkeeping, here: state added to cost set and reordering
+    upper_bounds->upper_bounds[new_state] = new_cost_bound;
+    upper_bounds->addState(new_state, new_cost_bound);
     reorder_state_sets_with_parent_updates(policy);
 
     if (update_parents) {
@@ -513,7 +580,7 @@ void BoundMaintenanceOracle::add_external_cost_bound(
 }
 
 PolicyCost
-BoundMaintenanceOracle::lookahead_search(Policy &policy, const State &s, unsigned int max_state_visits) {
+BoundMaintenancePctoOracle::lookahead_search(Policy &policy, const State &s, unsigned int max_state_visits) {
     struct search_node {
         StateID state;
         int g_value;
@@ -541,7 +608,7 @@ BoundMaintenanceOracle::lookahead_search(Policy &policy, const State &s, unsigne
 
     queue.emplace(start_state_id, 0, 0); // h value does not matter for start state
 
-    PolicyCost upper_bound_for_start = upper_cost_bounds[s];
+    PolicyCost upper_bound_for_start = upper_bounds->upper_bounds[s];
     bool handling_start_state = true;
 
     for (unsigned int i = 0; i < max_state_visits && !queue.empty();) {
@@ -596,13 +663,15 @@ BoundMaintenanceOracle::lookahead_search(Policy &policy, const State &s, unsigne
         }
     }
 
-    PolicyCost &cost_bound = upper_cost_bounds[s];
+    PolicyCost &cost_bound = upper_bounds->upper_bounds[s];
     const PolicyCost bound_before_update = cost_bound;
     if (bound_before_update != upper_bound_for_start) {
         cost_bound = upper_bound_for_start;
         if (tested_states.contains(s.get_id())) {
-            removeState(s, bound_before_update);
-            addState(s, upper_bound_for_start);
+            // std::cout << "Before removeState in lookahead_search (bmo pcto)" << std::endl;
+            upper_bounds->removeState(s, bound_before_update);
+            // std::cout << "After removeState in lookahead_search (bmo pcto)" << std::endl;
+            upper_bounds->addState(s, upper_bound_for_start);
         }
         if (update_parents) {
             update_parent_cost(policy, s);
@@ -612,16 +681,16 @@ BoundMaintenanceOracle::lookahead_search(Policy &policy, const State &s, unsigne
     return upper_bound_for_start;
 }
 
-class IterativeImprovementOracleFeature : public plugins::TypedFeature<Oracle, BoundMaintenanceOracle> {
+class BoundMaintenancePctoOracleFeature : public plugins::TypedFeature<Oracle, BoundMaintenancePctoOracle> {
 public:
-    IterativeImprovementOracleFeature() : TypedFeature("bound_maintenance_oracle") {
-        BoundMaintenanceOracle::add_options_to_feature(*this);
+    BoundMaintenancePctoOracleFeature() : TypedFeature("bound_maintenance_pcto_oracle") {
+        BoundMaintenancePctoOracle::add_options_to_feature(*this);
     }
 };
-static plugins::FeaturePlugin<IterativeImprovementOracleFeature> _plugin;
+static plugins::FeaturePlugin<BoundMaintenancePctoOracleFeature> _plugin;
 
 
-static plugins::TypedEnumPlugin<BoundMaintenanceOracle::LookaheadComp> _enum_plugin({
+static plugins::TypedEnumPlugin<BoundMaintenancePctoOracle::LookaheadComp> _enum_plugin({
         {"h", "heuristic value only (resembles GBFS)."},
         {"g_plus_h", "f=g+h (resembles A*)"}});
 } // namespace policy_testing

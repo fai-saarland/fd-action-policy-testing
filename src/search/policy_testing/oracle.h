@@ -38,6 +38,7 @@ inline TestResult best_of(const TestResult &left, const TestResult &right) {
 
 class Oracle : public TestingBaseComponent {
     friend class CompositeOracle;
+    friend class PolicyComparisonOracle;
 public:
     // for every reported bug go through all policy parents and report them as bugs as well
     const bool report_parent_bugs;
